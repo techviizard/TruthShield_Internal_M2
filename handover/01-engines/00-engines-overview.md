@@ -42,5 +42,4 @@ Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
 | 22 engines implemented | ✅ Implemented | Every one is real logic, no stubs |
 | Docs for 8 of the 22 engines | 🟡 In Progress | The last 8 rows above have no doc. Until they do, the handover understates what was built: [04-claim-vs-implementation](../05-scope-of-work/04-claim-vs-implementation.md) |
 | Unit tests | ❌ Not Started | Pure functions, the cheapest high-value tests in the repo |
-| Trained models replacing heuristics | 🔒 Gated | Licensing, not architecture. Signatures already allow the swap: [C6](../05-scope-of-work/02-constrained-and-deferred.md) |
-| Biometric engines (face, voiceprint, rPPG) | ⛔ Constrained | Deliberately absent: [C1](../05-scope-of-work/02-constrained-and-deferred.md) |
+| Trained models replacing heuristics | 🔒 Licence-gated | Signatures already allow the swap: [C6](../05-scope-of-work/02-constrained-and-deferred.md) |

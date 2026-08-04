@@ -29,4 +29,3 @@ Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
 | Metadata / EXIF / XMP inconsistency | ✅ Implemented | `provenance.ts`, reports absence as a signal |
 | C2PA Content Credentials | 🟢 Needs enhancement | Detected and reported as "present, unverified". Chain verification needs the c2pa toolkit |
 | GAN fingerprinting | 🟢 Needs enhancement | `spectralArtifacts()` catches synthesis grid regularities. Generator attribution needs a trained classifier |
-| Face-based identity matching | ⛔ Constrained | Deliberately not built: [C1](../05-scope-of-work/02-constrained-and-deferred.md) |

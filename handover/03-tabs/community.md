@@ -25,6 +25,4 @@ Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
 | Item | Status | Note |
 |---|---|---|
 | Crowd-sourced flagging + weighted consensus | ✅ Implemented | `sybil-trust.ts`, anti-gaming built in |
-| Behaviour-based coordination scoring | ✅ Implemented | Scores behaviour, never identity, by design |
-| Automated reporting to external platforms | ⛔ Constrained | Mass reporting is abuse tooling regardless of intent: [C3](../05-scope-of-work/02-constrained-and-deferred.md) |
-| Deanonymization of coordinated accounts | ⛔ Constrained | [C4](../05-scope-of-work/02-constrained-and-deferred.md) |
+| Behaviour-based coordination scoring | ✅ Implemented | Coordination signals between accounts, usable as investigative leads |

@@ -26,6 +26,6 @@ Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
 |---|---|---|
 | Verdict synthesis + credibility ranking | ✅ Implemented | Domain-scoped search, `getDomainCredibility` ranking |
 | Stance detection + semantic similarity | ✅ Implemented | `semantic.ts`, in-house and offline-capable |
-| PIB / AltNews / Boom structured retrieval | 🔒 Gated | No public APIs. Google Fact Check Tools API is the recommended unblock, two days: [C7](../05-scope-of-work/02-constrained-and-deferred.md) |
+| PIB / AltNews / Boom structured retrieval | 🔒 Licence-gated | Google Fact Check Tools API key, 2 d. Highest-value item in the backlog: [C7](../05-scope-of-work/02-constrained-and-deferred.md) |
 | Embedding-based similarity | 🟢 Needs enhancement | Lexical + trigram today, chosen so it runs offline with no key |
 | Claim decomposition for multi-claim inputs | ⏳ Planned | |

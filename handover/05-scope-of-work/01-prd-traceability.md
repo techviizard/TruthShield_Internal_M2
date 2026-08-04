@@ -26,16 +26,16 @@ remains. Status legend: [README.md](README.md).
 | 2.3 | Detect clickbait and manufactured urgency | ✅ | `src/lib/engines/text-heuristics.ts`, weighted signal table, offline, explainable per signal | Nothing |
 | 2.4 | Detect misleading claims | 🟢 | LLM pass + `text-heuristics` signals + `semantic.ts` stance | Real and explainable. Wants a trained classifier fine-tuned on an Indian-language misinformation corpus to move past lexical cues |
 | 2.5 | Detect known hoaxes | ✅ | `src/lib/engines/hoax-match.ts`, near-duplicate match against the recurring-hoax registry using semantic similarity + pHash | Registry is seeded and small. Growing it is content work, not engineering |
-| 2.6 | Cross-verify with PIB Fact Check | 🔒 | `webSearchFactCheck()` scopes queries to fact-checker domains; `src/config/source-domains.ts` ranks PIB highest | PIB publishes no public API. Needs either an MoU for a feed or a maintained scraper, and a scraper needs their written permission. See [02](02-constrained-and-deferred.md#c7) |
-| 2.7 | Cross-verify with AltNews | 🔒 | Same path, domain-scoped search | No public API. Their content is CC-licensed for reuse with attribution; a formal data-sharing request is the clean route |
-| 2.8 | Cross-verify with Boom | 🔒 | Same path, domain-scoped search | No public API. Boom is an IFCN signatory and publishes ClaimReview markup, so a ClaimReview crawler is the lawful path (2.9) |
+| 2.6 | Cross-verify with PIB Fact Check | 🔒 | `webSearchFactCheck()` scopes queries to fact-checker domains; `src/config/source-domains.ts` ranks PIB highest | No public API. As a government deployment, a direct PIB feed is an internal request. See [C7](02-constrained-and-deferred.md#c7) |
+| 2.7 | Cross-verify with AltNews | 🔒 | Same path, domain-scoped search | No public API. A data-sharing request is the durable route; Google Fact Check Tools covers them today |
+| 2.8 | Cross-verify with Boom | 🔒 | Same path, domain-scoped search | No public API. Boom publishes ClaimReview markup, so the Google Fact Check Tools route in 2.9 covers it |
 | 2.9 | Structured fact-check retrieval (ClaimReview / Google Fact Check Tools API) | ⏳ | Not built | This is the single highest-value unblock for 2.6 to 2.8. Google Fact Check Tools API is free, indexes PIB, AltNews, Boom, Factly and Vishvas News, and returns structured verdicts. Estimated two days |
 | 2.10 | NLP stance detection | ✅ | `src/lib/engines/semantic.ts`, cue-phrase classification weighted by topical relatedness, reports "unrelated" honestly | Nothing |
 | 2.11 | NLP semantic similarity | ✅ | `semantic.ts`, TF-IDF cosine blended with character-trigram Jaccard so it survives Indic morphology and transliteration | Nothing |
 | 2.12 | Semantic search over embeddings | 🟢 | Lexical + trigram similarity, no vector model | Works offline and needs no key, which is why it was chosen. A sentence-embedding model (multilingual E5 or IndicBERT) behind the same `semanticSimilarity()` signature would raise recall on paraphrase |
 | 2.13 | Coordinated campaign detection | ✅ | `clustering.ts` DBSCAN-lite over TF-IDF cosine, `POST /api/campaigns` | Nothing |
-| 2.14 | Author or account attribution | ⛔ | Deliberately absent | Linking content to real identities is out of scope. See [02](02-constrained-and-deferred.md#c4) |
-| 2.15 | Automated ingest from WhatsApp, X, Facebook, Instagram | ⛔ | Deliberately absent | Requires ToS violation or bot-detection bypass. See [02](02-constrained-and-deferred.md#c2) |
+| 2.14 | Author or account attribution | ⛔ | Not in this build | Attribution comes from subscriber data obtained under legal process by the investigating agency. See [C4](02-constrained-and-deferred.md#c4) |
+| 2.15 | Automated ingest from WhatsApp, X, Facebook, Instagram | ⛔ | Not in this build | Needs an official API grant or a lawful request through the designated authority. See [C2](02-constrained-and-deferred.md#c2) |
 
 ---
 
@@ -50,14 +50,14 @@ remains. Status legend: [README.md](README.md).
 | 3.2 | Temporal artifact identification | ✅ | `src/lib/engines/video-temporal.ts`, frame-to-frame perceptual distance and cross-frame variance of every spatial signal | Nothing |
 | 3.3 | Spatial artifact identification | ✅ | `video-temporal.ts` per-frame ELA region clustering, noise inconsistency, synthesis grid detection | Nothing |
 | 3.4 | Frame extraction | 🟢 | Browser-side canvas capture, up to 48 frames, posted to `POST /api/analyze/video-frames` | Deliberate: keeps ffmpeg out of the deployment and does decoding on the operator machine. Server-side ffmpeg with scene-change sampling would give denser and more even coverage on long clips |
-| 3.5 | Face tracking | ⛔ | Not built. `video-temporal.ts` documents the omission in its header | Face tracking that persists an identity across frames is biometric processing. See [02](02-constrained-and-deferred.md#c1) |
-| 3.6 | Head movement analysis | ⛔ | Not built | Same gate as 3.5. Head pose estimation requires facial landmark tracking |
+| 3.5 | Face tracking | ⛔ | Not in this build. `video-temporal.ts` documents the omission in its header | Biometric processing. Needs a DPDP s.17(2)(a) notification or statutory mandate plus purpose limitation in code. See [C1](02-constrained-and-deferred.md#c1) |
+| 3.6 | Head movement analysis | ⛔ | Not in this build | Same gate as 3.5. Head pose estimation requires facial landmark tracking |
 | 3.7 | Audio-lip sync detection | ⚠️ 🟡 | The VLM prompt in `src/app/api/analyze/video/route.ts` asks for `lipSyncScore` and the tab renders it. No engine computes it | **The number shown is a language model opinion, not a measurement.** Either label it as such in the UI or build a real SyncNet-style detector. See [04](04-claim-vs-implementation.md) |
 | 3.8 | Blink irregularity detection | ⚠️ 🟡 | Same: prompted for, rendered, not measured | Same remedy as 3.7 |
-| 3.9 | Pretrained deepfake models (MesoNet, Deepware) | 🔒 | Not integrated | MesoNet weights are research-licensed, non-commercial by default. Deepware is a paid API with ToS restrictions on redeployment. Both need a licence decision before integration, not engineering effort. See [02](02-constrained-and-deferred.md#c6) |
+| 3.9 | Pretrained deepfake models (MesoNet, Deepware) | 🔒 | Not integrated | MesoNet weights are research-licensed and non-commercial by default; Deepware is a paid API. A procurement decision, then 4 engineer-days. See [C6](02-constrained-and-deferred.md#c6) |
 | 3.10 | Audio track deepfake analysis on video | 🟡 | `audio-dsp.ts` exists and runs on standalone audio uploads via `POST /api/forensics/audio` | Video uploads do not split the audio track and route it through the DSP engine. Wiring the two together is a small, high-value task |
 | 3.11 | Long-video handling | ⏳ | 48-frame cap regardless of duration | Chunked processing, progress streaming, keyframe pHash storage for source tracing |
-| 3.12 | Biological signal detection (rPPG) | ⛔ | Not built | Remote photoplethysmography extracts pulse from face video. That is health data under DPDP. See [02](02-constrained-and-deferred.md#c1) |
+| 3.12 | Biological signal detection (rPPG) | ⛔ | Not in this build | rPPG extracts pulse from face video, which is health data under DPDP. Same gate as 3.5, and a research effort rather than an estimate. See [C1](02-constrained-and-deferred.md#c1) |
 
 ---
 
@@ -74,7 +74,7 @@ remains. Status legend: [README.md](README.md).
 | 4.7 | Explainable scoring | ✅ | `image-verdict.ts` fuses signals from a fixed weight table so a score reads backwards to the evidence that produced it | Nothing. This is the strongest piece of the codebase |
 | 4.8 | Visual cues for flagged regions | ✅ | ELA region overlay in `image-forensics-tab.tsx` | Nothing |
 | 4.9 | Reverse image search | 🟡 | `POST /api/analyze/reverse-image`, honest error state on failure | Depends on the configured search provider. No dedicated reverse-image index (TinEye, Bing Visual Search) is wired in |
-| 4.10 | Face-based image identity matching | ⛔ | Deliberately absent | See [02](02-constrained-and-deferred.md#c1) |
+| 4.10 | Face-based image identity matching | ⛔ | Not in this build | Same gate as 3.5. See [C1](02-constrained-and-deferred.md#c1) |
 
 ---
 
@@ -100,7 +100,7 @@ remains. Status legend: [README.md](README.md).
 |---|---|---|---|---|
 | 6.1 | Accuracy measurement harness | ✅ | `src/lib/engines/eval-metrics.ts`, `POST /api/eval`, `npm run eval`, corpora in `eval/` | The harness is real and computes confusion matrix, precision, recall, F1 and threshold sweeps |
 | 6.2 | Low false positive rate, evidenced | 🟡 | Harness exists, corpus is a smoke set | A published accuracy figure needs a labelled corpus of meaningful size per modality and language. This is the biggest credibility gap in the project |
-| 6.3 | Ground-truth labelled dataset | 🔒 | Not present | Public deepfake corpora (FaceForensics++, DFDC, Celeb-DF) each require signing a research use agreement. That is a paperwork task, not engineering. See [02](02-constrained-and-deferred.md#c5) |
+| 6.3 | Ground-truth labelled dataset | 🔒 | Not present | Public corpora (FaceForensics++, DFDC, Celeb-DF, ASVspoof) each need a signed research use agreement, straightforward for a government institution. See [C5](02-constrained-and-deferred.md#c5) |
 | 6.4 | Model metrics surfaced honestly | ✅ | Model Metrics tab states plainly that no labelled ground truth exists rather than drawing a fabricated ROC curve | Nothing. Preserve this behaviour |
 | 6.5 | Speed | 🟢 | In-house engines run in milliseconds, LLM calls dominate latency, real 24h latency tracked at `GET /api/system/latency` | Measured and visible. No load testing has been done |
 | 6.6 | Scalability | 🟡 | Single-node Next.js + SQLite | Postgres swap is a one-line Prisma change and is documented. Needs a job queue for video, object storage for uploads, and horizontal scaling before any real load |
@@ -114,15 +114,15 @@ remains. Status legend: [README.md](README.md).
 | # | Item | Status | Where it lives | What remains |
 |---|---|---|---|---|
 | 7.1 | Browser plugin | 🟢 | Full MV3 extension in `extension/`, downloadable via `GET /api/download/extension` | Works when side-loaded. Not published to any store, which needs a developer account and store review |
-| 7.2 | Social media plugin (in-feed) | ⛔ | Deliberately absent | Injecting verdicts into a live social feed requires DOM injection against platforms whose ToS forbid it. See [02](02-constrained-and-deferred.md#c2) |
+| 7.2 | Social media plugin (in-feed) | ⛔ | Not in this build | Same gate as 2.15. See [C2](02-constrained-and-deferred.md#c2) |
 | 7.3 | News verification API integration | 🔒 | Generic web search scoped to fact-checker domains | Same unblock as 2.9 |
 | 7.4 | Media database integration | 🔒 | Not built | Needs commercial agreements (Reuters, AFP, PTI archives) |
 | 7.5 | Crowd-sourced flagging | ✅ | `POST /api/community`, `sybil-trust.ts` weighted consensus with anti-gaming | Nothing |
 | 7.6 | Reporting mechanism | ✅ | Community reports, investigations, `report-generator.ts` export to HTML and JSON | Nothing |
-| 7.7 | Automated reporting to platforms | ⛔ | Deliberately absent | Automated mass reporting is abuse tooling regardless of intent. See [02](02-constrained-and-deferred.md#c3) |
+| 7.7 | Automated reporting to platforms | ⛔ | Not in this build | Needs an IT Act s.69A designation and a per-direction approval workflow. See [C3](02-constrained-and-deferred.md#c3) |
 | 7.8 | Offline capability | ✅ | Service worker with network-first documents, IndexedDB analysis queue, and on-device detectors (`text-heuristics.ts`, `hoax-match.ts`) that need no API key | Nothing. The offline path genuinely produces verdicts, it does not just cache a shell |
 | 7.9 | Dashboard for fact-checking teams | ✅ | Dashboard, Investigations, Campaign Detection, Live Threat Feed, Data Visualization | Nothing |
-| 7.10 | Dashboard for law enforcement | 🟢 | Chain-of-custody fingerprinting at ingest (`integrity.ts`), hash-linked tamper-evident audit log, exportable reports | The forensic primitives are real. Court admissibility needs a legal opinion, notably a Section 65B certificate workflow under the Indian Evidence Act. See [02](02-constrained-and-deferred.md#c8) |
+| 7.10 | Dashboard for law enforcement | 🟢 | Chain-of-custody fingerprinting at ingest (`integrity.ts`), hash-linked tamper-evident audit log, exportable reports | Forensic primitives are complete. Admissibility needs a Section 65B certificate workflow with a named signatory. See [C8](02-constrained-and-deferred.md#c8) |
 
 ---
 

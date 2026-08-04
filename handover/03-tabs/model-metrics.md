@@ -28,5 +28,5 @@ Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
 |---|---|---|
 | Metrics engine (confusion matrix, P/R/F1, threshold sweep) | ✅ Implemented | `eval-metrics.ts`, `POST /api/eval`, `npm run eval` |
 | Honest empty state where no ground truth exists | ✅ Implemented | Preserve this. The tab states the limit rather than drawing a fake ROC curve |
-| Labelled ground-truth corpus | 🔒 Gated | Public corpora need signed research use agreements: [C5](../05-scope-of-work/02-constrained-and-deferred.md) |
-| Published accuracy figures | 🟡 In Progress | Blocks the court-admissibility work in [C8](../05-scope-of-work/02-constrained-and-deferred.md) |
+| Labelled ground-truth corpus | 🔒 Licence-gated | Public corpora need signed research use agreements: [C5](../05-scope-of-work/02-constrained-and-deferred.md) |
+| Published accuracy figures | 🟡 In Progress | Dependency of the 65B certificate work in [C8](../05-scope-of-work/02-constrained-and-deferred.md) |

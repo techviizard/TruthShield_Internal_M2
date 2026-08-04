@@ -28,5 +28,4 @@ Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
 | Frame extraction | 🟢 Needs enhancement | Browser canvas capture, 48-frame cap. Server-side ffmpeg with scene-change sampling is the upgrade |
 | Audio-lip sync + blink scores | ⚠️ Overclaimed | Prompted from the VLM and rendered, but never measured. Fix before any demo: [04-claim-vs-implementation](../05-scope-of-work/04-claim-vs-implementation.md) |
 | Audio track of a video routed to `audio-dsp.ts` | 🟡 In Progress | Engine exists, only wired to standalone audio uploads |
-| Face tracking, head movement, rPPG | ⛔ Constrained | Biometric processing. Deliberately not built: [C1](../05-scope-of-work/02-constrained-and-deferred.md) |
-| MesoNet / Deepware | 🔒 Gated | Licensing, not effort: [C6](../05-scope-of-work/02-constrained-and-deferred.md) |
+| MesoNet / Deepware | 🔒 Licence-gated | Procurement decision, 4 d after: [C6](../05-scope-of-work/02-constrained-and-deferred.md) |

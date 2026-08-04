@@ -30,4 +30,3 @@ Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
 | Spectral / ZCR / flatness DSP features | ✅ Implemented | `audio-dsp.ts`, in-house, offline |
 | Audio track extracted from uploaded video | 🟡 In Progress | Engine exists, video route does not call it yet. High value, low effort |
 | Speaker diarization, emotion scoring | ❌ Not Started | Panels say so rather than inventing values |
-| Voice identity matching | ⛔ Constrained | Voiceprints are biometric data: [C1](../05-scope-of-work/02-constrained-and-deferred.md) |

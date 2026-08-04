@@ -22,6 +22,5 @@ Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
 
 | Item | Status | Note |
 |---|---|---|
-| Manifest V3 extension, user-initiated analysis | 🟢 Needs enhancement | Works side-loaded. Acts only on content the user asks about, which is the design constraint, not a limitation |
+| Manifest V3 extension, operator-initiated analysis | 🟢 Needs enhancement | Works side-loaded. Analyses content the operator is already viewing |
 | Store publication | ⏳ Planned | Needs a developer account and store review |
-| In-feed verdict injection on social platforms | ⛔ Constrained | ToS violation and third-party DOM injection: [C2](../05-scope-of-work/02-constrained-and-deferred.md) |

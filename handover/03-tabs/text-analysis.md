@@ -30,4 +30,3 @@ Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
 | Misleading claim detection | 🟢 Needs enhancement | Lexical signals plus LLM. A classifier fine-tuned on an Indian-language corpus is the next step |
 | Article ingest by URL | ⏳ Planned | Paste only today. Needs readability extraction |
 | Indic language depth | 🟢 Needs enhancement | Hindi, Gujarati and Tamil surface forms exist. Native-speaker review pending |
-| Account or author attribution | ⛔ Constrained | Deliberately not built: [C4](../05-scope-of-work/02-constrained-and-deferred.md) |

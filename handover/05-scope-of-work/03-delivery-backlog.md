@@ -78,31 +78,40 @@ Ordered by value per day.
 
 ---
 
-## Phase 4. Gated work
+## Phase 4. Licence-gated work
 
-Do not schedule these as engineering. Each needs an external unblock first, tracked in
-[02-constrained-and-deferred.md](02-constrained-and-deferred.md). The engineering estimate applies
-only after the gate opens.
+Procurement tasks with small engineering tails. Start the paperwork now; the engineering estimate
+applies once the licence or key is in hand. Tracked in
+[02-constrained-and-deferred.md](02-constrained-and-deferred.md).
 
-| # | Task | Gate | Effort after unblock |
+| # | Task | Instrument | Effort after |
 |---|---|---|---|
 | 4.1 | Licensed pretrained deepfake model behind `video-temporal.ts` | Licence or paid subscription ([C6](02-constrained-and-deferred.md#c6)) | 4 |
 | 4.2 | Section 65B certificate workflow for evidence export | Legal opinion + named signatory ([C8](02-constrained-and-deferred.md#c8)) | 3 |
-| 4.3 | Official platform API ingest (Meta Content Library, X API) | Research accreditation ([C2](02-constrained-and-deferred.md#c2)) | 5 |
-| 4.4 | PIB or AltNews direct feed | MoU or data-sharing agreement ([C7](02-constrained-and-deferred.md#c7)) | 2 |
+| 4.3 | PIB direct feed | Internal request within government ([C7](02-constrained-and-deferred.md#c7)) | 2 |
+
+Note that 4.2 depends on backlog item 2.6: a published detector error rate is part of what makes a
+65B certificate defensible.
 
 ---
 
-## Not scheduled, by design
+## Phase 5. Deployment-gated work
 
-Face tracking, head-pose and rPPG ([C1](02-constrained-and-deferred.md#c1)); platform scraping and
-in-feed injection ([C2](02-constrained-and-deferred.md#c2)); automated takedown and mass reporting
-([C3](02-constrained-and-deferred.md#c3)); identity attribution ([C4](02-constrained-and-deferred.md#c4));
-synthetic media generation ([C5](02-constrained-and-deferred.md#c5)).
+**Not for the sprint board.** Each needs the deploying authority's mandate or a named instrument
+before work starts. Raise these with the authority, not the engineering lead. Estimates apply only
+after the gate opens.
 
-These are absent on purpose. Read [02-constrained-and-deferred.md](02-constrained-and-deferred.md)
-before proposing any of them, and note what was built in their place: each has a lawful alternative
-already in the codebase carrying its weight.
+| # | Task | Instrument | Effort after |
+|---|---|---|---|
+| 5.1 | Face tracking and landmark consistency | DPDP s.17(2)(a) notification or statutory mandate, accountable officer, purpose limitation in code ([C1](02-constrained-and-deferred.md#c1)) | 8 |
+| 5.2 | Lip-sync detection (SyncNet-style). Depends on 5.1 | Same as 5.1 ([C1](02-constrained-and-deferred.md#c1)) | 5 |
+| 5.3 | Platform ingest connectors | Official API grant, or lawful request through the designated authority ([C2](02-constrained-and-deferred.md#c2)) | 5 per platform + 3 pipeline |
+| 5.4 | Takedown direction workflow with per-direction approval | IT Act s.69A designation, named authorised officer ([C3](02-constrained-and-deferred.md#c3)) | 6 |
+| 5.5 | Join lawfully-obtained subscriber data to behavioural clusters | Subscriber data obtained by the investigating agency under legal process ([C4](02-constrained-and-deferred.md#c4)) | 3 |
+
+What is built in place of each of these is listed in
+[02-constrained-and-deferred.md](02-constrained-and-deferred.md) and is load-bearing in the current
+design. When a gate opens, treat the change as a deliberate migration rather than a cleanup.
 
 ---
 
@@ -114,7 +123,10 @@ already in the codebase carrying its weight.
 | 1. Deployability | 18.5 | Any deployment with real users |
 | 2. PRD gaps | 29.5 | Full problem-statement coverage |
 | 3. Scale | 16 | Production load |
-| **Sum** | **66.6** | |
+| **Schedulable sum** | **66.6** | |
+| 4. Licence-gated | 9 | Applies once each licence or key lands |
+| 5. Deployment-gated | 30+ | Applies once each instrument exists. Not schedulable |
 
-Roughly three months for one engineer, or about six focused weeks for two. Phases 0 and 1 are
-non-negotiable and account for the first three weeks.
+Roughly three months for one engineer on the schedulable work, or about six focused weeks for two.
+Phases 0 and 1 are non-negotiable and account for the first three weeks. Phases 4 and 5 are excluded
+from the sum because their start dates are set outside the engineering team.

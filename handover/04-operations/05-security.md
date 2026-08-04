@@ -34,8 +34,7 @@ scheduled in [Phase 1 of the delivery backlog](../05-scope-of-work/03-delivery-b
 | Prompt-injection posture | ✅ Implemented | Strict system prompts, JSON-forced output, model output never executed. Keep it |
 | Evidence chain of custody | ✅ Implemented | `integrity.ts` fingerprints at ingest, audit log is hash-linked |
 | Data retention and deletion | ❌ Not Started | DPDP requires both. Analyses currently persist indefinitely |
-| Biometric data handling | ⛔ Constrained | The platform processes no biometric data, which is why it needs no biometric consent flow: [C1](../05-scope-of-work/02-constrained-and-deferred.md) |
-| Court-admissible export (Section 65B) | 🔒 Gated | Forensic primitives exist, legal wrapper does not: [C8](../05-scope-of-work/02-constrained-and-deferred.md) |
+| Court-admissible export (Section 65B) | 🔒 Licence-gated | Forensic primitives exist; needs a named signatory and certificate template: [C8](../05-scope-of-work/02-constrained-and-deferred.md) |
 
 ## Note for the incoming team
 

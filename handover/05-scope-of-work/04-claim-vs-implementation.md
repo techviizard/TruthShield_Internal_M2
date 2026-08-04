@@ -31,10 +31,11 @@ route contradicts the engine.
 2. Label them in the UI as "model impression, not measured", visually separated from measured
    signals. Preserves the information without the false precision.
 3. Build a real detector. A SyncNet-style audio-visual correspondence model is the standard
-   approach, and it needs the mouth region, which needs face detection, which is gated by
+   approach, and it needs the mouth region, which needs face detection, which sits behind
    [C1](02-constrained-and-deferred.md#c1). Blink detection has the same dependency.
 
-**Recommendation:** option 1 now, option 3 only if C1 is ever unblocked.
+**Recommendation:** option 1 now, since it ships today and removes the false precision. Option 3
+becomes backlog item 5.2 once C1 opens.
 
 **Related:** PRD 3.7, 3.8.
 
@@ -100,8 +101,8 @@ four-section template. Estimated one day.
 **Where:** `handover/README.md`
 
 The root README defines a three-state legend (Real, Partial, Demo). The per-component docs use it.
-This folder defines an eight-state legend that distinguishes "not built" from "deliberately not
-built", which is the distinction the project most needs to communicate.
+This folder defines an eight-state legend that separates work the team can schedule from work
+waiting on an instrument, which is the distinction the project most needs to communicate.
 
 **Fix:** point the root README at [README.md](README.md) as the canonical legend and migrate the
 per-component status markers as each doc is touched. Do not do a mass rewrite; migrate on contact.
