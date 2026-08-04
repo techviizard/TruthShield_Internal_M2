@@ -1,0 +1,346 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("analyst") // admin, analyst, viewer
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MediaUpload {
+  id           String   @id @default(cuid())
+  userId       String?
+  fileName     String
+  fileType     String   // image, video, audio, text
+  mimeType     String
+  fileSize     Int
+  storagePath  String?
+  thumbnailPath String?
+  metadata     String?  // JSON string of EXIF/metadata
+  status       String   @default("uploaded") // uploaded, processing, completed, failed
+  sha256       String?  // evidence hash computed at ingest (chain of custody)
+  perceptualHash String? // dHash64 at ingest, for near-duplicate evidence linking
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  analyses     AnalysisReport[]
+
+  @@index([sha256])
+}
+
+model AnalysisReport {
+  id              String      @id @default(cuid())
+  mediaUploadId   String
+  mediaUpload     MediaUpload  @relation(fields: [mediaUploadId], references: [id], onDelete: Cascade)
+  analysisType    String      // text_fake_news, image_forensics, video_deepfake, fact_check
+  status          String      @default("pending") // pending, processing, completed, failed
+  results         String?     // JSON string of analysis results
+  trustScore      Float?      // 0-100
+  riskLevel       String?     // low, medium, high, critical
+  aiModel         String?     // which model was used
+  processingTime  Int?        // ms
+  explanation     String?     // XAI explanation
+  confidence      Float?      // 0-1
+  flags           String?     // JSON array of flags
+  recommendations String?     // JSON array of recommendations
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  factChecks      FactCheckMatch[]
+  investigationId String?
+  investigation   Investigation? @relation(fields: [investigationId], references: [id])
+}
+
+model FactCheckMatch {
+  id              String         @id @default(cuid())
+  analysisReportId String
+  analysisReport  AnalysisReport @relation(fields: [analysisReportId], references: [id], onDelete: Cascade)
+  source          String         // pib, altnews, boomlive, factly, snopes, google_fact_check
+  claim           String?
+  verdict         String?        // true, false, misleading, unverified
+  confidence      Float?
+  url             String?
+  snippet         String?
+  publishedDate   String?
+  matchedAt       DateTime       @default(now())
+}
+
+model Investigation {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("open") // open, in_progress, closed, archived
+  priority    String   @default("medium") // low, medium, high, critical
+  tags        String?  // JSON array of tags
+  assignedTo  String?
+  // Law-enforcement case metadata (court-ready reports, FIR linkage)
+  caseNumber   String? // internal case / DD number
+  firNumber    String? // FIR registration number
+  officerName  String?
+  officerBadge String?
+  jurisdiction String? // police station / zone
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  analyses    AnalysisReport[]
+
+  @@index([firNumber])
+}
+
+model Alert {
+  id          String   @id @default(cuid())
+  type        String   // threat, verification_complete, system, escalation
+  severity    String   @default("info") // info, warning, error, critical
+  title       String
+  message     String
+  source      String?
+  isRead      Boolean  @default(false)
+  actionUrl   String?
+  createdAt   DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  resource  String
+  details   String?  // JSON string
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  // Tamper-evident hash chain: entryHash = sha256(prevHash + canonical(entry)).
+  // Any edit or deletion of a past row breaks every hash after it.
+  seq       Int      @default(0)
+  prevHash  String?
+  entryHash String?
+
+  @@index([seq])
+}
+
+model WatchlistItem {
+  id          String   @id @default(cuid())
+  keyword     String
+  type        String   // keyword, url, hashtag, account
+  language    String   @default("en")
+  isActive    Boolean  @default(true)
+  hitCount    Int      @default(0)
+  lastHitAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DashboardStats {
+  id                String   @id @default(cuid())
+  totalAnalyses     Int      @default(0)
+  fakeNewsDetected  Int      @default(0)
+  deepfakesDetected Int      @default(0)
+  imagesAnalyzed    Int      @default(0)
+  factChecksRun     Int      @default(0)
+  activeAlerts      Int      @default(0)
+  openInvestigations Int     @default(0)
+  avgTrustScore     Float    @default(0)
+  updatedAt         DateTime @updatedAt
+}
+
+// ── Tier 2-5 Additions (additive, no breaking changes) ──
+
+model PerceptualHash {
+  id            String   @id @default(cuid())
+  mediaUploadId String
+  hash          String
+  algorithm     String   @default("dhash64")
+  createdAt     DateTime @default(now())
+
+  @@index([hash])
+  @@index([mediaUploadId])
+}
+
+model WatchlistHit {
+  id                String   @id @default(cuid())
+  watchlistItemId   String
+  analysisReportId  String?
+  matchedText       String
+  context           String?
+  createdAt         DateTime @default(now())
+
+  @@index([watchlistItemId])
+  @@index([createdAt])
+}
+
+model CommunityReport {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  mediaType       String   // text, image, video, audio
+  submitterId     String?
+  submitterName   String
+  tags            String?  // JSON array
+  status          String   @default("pending") // pending, verified, disputed
+  consensusScore  Float    @default(0)
+  effectiveVoters Int      @default(0)
+  flaggedSybil    Int      @default(0)
+  confidence      Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  votes           CommunityVote[]
+  @@index([status])
+}
+
+model CommunityVote {
+  id                String   @id @default(cuid())
+  reportId          String
+  report            CommunityReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  voterFingerprint  String   // hashed IP+UA combo
+  vote              String   // agree, disagree
+  voterTrustScore   Float    @default(50)
+  createdAt         DateTime @default(now())
+
+  @@unique([reportId, voterFingerprint])
+  @@index([reportId])
+}
+
+model SourceCredibilityScore {
+  id              String   @id @default(cuid())
+  domain          String   @unique
+  totalCitations  Int      @default(0)
+  factualRating   Float    @default(50)
+  biasScore       Float    @default(0)
+  type            String   @default("unknown") // fact-checker, mainstream, unknown
+  lastUpdated     DateTime @updatedAt
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  label       String
+  keywords    String   // JSON array
+  severity    String   @default("medium")
+  memberCount Int      @default(0)
+  firstSeen   DateTime
+  lastSeen    DateTime
+  createdAt   DateTime @default(now())
+
+  members     CampaignMember[]
+  @@index([severity])
+}
+
+model CampaignMember {
+  id               String   @id @default(cuid())
+  campaignId       String
+  campaign         Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  analysisReportId String
+  similarity       Float    @default(0)
+  addedAt          DateTime @default(now())
+
+  @@unique([campaignId, analysisReportId])
+}
+
+model WorkflowRule {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  triggerType String   // analysis_complete, alert_created, watchlist_hit, schedule
+  conditions  String   // JSON
+  actions     String   // JSON array
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  executions  WorkflowExecution[]
+}
+
+model WorkflowExecution {
+  id           String   @id @default(cuid())
+  ruleId       String
+  rule         WorkflowRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  triggeredAt  DateTime @default(now())
+  status       String   @default("pending") // pending, success, failed
+  durationMs   Int?
+  result       String?  // JSON
+
+  @@index([ruleId])
+  @@index([triggeredAt])
+}
+
+/// Registry of recurring hoax narratives. New content is matched against these
+/// so a message that is a re-skin of a known debunked forward is recognised
+/// without another round trip to a model or a search engine.
+model KnownHoax {
+  id           String   @id @default(cuid())
+  title        String
+  narrative    String   // canonical phrasing of the claim
+  language     String   @default("en")
+  category     String   @default("general") // financial, health, civic, communal, disaster
+  verdict      String   @default("false")   // false, misleading, unproven
+  debunkUrl    String?  // published debunk, when one exists
+  debunkSource String?  // pib, altnews, boomlive, factly, internal
+  firstSeen    DateTime @default(now())
+  lastSeen     DateTime @default(now())
+  hitCount     Int      @default(0)
+  perceptualHash String? // set when the hoax circulates as a specific image
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([language])
+  @@index([isActive])
+}
+
+/// One execution of the evaluation harness over a labeled dataset.
+model EvalRun {
+  id          String   @id @default(cuid())
+  datasetName String
+  datasetHash String   // SHA-256 of the corpus file — ties results to exact inputs
+  modality    String   // text, image, audio, mixed
+  provider    String
+  model       String
+  threshold   Float    @default(50)
+  sampleCount Int      @default(0)
+  errorCount  Int      @default(0)
+  durationMs  Int      @default(0)
+  metrics     String?  // JSON snapshot of the summary at `threshold`
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  samples     EvalSample[]
+
+  @@index([createdAt])
+}
+
+/// Per-sample prediction, kept so thresholds can be re-tuned without re-running the model.
+model EvalSample {
+  id         String   @id @default(cuid())
+  runId      String
+  run        EvalRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  sampleId   String   // stable id from the corpus file
+  label      Int      // 1 = should be flagged, 0 = genuine
+  score      Float    // detector suspicion score 0..100
+  language   String   @default("en")
+  modality   String   @default("text")
+  latencyMs  Int      @default(0)
+  error      String?
+  excerpt    String?  // short snippet for error review in the UI
+
+  @@index([runId])
+}
+
+model UserPreferences {
+  id                    String   @id @default(cuid())
+  userId                String?  @unique
+  theme                 String   @default("system") // light, dark, system
+  analysisSensitivity   Int      @default(75)
+  notificationsEnabled  Boolean  @default(true)
+  defaultExportFormat   String   @default("json")
+  language              String   @default("en")
+  updatedAt             DateTime @updatedAt
+}
