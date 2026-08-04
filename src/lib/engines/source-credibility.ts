@@ -1,7 +1,7 @@
 /**
  * Derived source credibility scoring.
  * Aggregates over FactCheckMatch.url hostnames + AnalysisReport explanations.
- * Real metric — no hardcoded NDTV/TOI ratings.
+ * Real metric - no hardcoded NDTV/TOI ratings.
  */
 
 import { db } from '@/lib/db'
@@ -10,8 +10,8 @@ import { FACT_CHECKER_DOMAINS } from '@/config/source-domains'
 export interface SourceScore {
   domain: string
   totalCitations: number
-  factualRating: number        // 0..100 — avg trustScore of analyses citing this source
-  biasScore: number            // -50..+50 — sentiment skew of citing analyses (negative = left-leaning lexical, positive = right)
+  factualRating: number        // 0..100 - avg trustScore of analyses citing this source
+  biasScore: number            // -50..+50 - sentiment skew of citing analyses (negative = left-leaning lexical, positive = right)
   recencyDays: number          // days since last citation
   type: 'fact-checker' | 'mainstream' | 'unknown'
 }
@@ -55,7 +55,7 @@ export async function computeSourceCredibility(): Promise<SourceScore[]> {
       entry.trustSum += m.analysisReport.trustScore
       entry.trustN++
     }
-    // Lexical bias proxy — count loaded words in explanation
+    // Lexical bias proxy - count loaded words in explanation
     if (m.analysisReport?.explanation) {
       const exp = m.analysisReport.explanation.toLowerCase()
       const leftMarkers = ['progressive', 'social justice', 'equality', 'climate crisis', 'minority rights'].filter((k) => exp.includes(k)).length

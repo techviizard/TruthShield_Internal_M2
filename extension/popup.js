@@ -46,11 +46,11 @@ function renderResult(data, kind) {
       `confidence ${data.confidence ?? 0}%`))
     if (data.stanceRollup) {
       box.appendChild(el('div', 'muted',
-        `sources — support ${data.stanceRollup.support}, refute ${data.stanceRollup.refute}, neutral ${data.stanceRollup.neutral}, unrelated ${data.stanceRollup.unrelated}`))
+        `sources - support ${data.stanceRollup.support}, refute ${data.stanceRollup.refute}, neutral ${data.stanceRollup.neutral}, unrelated ${data.stanceRollup.unrelated}`))
     }
   } else {
     const risk = riskClass(data.riskLevel, data.trustScore)
-    box.appendChild(el('div', 'score', `${data.trustScore ?? '—'}/100`))
+    box.appendChild(el('div', 'score', `${data.trustScore ?? ' - '}/100`))
     box.appendChild(el('span', `pill ${risk}`, `${risk} risk`))
   }
 
@@ -116,7 +116,7 @@ chrome.tabs.query({ active: true, currentWindow: true }).then(async ([tab]) => {
     })
     if (result) $('input').value = result.slice(0, 5000)
   } catch {
-    // Restricted page (chrome://, store pages) — nothing to pre-fill.
+    // Restricted page (chrome://, store pages) - nothing to pre-fill.
   }
 })
 

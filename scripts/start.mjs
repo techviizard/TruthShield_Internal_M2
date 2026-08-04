@@ -8,7 +8,7 @@
  *   npm run start:all -- --caddy # also start the Caddy reverse proxy (:81) if installed
  *
  * Every step is idempotent, so this is safe to run repeatedly. Seeding is skipped
- * when the database already has analyses, so a re-run never wipes real work — pass
+ * when the database already has analyses, so a re-run never wipes real work - pass
  * --fresh to override.
  *
  * Cross-platform (Windows/macOS/Linux): child processes run through the platform
@@ -75,7 +75,7 @@ async function databaseHasData() {
       await db.$disconnect()
     }
   } catch {
-    // No client generated yet, or no table — treat as empty so we seed.
+    // No client generated yet, or no table - treat as empty so we seed.
     return false
   }
 }
@@ -89,7 +89,7 @@ async function prepareDatabase() {
 
   const hasData = !FRESH && (await databaseHasData())
   if (hasData) {
-    console.log('  Database already has analyses — skipping seed (use --fresh to reseed).')
+    console.log('  Database already has analyses - skipping seed (use --fresh to reseed).')
   } else {
     step(FRESH ? 'Reseeding demo corpus (--fresh)' : 'Seeding demo corpus (empty database)')
     await run(npm, ['run', 'db:seed'])
@@ -110,7 +110,7 @@ async function warmEval() {
 // ── main ──────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('\x1b[1mTruthShield — starting all services\x1b[0m')
+  console.log('\x1b[1mTruthShield - starting all services\x1b[0m')
 
   await prepareDatabase()
   if (WITH_EVAL) await warmEval()
@@ -130,11 +130,11 @@ async function main() {
       step('Starting Caddy reverse proxy (:81 → :3000)')
       const caddy = start('caddy', ['run', '--config', 'Caddyfile'])
       caddy.on('error', () =>
-        console.warn('  Caddy is not installed or not on PATH — skipping the reverse proxy.')
+        console.warn('  Caddy is not installed or not on PATH - skipping the reverse proxy.')
       )
       children.push(caddy)
     } else {
-      console.warn('  No Caddyfile found — skipping --caddy.')
+      console.warn('  No Caddyfile found - skipping --caddy.')
     }
   }
 

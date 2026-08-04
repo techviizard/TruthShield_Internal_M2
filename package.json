@@ -2,7 +2,7 @@
   "name": "truthshield",
   "version": "0.3.0",
   "private": true,
-  "description": "TruthShield by CyArt — deepfake detection, misinformation analysis and digital media verification console.",
+  "description": "TruthShield by CyArt - deepfake detection, misinformation analysis and digital media verification console.",
   "author": "CyArt <inquiry@cyart.io>",
   "scripts": {
     "dev": "next dev -p 3000",

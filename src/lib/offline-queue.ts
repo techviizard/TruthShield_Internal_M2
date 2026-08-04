@@ -82,7 +82,7 @@ export async function pendingCount(): Promise<number> {
 
 /**
  * Replay queued items against the server, oldest first.
- * Stops on the first network failure — if the link is down again, hammering the
+ * Stops on the first network failure - if the link is down again, hammering the
  * rest of the queue only produces more failures.
  */
 export async function drainQueue(

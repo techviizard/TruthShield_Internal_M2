@@ -1,6 +1,6 @@
 /**
  * Real OS / process metrics for System Health tab.
- * Uses Node `os` + `process` — no external monitor agent.
+ * Uses Node `os` + `process` - no external monitor agent.
  */
 
 import os from 'node:os'

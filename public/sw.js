@@ -68,7 +68,7 @@ function isImmutableAsset(url) {
   return url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/')
 }
 
-/** Documents and React Server Component payloads — both are build-coupled. */
+/** Documents and React Server Component payloads - both are build-coupled. */
 function isDocument(request, url) {
   return (
     request.mode === 'navigate' ||

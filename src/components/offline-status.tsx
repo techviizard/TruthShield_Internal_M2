@@ -20,7 +20,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 /**
  * Subscribe to connectivity through the browser's own events rather than
- * mirroring `navigator.onLine` into state — no effect, no cascading render, and
+ * mirroring `navigator.onLine` into state - no effect, no cascading render, and
  * the server snapshot is `true` so the markup matches on hydration.
  */
 function subscribeOnline(callback: () => void) {
@@ -52,7 +52,7 @@ export function OfflineStatus() {
     try {
       setQueue(await listQueue())
     } catch {
-      // IndexedDB unavailable (private mode / older browser) — the app still works online.
+      // IndexedDB unavailable (private mode / older browser) - the app still works online.
     }
   }, [])
 
@@ -68,7 +68,7 @@ export function OfflineStatus() {
         })
       } else {
         // A caching worker in dev serves assets from a previous build and hides
-        // edits behind a stale shell — unregister anything left over and drop the
+        // edits behind a stale shell - unregister anything left over and drop the
         // caches it wrote, which outlive the registration.
         void navigator.serviceWorker.getRegistrations().then((regs) =>
           regs.forEach((r) => void r.unregister())
@@ -149,7 +149,7 @@ export function OfflineStatus() {
             variant="ghost"
             size="sm"
             className={`h-8 gap-1.5 px-2 text-xs ${online ? '' : 'text-amber-600 dark:text-amber-400'}`}
-            title={online ? 'Online' : 'Offline — analyses are scored on-device and queued'}
+            title={online ? 'Online' : 'Offline - analyses are scored on-device and queued'}
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
@@ -180,7 +180,7 @@ export function OfflineStatus() {
                 <p className="text-[11px] text-muted-foreground">
                   {online
                     ? 'Full pipeline available.'
-                    : 'On-device pattern detection only — no model reasoning or web corroboration.'}
+                    : 'On-device pattern detection only - no model reasoning or web corroboration.'}
                 </p>
               </div>
               <Button size="sm" className="h-7 gap-1 text-[11px]" onClick={sync} disabled={syncing || !online || pending === 0}>

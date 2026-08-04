@@ -17,7 +17,7 @@ DBSCAN-lite clustering over TF-IDF cosine similarity. Groups highly-similar repo
 Output clusters = candidate campaigns; cluster size + tightness ≈ coordination strength.
 
 ## Future scope & enterprise enhancements
-- Add **temporal + author-graph signals** (near-simultaneous posting, shared accounts) — text similarity alone yields false positives.
+- Add **temporal + author-graph signals** (near-simultaneous posting, shared accounts) - text similarity alone yields false positives.
 - Use embeddings instead of TF-IDF for cross-lingual campaigns.
 - Incremental/streaming clustering so new items join clusters without a full recompute.
 - Persist clusters to `Campaign`/`CampaignMember` with provenance + confidence.

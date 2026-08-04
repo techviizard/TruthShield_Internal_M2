@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
         frameCount: verdict.frameCount,
         flaggedFrames: verdict.flaggedFrames.length,
         temporalConsistency: verdict.temporalConsistency,
-        summary: `Frame forensics over ${verdict.frameCount} frames — trust ${trustScore}/100, ${verdict.flaggedFrames.length} frame(s) flagged.`,
+        summary: `Frame forensics over ${verdict.frameCount} frames - trust ${trustScore}/100, ${verdict.flaggedFrames.length} frame(s) flagged.`,
       },
     })
 

@@ -275,7 +275,7 @@ export function ImageForensicsTab() {
               </Card>
             </div>
 
-            {/* Pixel-level evidence — measured in-house, independent of the model */}
+            {/* Pixel-level evidence - measured in-house, independent of the model */}
             {imageResult.forensics && (
               <>
                 <ElaEvidence forensics={imageResult.forensics} previewUrl={imageResult.previewUrl} />

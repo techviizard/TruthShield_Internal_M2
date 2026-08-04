@@ -14,9 +14,9 @@ Auto-documents the API by walking the `src/app/api` directory at runtime. Replac
 3. Detect exported HTTP methods (`GET`/`POST`/`PATCH`/`DELETE`) by scanning the file.
 4. Optionally pull a leading doc-comment as the description.
 
-Result: the API Docs tab is always in sync with the real routes — add a route and it appears automatically.
+Result: the API Docs tab is always in sync with the real routes - add a route and it appears automatically.
 
 ## Future scope & enterprise enhancements
 - Emit an **OpenAPI/Swagger** spec (parse zod schemas or JSDoc for request/response shapes).
 - Include auth requirements + example payloads.
-- Note: filesystem walking assumes the source layout is present at runtime — verify it works under the `standalone` build (may need to bundle a generated manifest instead).
+- Note: filesystem walking assumes the source layout is present at runtime - verify it works under the `standalone` build (may need to bundle a generated manifest instead).

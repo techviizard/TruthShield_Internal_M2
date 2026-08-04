@@ -3,7 +3,7 @@
 **File:** `src/components/tabs/audit-log-tab.tsx` · **Data:** `/api/audit/logs` · **Status:** 🟡 (mock fallback)
 
 ## What it is
-Activity timeline: who did what, when — analyses, alerts, investigations, config changes.
+Activity timeline: who did what, when - analyses, alerts, investigations, config changes.
 
 ## How it's built
 Fetches `/api/audit/logs` (`AuditLog` model). Falls back to `generateMockEntries()` (line ~39) when the DB is empty (line ~421).

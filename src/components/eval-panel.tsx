@@ -82,7 +82,7 @@ function MetricTile({ label, value, hint, tone }: {
   )
 }
 
-/** 2×2 confusion matrix — the plainest statement of what the detector got wrong. */
+/** 2×2 confusion matrix - the plainest statement of what the detector got wrong. */
 function ConfusionMatrix({ m }: { m: Metrics }) {
   const cells = [
     { label: 'True positive', sub: 'flagged, was fake', value: m.tp, tone: 'bg-emerald-500/10 border-emerald-500/25' },
@@ -308,7 +308,7 @@ export function EvalPanel() {
             />
             <p className="mt-2 flex items-start gap-1.5 text-[11px] text-muted-foreground">
               <Info className="mt-0.5 h-3 w-3 shrink-0" />
-              Re-scored from stored per-sample predictions — no model calls. Raising the threshold
+              Re-scored from stored per-sample predictions - no model calls. Raising the threshold
               cuts false positives and misses more fakes; the right point is a policy choice, not a
               technical one.
             </p>
@@ -396,7 +396,7 @@ export function EvalPanel() {
             <div>
               <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                Errors at this threshold — review these before quoting the numbers
+                Errors at this threshold - review these before quoting the numbers
               </p>
               <div className="space-y-1.5">
                 {mistakes.map((s) => {

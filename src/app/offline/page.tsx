@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 /**
  * Served by the service worker when a navigation is attempted with no network
- * and no cached copy of the target. Static by design — it must render from the
+ * and no cached copy of the target. Static by design - it must render from the
  * cache with no data fetching of its own.
  */
 export default function OfflinePage() {

@@ -12,7 +12,7 @@ export interface RegionPoint {
   y: number
 }
 
-// 14 monitored cities with SVG (500x600 viewBox) coordinates — keep in sync with threat-intel-map.tsx
+// 14 monitored cities with SVG (500x600 viewBox) coordinates - keep in sync with threat-intel-map.tsx
 export const REGION_DICT: RegionPoint[] = [
   { city: 'Delhi', lat: 28.6, lng: 77.2, x: 222, y: 148 },
   { city: 'Mumbai', lat: 19.1, lng: 72.9, x: 160, y: 328 },

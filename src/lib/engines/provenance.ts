@@ -3,7 +3,7 @@
  *
  * The forensic question "was this edited" is much easier when the file says so.
  * Cameras, phones and editors leave traces; C2PA-signed assets carry an explicit
- * manifest. This reads what is present and — just as important — reports what is
+ * manifest. This reads what is present and - just as important - reports what is
  * *absent*, because a stripped file is itself a signal.
  *
  * Scope: presence, structure and self-reported claims. Verifying a C2PA
@@ -36,7 +36,7 @@ export interface ProvenanceResult {
   /** AI-generation markers that some generators write into metadata. */
   generatorHints: string[]
   fields: ProvenanceField[]
-  /** 0..100 — how much the metadata *alone* argues the file was altered/synthesised. */
+  /** 0..100 - how much the metadata *alone* argues the file was altered/synthesised. */
   suspicionScore: number
   summary: string
 }
@@ -90,7 +90,7 @@ export async function readProvenance(buffer: Buffer): Promise<ProvenanceResult> 
       : 'No provenance manifest to check against.')
   push('Editing software', editorMatch ? editorMatch[0] : 'Not declared',
     editorMatch ? 'suspicious' : 'clean',
-    editorMatch ? 'Editor tag present — the file was opened in an editor, though that does not prove manipulation of content.' : undefined)
+    editorMatch ? 'Editor tag present - the file was opened in an editor, though that does not prove manipulation of content.' : undefined)
   push('Generator markers', generatorHits.length ? generatorHits.join(', ') : 'None',
     generatorHits.length ? 'suspicious' : 'clean',
     generatorHits.length ? 'Metadata explicitly names a generative tool.' : undefined)
@@ -116,7 +116,7 @@ export async function readProvenance(buffer: Buffer): Promise<ProvenanceResult> 
   suspicion = Math.min(100, suspicion)
 
   const summary = generatorHits.length
-    ? 'Metadata names a generative tool — the file itself declares synthetic origin.'
+    ? 'Metadata names a generative tool - the file itself declares synthetic origin.'
     : editorMatch
       ? `Metadata names an editor (${editorMatch[0]}). The file passed through editing software.`
       : md?.exif

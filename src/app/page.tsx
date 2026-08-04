@@ -304,7 +304,7 @@ function IstClock() {
   }, [])
   return (
     <span className="ops-label text-muted-foreground tabular-nums" suppressHydrationWarning>
-      {now ? `${now} IST` : '—:—:— IST'}
+      {now ? `${now} IST` : '--:--:-- IST'}
     </span>
   )
 }

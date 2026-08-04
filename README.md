@@ -1,8 +1,8 @@
 # TruthShield by CyArt
 
-**Information-integrity & deepfake-detection console.** A Next.js app for analysts to detect deepfakes, analyze images/video/audio, fact-check claims, track disinformation campaigns, and manage investigations — backed by real analysis engines, a provider-agnostic AI layer, and a Prisma database.
+**Information-integrity & deepfake-detection console.** A Next.js app for analysts to detect deepfakes, analyze images/video/audio, fact-check claims, track disinformation campaigns, and manage investigations - backed by real analysis engines, a provider-agnostic AI layer, and a Prisma database.
 
-> **New here?** Read the full engineering handover in [`handover/`](handover/README.md) — it documents every component, its logic, and its roadmap.
+> **New here?** Read the full engineering handover in [`handover/`](handover/README.md) - it documents every component, its logic, and its roadmap.
 
 ---
 
@@ -11,12 +11,12 @@
 - **Next.js 16** (App Router) + **React 19** + **TypeScript**
 - **Tailwind CSS v4** + **HeroUI v3** UI
 - **Prisma** ORM + **SQLite** (swappable to Postgres)
-- **Provider-agnostic AI** — OpenAI, Anthropic, Kimi, Qwen, or any local/OpenAI-compatible model
+- **Provider-agnostic AI** - OpenAI, Anthropic, Kimi, Qwen, or any local/OpenAI-compatible model
 - **npm** for package management
 
 ## Prerequisites
 
-- **Node.js 20+** and **npm** (this project migrated off Bun — use npm).
+- **Node.js 20+** and **npm** (this project migrated off Bun - use npm).
 - An API key for your chosen AI provider (or a local model via Ollama / LM Studio).
 
 ## Installation
@@ -52,11 +52,11 @@ only module that reads `process.env`. It covers:
 - operational parameters (upload limits, page sizes, dashboard refresh/poll intervals, clustering thresholds)
 - feature flags
 
-Two exports: `appConfig` (full, server-only — contains secrets) and `publicConfig` /
+Two exports: `appConfig` (full, server-only - contains secrets) and `publicConfig` /
 `GET /api/config` (secret-free subset consumed by client components).
 
 `GET /api` reports whether each integration is actually wired (database reachable, AI key present,
-search enabled) — use it as a deployment smoke check.
+search enabled) - use it as a deployment smoke check.
 
 Copy `.env.example` → `.env.local` and edit; no code changes are needed for any supported setup.
 The essentials:
@@ -73,7 +73,7 @@ The essentials:
 | `MAX_*_UPLOAD_MB`, `*_PAGE_SIZE`, `DASHBOARD_*` | Limits, page sizes and dashboard refresh behaviour |
 | `FEATURE_*` | Feature flags (community reports, watchlist scanning, audit log, workflows) |
 
-**Switching AI providers requires no code changes** — just change `.env.local`. See [handover/00-architecture/08-ai-provider-layer.md](handover/00-architecture/08-ai-provider-layer.md).
+**Switching AI providers requires no code changes** - just change `.env.local`. See [handover/00-architecture/08-ai-provider-layer.md](handover/00-architecture/08-ai-provider-layer.md).
 
 ### Run fully local (no cloud key)
 
@@ -113,7 +113,7 @@ The app uses Next.js `output: "standalone"`. `npm run build` runs a cross-platfo
 
 ```
 src/
-  app/            Next.js App Router — page.tsx (shell) + api/ route handlers
+  app/            Next.js App Router - page.tsx (shell) + api/ route handlers
   components/     UI: tabs/ (28 feature tabs), ui/ (primitives)
   lib/
     ai/           provider-agnostic AI layer (config + adapters + helpers)
@@ -128,17 +128,17 @@ scripts/          build/ops scripts
 
 ## Known issues
 
-The production build passes, but `next.config.ts` currently sets `typescript.ignoreBuildErrors: true`. A few pre-existing type errors remain — see [handover/04-operations/03-known-issues.md](handover/04-operations/03-known-issues.md). Fixing them and flipping that flag off is the recommended first hardening step.
+The production build passes, but `next.config.ts` currently sets `typescript.ignoreBuildErrors: true`. A few pre-existing type errors remain - see [handover/04-operations/03-known-issues.md](handover/04-operations/03-known-issues.md). Fixing them and flipping that flag off is the recommended first hardening step.
 
 ## Documentation
 
-- [`handover/`](handover/README.md) — architecture, per-component docs, engines, APIs, tabs, operations, and the enterprise roadmap.
-- [`handover/04-operations/05-security.md`](handover/04-operations/05-security.md) — **read before deploying** (no auth yet, etc.).
+- [`handover/`](handover/README.md) - architecture, per-component docs, engines, APIs, tabs, operations, and the enterprise roadmap.
+- [`handover/04-operations/05-security.md`](handover/04-operations/05-security.md) - **read before deploying** (no auth yet, etc.).
 
 ## Contact
 
-CyArt — [inquiry@cyart.io](mailto:inquiry@cyart.io)
+CyArt - [inquiry@cyart.io](mailto:inquiry@cyart.io)
 
 ## License
 
-Proprietary © CyArt. Internal handover — add a license before external distribution.
+Proprietary © CyArt. Internal handover - add a license before external distribution.

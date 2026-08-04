@@ -16,7 +16,7 @@ import {
 } from 'recharts'
 
 /**
- * System Health — every value here is measured: OS/process metrics from the
+ * System Health - every value here is measured: OS/process metrics from the
  * `system-metrics` engine, latency and failures from stored AnalysisReport
  * rows, and integration status from the central configuration. There is no
  * synthetic time series and no invented service inventory.
@@ -317,7 +317,7 @@ export function SystemHealthTab() {
               </ResponsiveContainer>
             ) : (
               <p className="text-sm text-muted-foreground py-12 text-center">
-                No analyses in the last 24 hours — latency chart will populate as work runs.
+                No analyses in the last 24 hours - latency chart will populate as work runs.
               </p>
             )}
           </CardContent>
@@ -332,7 +332,7 @@ export function SystemHealthTab() {
               <AlertTriangle className="h-4 w-4 text-amber-500" />
               Failed analyses
             </CardTitle>
-            <CardDescription>Reports whose status is `failed` — the platform&apos;s real error log</CardDescription>
+            <CardDescription>Reports whose status is `failed` - the platform&apos;s real error log</CardDescription>
           </CardHeader>
           <CardContent>
             {latency && latency.failures.length > 0 ? (
@@ -374,7 +374,7 @@ export function SystemHealthTab() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Last analysis</p>
-              <p className="font-medium">{live.db.lastReportAt ? relativeTime(live.db.lastReportAt) : '—'}</p>
+              <p className="font-medium">{live.db.lastReportAt ? relativeTime(live.db.lastReportAt) : ' - '}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Network interfaces</p>

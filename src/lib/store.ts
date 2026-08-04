@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { toast } from 'sonner'
-// Pure, dependency-free detector — safe to run in the browser for offline scoring.
+// Pure, dependency-free detector - safe to run in the browser for offline scoring.
 import { scoreText } from '@/lib/engines/text-heuristics'
 // Static import is safe: the module touches IndexedDB only inside its functions.
 import { enqueue } from '@/lib/offline-queue'
@@ -166,13 +166,13 @@ export interface Investigation {
   priority: InvestigationPriority
   assignedAnalyst: string
   relatedAnalyses: number
-  /** Analyses attached to this case — the real evidence list. */
+  /** Analyses attached to this case - the real evidence list. */
   analyses: InvestigationAnalysis[]
   tags: string[]
   createdAt: string
   updatedAt: string
   description: string
-  /** Law-enforcement case metadata — present only when the case was filed with it. */
+  /** Law-enforcement case metadata - present only when the case was filed with it. */
   caseNumber: string | null
   firNumber: string | null
   officerName: string | null
@@ -465,13 +465,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   videoResult: null,
   factCheckResult: null,
 
-  // Dashboard — populated from /api/dashboard/stats on mount
+  // Dashboard - populated from /api/dashboard/stats on mount
   dashboardStats: null,
 
-  // Investigations — populated from /api/investigations
+  // Investigations - populated from /api/investigations
   investigations: [],
 
-  // Alerts — populated from /api/alerts
+  // Alerts - populated from /api/alerts
   alerts: [],
 
   // Text analysis input
@@ -644,7 +644,7 @@ export const useAppStore = create<AppState>((set, get) => ({
               description: s.label,
               icon: 'AlertTriangle',
             })),
-          explanation: `${local.explanation} Scored on-device while offline — no language-model reasoning, no fact-check corroboration and no evidence record yet. Queued for sync.`,
+          explanation: `${local.explanation} Scored on-device while offline - no language-model reasoning, no fact-check corroboration and no evidence record yet. Queued for sync.`,
           confidence: 50,
           recommendations: [
             'Treat this as provisional until the queued analysis syncs.',
@@ -668,7 +668,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           knownHoaxMatches: [],
         },
       })
-      toast.warning('Offline — scored on this device', {
+      toast.warning('Offline - scored on this device', {
         description: 'Queued for sync. Reconnect to run the full analysis.',
       })
       return
@@ -803,7 +803,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         const rawFlags: string[] = Array.isArray(analysis.flags) ? analysis.flags : []
         const manipulationIndicators = rawFlags.map((f: string) => ({
           type: f.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
-          // Use the model's real confidence (0-1 → 0-100). No random jitter — this is a verification product.
+          // Use the model's real confidence (0-1 → 0-100). No random jitter - this is a verification product.
           confidence: Math.round(typeof analysis.confidence === 'number' ? (analysis.confidence <= 1 ? analysis.confidence * 100 : analysis.confidence) : 50),
           description: f.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) + ' detected in analysis',
         }))

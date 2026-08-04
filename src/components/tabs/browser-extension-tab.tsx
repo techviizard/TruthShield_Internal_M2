@@ -240,7 +240,7 @@ export function BrowserExtensionTab() {
 
               <div className="flex items-center gap-4 mt-5 justify-center lg:justify-start text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <ShieldCheck className="h-4 w-4 text-zinc-500" /> Unpacked build — not published to any store
+                  <ShieldCheck className="h-4 w-4 text-zinc-500" /> Unpacked build - not published to any store
                 </span>
                 <span className="flex items-center gap-1"><Zap className="h-4 w-4 text-cyan-500" /> Manifest V3</span>
               </div>
@@ -593,7 +593,7 @@ export function BrowserExtensionTab() {
         <Card className="glass">
           <CardContent className="p-6 space-y-4">
             <p className="text-sm text-muted-foreground mb-2">
-              TruthShield requires the following permissions. All data is processed locally — nothing is sent to external servers.
+              TruthShield requires the following permissions. All data is processed locally - nothing is sent to external servers.
             </p>
             {permissions.map((p, i) => (
               <motion.div

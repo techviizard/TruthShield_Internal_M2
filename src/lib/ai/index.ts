@@ -2,7 +2,7 @@
  * Provider-agnostic AI facade.
  *
  * The whole app imports from `@/lib/ai`. Swapping providers is purely a matter
- * of environment variables (see `src/lib/ai/config.ts` + `.env.example`) — no
+ * of environment variables (see `src/lib/ai/config.ts` + `.env.example`) - no
  * application code changes. Supported: OpenAI, Anthropic, Kimi, Qwen, and any
  * OpenAI-compatible / locally-hosted model (Ollama, LM Studio, vLLM).
  */
@@ -36,7 +36,7 @@ export interface FactCheckSource {
   stance?: 'supports' | 'refutes' | 'mixed' | 'unrelated'
   credibility?: number
   type?: string
-  /** Stance computed in-house from the snippet — independent of the model's read. */
+  /** Stance computed in-house from the snippet - independent of the model's read. */
   localStance?: {
     stance: 'support' | 'refute' | 'neutral' | 'unrelated'
     confidence: number
@@ -145,7 +145,7 @@ export async function vlmImageAnalysis(
 /**
  * "Video" analysis. Generic providers don't accept video; this is a best-effort
  * pass through the vision path (a thumbnail/frame). True per-frame video analysis
- * needs server-side frame extraction (ffmpeg) — see the enterprise roadmap.
+ * needs server-side frame extraction (ffmpeg) - see the enterprise roadmap.
  */
 export async function vlmVideoAnalysis(
   videoUrl: string,
@@ -189,7 +189,7 @@ function buildSearchPhrase(claim: string): string {
 
 /**
  * Web-search fact-check helper. Uses the configured search provider (Tavily/Brave).
- * Returns [] when search is disabled — fact-check then relies on model reasoning
+ * Returns [] when search is disabled - fact-check then relies on model reasoning
  * alone. Results are deduped and ranked by domain credibility.
  */
 export async function webSearchFactCheck(

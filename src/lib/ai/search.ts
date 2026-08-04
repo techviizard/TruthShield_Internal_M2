@@ -6,7 +6,7 @@
  *   SEARCH_PROVIDER=tavily|brave|none   SEARCH_API_KEY=...
  *
  * If unconfigured (or "none"), `webSearch` returns [] and the app degrades
- * gracefully — fact-check still runs on model reasoning, just without live sources.
+ * gracefully - fact-check still runs on model reasoning, just without live sources.
  */
 
 import { getConfig } from '@/config/app.config'

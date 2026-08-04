@@ -362,7 +362,7 @@ function ThreatFeedEntry({ threat, index }: { threat: ThreatEntry; index: number
 // ── Main Component ─────────────────────────────────────────────
 
 export function LiveThreatFeedTab() {
-  // Feed state — populated from /api/live-feed (DB-derived), empty until first response
+  // Feed state - populated from /api/live-feed (DB-derived), empty until first response
   const [threats, setThreats] = useState<ThreatEntry[]>([])
   const [feedLoaded, setFeedLoaded] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
@@ -678,7 +678,7 @@ export function LiveThreatFeedTab() {
                           {!feedLoaded
                             ? 'Connecting to live feed…'
                             : threats.length === 0
-                              ? 'No threats detected yet — run an analysis to populate the feed'
+                              ? 'No threats detected yet - run an analysis to populate the feed'
                               : 'No threats match current filters'}
                         </p>
                       </motion.div>

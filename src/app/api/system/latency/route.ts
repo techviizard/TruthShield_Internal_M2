@@ -4,7 +4,7 @@
  * Real request-latency series for the System Health tab: mean processing time
  * per hour over the last 24 hours, split by analysis type, plus the failed
  * analyses that act as the platform's error log. All values come from stored
- * AnalysisReport rows — nothing synthetic.
+ * AnalysisReport rows - nothing synthetic.
  */
 
 import { NextResponse } from 'next/server'

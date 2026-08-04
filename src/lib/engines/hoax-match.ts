@@ -1,7 +1,7 @@
 /**
  * Near-duplicate matching against the recurring-hoax registry.
  *
- * Viral misinformation rarely arrives as new text — it arrives as the same
+ * Viral misinformation rarely arrives as new text - it arrives as the same
  * narrative reworded, translated, or re-cropped. Matching against known
  * narratives catches that class in milliseconds, offline, before any model call.
  */
@@ -34,7 +34,7 @@ export const IMAGE_MATCH_MAX_DISTANCE = 10
 /**
  * Compare text against every active registry entry.
  * The registry is small (curated narratives, not a document corpus), so a linear
- * scan is correct here — no index to keep in sync, no approximate recall loss.
+ * scan is correct here - no index to keep in sync, no approximate recall loss.
  */
 export async function matchKnownHoaxes(text: string, limit = 3): Promise<HoaxMatch[]> {
   if (!text.trim()) return []
@@ -94,7 +94,7 @@ export async function matchKnownHoaxImages(perceptualHash: string, limit = 3): P
     }))
 }
 
-/** Record that a registry entry was matched again — drives "seen N times" in the UI. */
+/** Record that a registry entry was matched again - drives "seen N times" in the UI. */
 export async function recordHoaxHit(id: string): Promise<void> {
   try {
     await db.knownHoax.update({

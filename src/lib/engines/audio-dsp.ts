@@ -1,6 +1,6 @@
 /**
  * Server-side audio DSP for deepfake detection.
- * Pure TS implementation — no native libs.
+ * Pure TS implementation - no native libs.
  *
  * Strategies:
  *  - Spectral cutoff: synthetic generators often cap at 16/22kHz, real mics reach 44kHz.
@@ -26,7 +26,7 @@ export interface AudioFeatures {
 
 /**
  * Minimal WAV header parser. Returns Float32 mono samples and sample rate.
- * Supports PCM16 LE WAV — most common.
+ * Supports PCM16 LE WAV - most common.
  */
 export function parseWav(buf: Buffer): { samples: Float32Array; sampleRate: number } | null {
   if (buf.length < 44) return null
@@ -185,27 +185,27 @@ export function analyzeAudio(samples: Float32Array, sampleRate: number): AudioFe
     // Suspicious cutoff suggests resampled / synthesized audio
     if (cutoffHz < 16500) {
       score += 35
-      artifacts.push(`Spectral cutoff at ${cutoffHz}Hz — below natural microphone range (typical 20kHz+)`)
+      artifacts.push(`Spectral cutoff at ${cutoffHz}Hz - below natural microphone range (typical 20kHz+)`)
     } else if (cutoffHz < 20000) {
       score += 15
-      artifacts.push(`Spectral cutoff at ${cutoffHz}Hz — possible vocoder/codec artifact`)
+      artifacts.push(`Spectral cutoff at ${cutoffHz}Hz - possible vocoder/codec artifact`)
     }
   }
   if (eVar < 20 && energies.length > 10) {
     score += 25
-    artifacts.push(`Flat energy envelope (variance ${eVar.toFixed(1)} dB²) — synthetic voices lack natural dynamics`)
+    artifacts.push(`Flat energy envelope (variance ${eVar.toFixed(1)} dB²) - synthetic voices lack natural dynamics`)
   }
   if (flatness > 0.45) {
     score += 15
-    artifacts.push(`High spectral flatness (${flatness.toFixed(2)}) — noise-like background suggests synthesis`)
+    artifacts.push(`High spectral flatness (${flatness.toFixed(2)}) - noise-like background suggests synthesis`)
   }
   if (silenceRatio < 0.05) {
     score += 10
-    artifacts.push(`Almost no silence (${(silenceRatio * 100).toFixed(1)}%) — natural speech has breath pauses`)
+    artifacts.push(`Almost no silence (${(silenceRatio * 100).toFixed(1)}%) - natural speech has breath pauses`)
   }
   if (zcr < 1500 && durationSec > 1) {
     score += 10
-    artifacts.push(`Low zero-crossing rate (${zcr.toFixed(0)}/s) — over-smoothed waveform`)
+    artifacts.push(`Low zero-crossing rate (${zcr.toFixed(0)}/s) - over-smoothed waveform`)
   }
   if (artifacts.length === 0) artifacts.push('No strong synthetic indicators detected')
 

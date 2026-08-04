@@ -460,7 +460,7 @@ const sdks = [
     icon: '🔧',
     color: 'from-zinc-500/20 to-zinc-600/20',
     badgeColor: 'bg-zinc-500/15 text-zinc-600 dark:text-zinc-400',
-    install: '# No installation needed — use directly',
+    install: '# No installation needed - use directly',
     version: 'N/A',
     updated: 'Always latest',
   },
@@ -534,7 +534,7 @@ export function ApiDocsTab() {
                 </div>
                 <Badge variant="outline" className="font-mono text-xs h-8 px-3 flex items-center">
                   <Key className="h-3 w-3 mr-1.5" />
-                  Self-hosted — no API key issuance
+                  Self-hosted - no API key issuance
                 </Badge>
               </div>
             </CardHeader>

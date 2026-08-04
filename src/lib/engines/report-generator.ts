@@ -1,5 +1,5 @@
 /**
- * Real report generator. No external PDF lib — emit standards-compliant HTML
+ * Real report generator. No external PDF lib - emit standards-compliant HTML
  * that browsers can Print-to-PDF, plus a structured JSON download.
  * Avoids adding heavy deps; works offline.
  */
@@ -32,7 +32,7 @@ export async function generateReport(opts: ReportOptions): Promise<{ content: st
   const title = opts.title ?? 'TruthShield Verification Report'
   const ts = new Date().toISOString().replace(/[:.]/g, '-')
 
-  // Integrity annex — computed for every export so the JSON and HTML forms of a
+  // Integrity annex - computed for every export so the JSON and HTML forms of a
   // report carry the same provenance claims.
   const generatedAt = new Date().toISOString()
   const [chainHead, chainCheck] = await Promise.all([auditChainHead(), verifyAuditChain()])
@@ -76,17 +76,17 @@ export async function generateReport(opts: ReportOptions): Promise<{ content: st
     const fc = r.factChecks ?? []
     return `
       <section class="report">
-        <h2>${escapeHtml(r.analysisType)} — ${escapeHtml(r.mediaUpload.fileName)}</h2>
+        <h2>${escapeHtml(r.analysisType)} - ${escapeHtml(r.mediaUpload.fileName)}</h2>
         <div class="grid">
-          <div><b>Trust Score</b><span class="big">${r.trustScore ?? '—'}/100</span></div>
-          <div><b>Risk Level</b><span class="risk ${r.riskLevel ?? ''}">${r.riskLevel ?? '—'}</span></div>
-          <div><b>Confidence</b><span>${r.confidence != null ? `${Math.round(r.confidence * 100)}%` : '—'}</span></div>
-          <div><b>Processing Time</b><span>${r.processingTime ?? '—'}ms</span></div>
+          <div><b>Trust Score</b><span class="big">${r.trustScore ?? ' - '}/100</span></div>
+          <div><b>Risk Level</b><span class="risk ${r.riskLevel ?? ''}">${r.riskLevel ?? ' - '}</span></div>
+          <div><b>Confidence</b><span>${r.confidence != null ? `${Math.round(r.confidence * 100)}%` : ' - '}</span></div>
+          <div><b>Processing Time</b><span>${r.processingTime ?? ' - '}ms</span></div>
         </div>
         <p><b>Explanation:</b> ${escapeHtml(r.explanation ?? 'n/a')}</p>
         ${flags.length > 0 ? `<p><b>Flags:</b> ${flags.map(escapeHtml).join(', ')}</p>` : ''}
         ${recs.length > 0 ? `<ul class="recs">${recs.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul>` : ''}
-        ${fc.length > 0 ? `<details><summary>Fact Check Matches (${fc.length})</summary><ul>${fc.map((m) => `<li>[${escapeHtml(m.verdict ?? '?')}] <a href="${escapeHtml(m.url ?? '#')}">${escapeHtml(m.source)}</a> — ${escapeHtml(m.snippet ?? '')}</li>`).join('')}</ul></details>` : ''}
+        ${fc.length > 0 ? `<details><summary>Fact Check Matches (${fc.length})</summary><ul>${fc.map((m) => `<li>[${escapeHtml(m.verdict ?? '?')}] <a href="${escapeHtml(m.url ?? '#')}">${escapeHtml(m.source)}</a> - ${escapeHtml(m.snippet ?? '')}</li>`).join('')}</ul></details>` : ''}
         ${opts.includeMetadata && r.mediaUpload.metadata ? `<details><summary>Media Metadata</summary><pre>${escapeHtml(r.mediaUpload.metadata)}</pre></details>` : ''}
         ${opts.includeRawJson && r.results ? `<details><summary>Raw Analysis</summary><pre>${escapeHtml(r.results)}</pre></details>` : ''}
         <hr/>
@@ -127,7 +127,7 @@ export async function generateReport(opts: ReportOptions): Promise<{ content: st
 </style></head>
 <body>
   <h1>${escapeHtml(title)}</h1>
-  <p class="meta">Generated ${new Date().toLocaleString()} — ${reports.length} report(s) — TruthShield v3.3.0</p>
+  <p class="meta">Generated ${new Date().toLocaleString()} - ${reports.length} report(s) - TruthShield v3.3.0</p>
   ${opts.courtReady === false ? '' : renderIntegrityAnnex(integrity)}
   ${rows}
   <footer><p class="meta">End of report. To convert to PDF: File → Print → Save as PDF.</p></footer>
@@ -185,8 +185,8 @@ interface IntegrityAnnex {
 
 /**
  * Evidence-integrity annex. Placed before the findings so a reader sees what the
- * findings are about — which artifact, which case, and whether the trail behind
- * them still verifies — before reading any conclusion.
+ * findings are about - which artifact, which case, and whether the trail behind
+ * them still verifies - before reading any conclusion.
  */
 function renderIntegrityAnnex(a: IntegrityAnnex): string {
   const caseRows = a.cases.length
@@ -194,9 +194,9 @@ function renderIntegrityAnnex(a: IntegrityAnnex): string {
         <tr><th>Case</th><th>FIR</th><th>Officer</th><th>Jurisdiction</th></tr>
         ${a.cases.map((c) => `<tr>
           <td>${escapeHtml(c.caseNumber ?? c.title)}</td>
-          <td>${escapeHtml(c.firNumber ?? '—')}</td>
-          <td>${escapeHtml([c.officerName, c.officerBadge].filter(Boolean).join(' · ') || '—')}</td>
-          <td>${escapeHtml(c.jurisdiction ?? '—')}</td>
+          <td>${escapeHtml(c.firNumber ?? ' - ')}</td>
+          <td>${escapeHtml([c.officerName, c.officerBadge].filter(Boolean).join(' · ') || ' - ')}</td>
+          <td>${escapeHtml(c.jurisdiction ?? ' - ')}</td>
         </tr>`).join('')}
       </table>`
     : '<p class="meta">No case record is linked to these reports.</p>'
@@ -208,10 +208,10 @@ function renderIntegrityAnnex(a: IntegrityAnnex): string {
       Document digest <code>${escapeHtml(a.documentDigest)}</code>
     </p>
     <p class="${a.auditChainValid ? 'ok' : 'bad'}">
-      Audit chain: ${a.auditChainValid ? 'INTACT' : `INTEGRITY FAILURE — ${a.auditChainBreaks} break(s)`}
+      Audit chain: ${a.auditChainValid ? 'INTACT' : `INTEGRITY FAILURE - ${a.auditChainBreaks} break(s)`}
       &nbsp;·&nbsp; ${escapeHtml(a.auditRecordsVerified)} records verified
       &nbsp;·&nbsp; head #${a.auditChainHead.seq}
-      <code>${escapeHtml(a.auditChainHead.hash ?? '—')}</code>
+      <code>${escapeHtml(a.auditChainHead.hash ?? ' - ')}</code>
     </p>
     <h3>Case record</h3>
     ${caseRows}

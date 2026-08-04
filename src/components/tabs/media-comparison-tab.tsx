@@ -753,9 +753,9 @@ export function MediaComparisonTab() {
                       </span>
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-2">
-                      {result.similarity > 80 ? 'High similarity — minor differences' :
-                       result.similarity > 50 ? 'Moderate similarity — notable differences' :
-                       'Low similarity — significant differences'}
+                      {result.similarity > 80 ? 'High similarity - minor differences' :
+                       result.similarity > 50 ? 'Moderate similarity - notable differences' :
+                       'Low similarity - significant differences'}
                     </p>
                   </CardContent>
                 </Card>

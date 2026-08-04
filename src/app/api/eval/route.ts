@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     })
 
     if (!run) {
-      // No run yet is a legitimate state — say so instead of inventing metrics.
+      // No run yet is a legitimate state - say so instead of inventing metrics.
       return NextResponse.json({
         success: true,
         run: null,

@@ -1,6 +1,6 @@
 # Engines Overview
 
-`src/lib/engines/*` — the domain logic. These are **pure(ish) functions**: given input, they compute a result. Most take a buffer/text/DB handle and return a typed object. API routes call them; they contain no HTTP concerns. This is the most valuable code in the repo and the easiest to unit-test.
+`src/lib/engines/*` - the domain logic. These are **pure(ish) functions**: given input, they compute a result. Most take a buffer/text/DB handle and return a typed object. API routes call them; they contain no HTTP concerns. This is the most valuable code in the repo and the easiest to unit-test.
 
 | Engine | File | One-liner | Doc |
 |--------|------|-----------|-----|
@@ -18,9 +18,29 @@
 | API introspect | `api-introspect.ts` | Walks `src/app/api` to auto-document routes | [21](21-api-introspect.md) |
 | Report generator | `report-generator.ts` | HTML(→print-PDF) + JSON reports, no heavy deps | [22](22-report-generator.md) |
 | Audit logger | `audit-logger.ts` | Writes `AuditLog` rows from any route | [23](23-audit-logger.md) |
+| Semantic | `semantic.ts` | Stance detection + TF-IDF/trigram similarity, Indic-safe | doc pending |
+| Text heuristics | `text-heuristics.ts` | Offline multilingual misinformation signal detector | doc pending |
+| Hoax match | `hoax-match.ts` | Near-duplicate match against the recurring-hoax registry | doc pending |
+| Video temporal | `video-temporal.ts` | Per-frame + cross-frame spatial/temporal video forensics | doc pending |
+| Image verdict | `image-verdict.ts` | Weighted signal fusion with per-signal attribution | doc pending |
+| Provenance | `provenance.ts` | C2PA, XMP and EXIF provenance, reports absence as signal | doc pending |
+| Integrity | `integrity.ts` | SHA-256 + pHash chain of custody, hash-linked audit | doc pending |
+| Eval metrics | `eval-metrics.ts` | Confusion matrix, precision, recall, F1, threshold sweep | doc pending |
 
 ## Shared design choices
 
 - **No heavy third-party services.** Forensics uses `sharp`; DSP/TF-IDF/clustering are hand-written TS. This keeps the app self-contained and offline-capable, at the cost of accuracy vs. specialist models. The enterprise path (per engine) is usually "swap this heuristic for a trained model / dedicated service behind the same function signature."
 - **The function signature is the contract.** Because routes only depend on the exported function, you can replace an engine's internals (e.g. TF-IDF cosine → embeddings) without touching routes or UI.
 - **Testability.** None of these have unit tests yet. They are the first place to add them (see [`04-operations/02-testing-strategy.md`](../04-operations/02-testing-strategy.md)).
+
+## Scope of work
+
+Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
+
+| Item | Status | Note |
+|---|---|---|
+| 22 engines implemented | ✅ Implemented | Every one is real logic, no stubs |
+| Docs for 8 of the 22 engines | 🟡 In Progress | The last 8 rows above have no doc. Until they do, the handover understates what was built: [04-claim-vs-implementation](../05-scope-of-work/04-claim-vs-implementation.md) |
+| Unit tests | ❌ Not Started | Pure functions, the cheapest high-value tests in the repo |
+| Trained models replacing heuristics | 🔒 Gated | Licensing, not architecture. Signatures already allow the swap: [C6](../05-scope-of-work/02-constrained-and-deferred.md) |
+| Biometric engines (face, voiceprint, rPPG) | ⛔ Constrained | Deliberately absent: [C1](../05-scope-of-work/02-constrained-and-deferred.md) |

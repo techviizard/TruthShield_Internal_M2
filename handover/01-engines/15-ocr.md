@@ -9,7 +9,7 @@ Optical character recognition tuned for Indian scripts. `sharp` preprocess → V
 `preprocessForOcr(buffer)` cleans the image; `runOcr()` sends it to the VLM and parses `OcrResult` (`text`, `language`, `confidence`, `blocks` with optional bounding boxes); `detectScripts()` identifies scripts present.
 
 ## How it works (logic)
-1. **Preprocess (the real engineering):** deskew, binarize, denoise with `sharp` — this materially improves VLM accuracy on photographed/low-quality text.
+1. **Preprocess (the real engineering):** deskew, binarize, denoise with `sharp` - this materially improves VLM accuracy on photographed/low-quality text.
 2. **Extract:** call the configured VLM (via the AI provider layer) as a lightweight OCR model (avoids bundling tesseract/transformers.js).
 3. **Script detection:** inspect Unicode ranges to tag Devanagari/Tamil/Bengali/Latin etc.
 4. **Confidence merge:** combine VLM confidence with preprocessing/character signals into a 0–100 score.

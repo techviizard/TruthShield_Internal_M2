@@ -23,7 +23,7 @@ export function extractJson(content: string): Record<string, unknown> {
 export function parseDataUrl(dataUrl: string): { mediaType: string; base64: string } {
   const match = dataUrl.match(/^data:([^;]+);base64,(.*)$/)
   if (!match) {
-    // Not a data URL (e.g. a plain https URL) — caller must handle.
+    // Not a data URL (e.g. a plain https URL) - caller must handle.
     return { mediaType: '', base64: '' }
   }
   return { mediaType: match[1], base64: match[2] }

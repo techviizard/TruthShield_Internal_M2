@@ -127,7 +127,7 @@ export async function elaRegions(input: Buffer, grid = 16): Promise<{
 }
 
 export interface SpectralResult {
-  /** 0..100 — strength of periodic peaks typical of GAN/upsampling grids. */
+  /** 0..100 - strength of periodic peaks typical of GAN/upsampling grids. */
   ganArtifactScore: number
   peakRatio: number
   dominantPeriod: number | null
@@ -140,7 +140,7 @@ export interface SpectralResult {
  * Generative upsampling (transposed convolution, nearest-neighbour + conv) leaves
  * a periodic checkerboard that appears as regularly spaced spikes in the spectrum
  * of the high-pass residual. Rather than a full 2-D FFT, this measures the
- * residual's row/column autocorrelation at small lags — the same periodicity,
+ * residual's row/column autocorrelation at small lags - the same periodicity,
  * far cheaper, and enough to separate "has a synthesis grid" from "does not".
  *
  * This is an indicator, not proof: heavy JPEG blocking also produces 8-pixel
@@ -209,7 +209,7 @@ export async function spectralArtifacts(input: Buffer): Promise<SpectralResult> 
     dominantPeriod: peakRatio > 2.2 ? peak.lag : null,
     explanation:
       ganArtifactScore >= 55
-        ? `Repeating structure at ${peak.lag}px with a confirmed harmonic at ${harmonicLag}px — the pattern generative upsampling leaves behind.`
+        ? `Repeating structure at ${peak.lag}px with a confirmed harmonic at ${harmonicLag}px - the pattern generative upsampling leaves behind.`
         : ganArtifactScore > 0
           ? `Periodic structure at ${peak.lag}px without harmonic confirmation. Regular texture (fabric, tiling, gradients) produces this too, so it is indicative at most.`
           : 'No periodic synthesis grid detected in the high-pass residual.',
@@ -276,7 +276,7 @@ export async function noiseInconsistency(input: Buffer, tileSize = 32): Promise<
 }
 
 /**
- * Edge density via Sobel-ish kernel — simple high-pass + count.
+ * Edge density via Sobel-ish kernel - simple high-pass + count.
  * Useful for AI-generated detection (low fine-edge density).
  */
 export async function edgeDensity(input: Buffer): Promise<{ edgePct: number; aiSuspicion: number }> {
@@ -329,7 +329,7 @@ export async function pixelDiff(a: Buffer, b: Buffer): Promise<{
   }
   const meanDelta = total / ra.length
 
-  // Region detection — bucket diff into 8x8 grid, flag tiles with mean > threshold
+  // Region detection - bucket diff into 8x8 grid, flag tiles with mean > threshold
   const G = 8
   const tileW = W / G, tileH = H / G
   const regions: { x: number; y: number; w: number; h: number; intensity: number }[] = []

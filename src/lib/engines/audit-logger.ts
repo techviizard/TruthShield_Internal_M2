@@ -38,7 +38,7 @@ export interface AuditEntry {
 
 /**
  * Appends are serialized through this promise so two concurrent requests cannot
- * read the same chain head and fork it. Single-process only — a multi-instance
+ * read the same chain head and fork it. Single-process only - a multi-instance
  * deployment needs the same guarantee from a DB transaction or advisory lock.
  */
 let appendLock: Promise<unknown> = Promise.resolve()
@@ -108,7 +108,7 @@ export async function verifyAuditChain(limit = 5000): Promise<ChainVerification>
   return verifyChain(rows.reverse())
 }
 
-/** Current chain head — the single value to quote in a court-ready report. */
+/** Current chain head - the single value to quote in a court-ready report. */
 export async function auditChainHead() {
   const head = await db.auditLog.findFirst({
     orderBy: [{ seq: 'desc' }, { createdAt: 'desc' }],

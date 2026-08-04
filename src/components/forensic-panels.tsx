@@ -95,7 +95,7 @@ export function ElaEvidence({
           Bright areas resave differently from the rest of the image. Uniformly bright edges are normal;
           an isolated patch that resaves differently from everything around it is what pasted content
           looks like. Regions are flagged where a tile deviates from this image&rsquo;s own median error
-          level by more than 3× the median absolute deviation — in <em>either</em> direction, since a
+          level by more than 3× the median absolute deviation - in <em>either</em> direction, since a
           patch taken from a lower-quality source resaves more smoothly than its surroundings, not less.
         </p>
       </CardContent>
@@ -103,7 +103,7 @@ export function ElaEvidence({
   )
 }
 
-/** Frequency-residual and noise statistics — the synthesis-fingerprint view. */
+/** Frequency-residual and noise statistics - the synthesis-fingerprint view. */
 export function SpectralEvidence({ forensics }: { forensics: ImageForensicsDetail }) {
   const s = forensics.spectral
   return (

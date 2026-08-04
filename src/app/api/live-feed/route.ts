@@ -1,5 +1,5 @@
 /**
- * Live Threat Feed source — real recent threats from DB.
+ * Live Threat Feed source - real recent threats from DB.
  * Returns AnalysisReports + Alerts merged & sorted with platform/region/severity inferred.
  */
 

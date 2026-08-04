@@ -3,7 +3,7 @@
 ## Project Status: ✅ Production-Ready Platform (Phase 20 Complete)
 
 ### Overview
-TruthShield v3.3.0 is a comprehensive AI-powered Digital Media Verification & Deepfake Detection Platform built with Next.js 16, TypeScript, Tailwind CSS 4, and shadcn/ui. It integrates with z-ai-web-dev-sdk for LLM, VLM, and Web Search capabilities. The platform features 30 navigation tabs — the complete target feature set — with AI-powered analysis tools, batch processing, media comparison, export capabilities, notification center, audit logging, global search, model performance metrics, browser extension demo, API documentation, model metrics with A/B testing, campaign detection, OCR scanner for Indian scripts, audio deepfake detection, source credibility analysis, live threat feed monitoring, education & digital literacy resources, report generator, system health monitor, data visualization dashboard, and workflow automation pipelines.
+TruthShield v3.3.0 is a comprehensive AI-powered Digital Media Verification & Deepfake Detection Platform built with Next.js 16, TypeScript, Tailwind CSS 4, and shadcn/ui. It integrates with z-ai-web-dev-sdk for LLM, VLM, and Web Search capabilities. The platform features 30 navigation tabs - the complete target feature set - with AI-powered analysis tools, batch processing, media comparison, export capabilities, notification center, audit logging, global search, model performance metrics, browser extension demo, API documentation, model metrics with A/B testing, campaign detection, OCR scanner for Indian scripts, audio deepfake detection, source credibility analysis, live threat feed monitoring, education & digital literacy resources, report generator, system health monitor, data visualization dashboard, and workflow automation pipelines.
 
 ---
 
@@ -232,7 +232,7 @@ Database (Prisma + SQLite)
 - Fixed duplicate `SeverityLegend` function definition in `src/components/threat-intel-map.tsx` that was causing a 500 error on the app (line 605 had a redundant copy of the same function)
 
 #### Technical Details:
-- Self-contained component exported as `BatchAnalysis` — no store integration needed
+- Self-contained component exported as `BatchAnalysis` - no store integration needed
 - Uses local state management via `useState` and `useCallback`
 - All analysis API calls use relative paths with FormData
 - `abortRef` for cancellation support during batch processing
@@ -1458,7 +1458,7 @@ Stage Summary:
 - Education & Resources tab is the 25th navigation tab, placed in the Tools section
 - Component features:
   1. Hero Section: GraduationCap icon with emerald glow, "Digital Media Literacy Hub" title with gradient text, subtitle, course/tutorial count badges
-  2. Interactive Courses (4 cards): Deepfake Detection 101 (40% progress), Advanced Image Forensics (locked/Premium), Fact-Checking Methodology (75% progress), Understanding AI Bias (not started) — each with difficulty badge (color-coded), module count, duration, progress bar or lock, Continue/Start button
+  2. Interactive Courses (4 cards): Deepfake Detection 101 (40% progress), Advanced Image Forensics (locked/Premium), Fact-Checking Methodology (75% progress), Understanding AI Bias (not started) - each with difficulty badge (color-coded), module count, duration, progress bar or lock, Continue/Start button
   3. Video Tutorials Grid (6 cards): Each with gradient thumbnail, play icon overlay, duration badge, category tag, view count
   4. Quick Reference Cards (6 expandable cards): Click to expand with AnimatePresence, each has icon, title, and 4-5 bullet points with CheckCircle icons
   5. Quizzes Section: 3 multiple-choice questions with score counter, correct/incorrect answer reveal on click, retake functionality, completion message

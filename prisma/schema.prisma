@@ -300,7 +300,7 @@ model KnownHoax {
 model EvalRun {
   id          String   @id @default(cuid())
   datasetName String
-  datasetHash String   // SHA-256 of the corpus file — ties results to exact inputs
+  datasetHash String   // SHA-256 of the corpus file - ties results to exact inputs
   modality    String   // text, image, audio, mixed
   provider    String
   model       String

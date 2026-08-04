@@ -81,7 +81,7 @@ const riskBadgeClass: Record<string, string> = {
   low: 'bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/25',
 }
 
-/** Peak envelope of a decoded clip — `count` bars of real amplitude data. */
+/** Peak envelope of a decoded clip - `count` bars of real amplitude data. */
 function waveformFromBuffer(buf: AudioBuffer, count: number): number[] {
   const mono = buf.getChannelData(0)
   const block = Math.max(1, Math.floor(mono.length / count))
@@ -149,7 +149,7 @@ function safeParse(raw: string): Record<string, unknown> {
 }
 
 function formatSeconds(sec: number): string {
-  if (!sec) return '—'
+  if (!sec) return ' - '
   const m = Math.floor(sec / 60)
   const r = Math.round(sec % 60)
   return `${m}:${String(r).padStart(2, '0')}`
@@ -317,7 +317,7 @@ export function AudioDeepfakeTab() {
         // engine; the UI renders an explicit "not available" state for these.
         detectedSpeakers: [],
         emotions: [],
-        transcription: '(Transcription requires separate STT pass — disabled in in-house DSP engine)',
+        transcription: '(Transcription requires separate STT pass - disabled in in-house DSP engine)',
         deepfakeIndicators: indicators,
         artifacts: a.artifacts.map((art: string, i: number) => ({
           type: 'DSP Indicator',

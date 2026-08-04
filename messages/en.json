@@ -19,7 +19,7 @@
     "connected": "Connected",
     "workingOffline": "Working offline",
     "fullPipeline": "Full pipeline available.",
-    "onDeviceOnly": "On-device pattern detection only — no model reasoning or web corroboration.",
+    "onDeviceOnly": "On-device pattern detection only - no model reasoning or web corroboration.",
     "sync": "Sync",
     "queueEmpty": "Nothing queued. Analyses submitted while offline appear here.",
     "install": "Install",
@@ -77,7 +77,7 @@
     "flagsDetected": "Flags Detected",
     "detectedClaims": "Detected Claims",
     "recommendations": "Recommendations",
-    "scriptDetected": "Detected {script} script — analysis language set to {language}."
+    "scriptDetected": "Detected {script} script - analysis language set to {language}."
   },
   "evidence": {
     "hoaxTitle": "Matches a recurring hoax narrative",

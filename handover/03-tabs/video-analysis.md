@@ -17,3 +17,16 @@ File-upload form; calls `analyzeVideo(file)`; renders `videoResult` (`VideoAnaly
 - **Real frame extraction** (ffmpeg) + per-frame CNN deepfake scores instead of VLM-only reasoning.
 - **Lip-sync / biological-signal** (rPPG) detectors for temporal artifacts.
 - Long-video chunking + progress streaming; store keyframe pHashes for source tracing.
+
+## Scope of work
+
+Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
+
+| Item | Status | Note |
+|---|---|---|
+| Temporal + spatial artifact detection | ✅ Implemented | `video-temporal.ts`, real per-frame and cross-frame measurement |
+| Frame extraction | 🟢 Needs enhancement | Browser canvas capture, 48-frame cap. Server-side ffmpeg with scene-change sampling is the upgrade |
+| Audio-lip sync + blink scores | ⚠️ Overclaimed | Prompted from the VLM and rendered, but never measured. Fix before any demo: [04-claim-vs-implementation](../05-scope-of-work/04-claim-vs-implementation.md) |
+| Audio track of a video routed to `audio-dsp.ts` | 🟡 In Progress | Engine exists, only wired to standalone audio uploads |
+| Face tracking, head movement, rPPG | ⛔ Constrained | Biometric processing. Deliberately not built: [C1](../05-scope-of-work/02-constrained-and-deferred.md) |
+| MesoNet / Deepware | 🔒 Gated | Licensing, not effort: [C6](../05-scope-of-work/02-constrained-and-deferred.md) |

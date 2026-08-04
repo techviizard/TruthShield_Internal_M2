@@ -3,7 +3,7 @@
 **File:** `src/components/tabs/chat-tab.tsx` · **Data:** store `sendChatMessage` → `/api/chat` · **Status:** ✅
 
 ## What it is
-Conversational assistant for analysts — ask questions, get help interpreting results.
+Conversational assistant for analysts - ask questions, get help interpreting results.
 
 ## How it's built
 Reads/writes chat history in the store; `sendChatMessage(msg)` posts to `/api/chat` (AI provider). `clearChatHistory()` resets.

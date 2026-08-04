@@ -9,7 +9,7 @@ import { motion } from 'framer-motion'
 import { Shield, AlertTriangle, Activity, Eye, Loader2, MapPin } from 'lucide-react'
 import type { ThreatMapCity, ThreatSeverity } from '@/components/threat-map-leaflet'
 
-// Leaflet touches `window` — must never render on the server
+// Leaflet touches `window` - must never render on the server
 const ThreatMapLeaflet = dynamic(() => import('@/components/threat-map-leaflet'), {
   ssr: false,
   loading: () => (
@@ -21,7 +21,7 @@ const ThreatMapLeaflet = dynamic(() => import('@/components/threat-map-leaflet')
 
 type TimeRange = '24h' | '7d' | '30d'
 
-// Seed fallback — replaced at runtime by /api/dashboard/threats
+// Seed fallback - replaced at runtime by /api/dashboard/threats
 const baseThreatData: ThreatMapCity[] = [
   { city: 'Delhi', lat: 28.6, lng: 77.2, threats: 342, severity: 'critical', topThreat: 'Election deepfakes', trend: '+15%' },
   { city: 'Mumbai', lat: 19.1, lng: 72.9, threats: 287, severity: 'high', topThreat: 'Financial scams', trend: '+8%' },
@@ -90,7 +90,7 @@ export function ThreatIntelMap() {
               trend: reg.trend ?? '0%',
             }
           })
-          // Empty DB yields all-zero regions — keep seed demo data in that case
+          // Empty DB yields all-zero regions - keep seed demo data in that case
           if (merged.some((m) => m.threats > 0)) setLiveData(merged)
         }
       })

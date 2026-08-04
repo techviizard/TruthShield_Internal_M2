@@ -273,7 +273,7 @@ export function DashboardTab() {
                 <Badge className="bg-zinc-500/20 text-zinc-300 border-zinc-500/30 text-[10px] px-1.5 py-0 ml-1">v{liveConfig?.app.version ?? ''}</Badge>
               </div>
               <p className="text-sm sm:text-base text-zinc-100/80 max-w-lg">
-                AI-Powered Digital Media Verification Platform — Detect deepfakes, combat misinformation, verify facts in real-time
+                AI-Powered Digital Media Verification Platform - Detect deepfakes, combat misinformation, verify facts in real-time
               </p>
             </div>
           </div>
@@ -312,7 +312,7 @@ export function DashboardTab() {
                       </div>
                     )}
                   </div>
-                  {/* Sparkline — only rendered when the DB has a real series */}
+                  {/* Sparkline - only rendered when the DB has a real series */}
                   {series && (
                     <div className="mt-2 flex justify-end">
                       <Sparkline data={series} color={card.sparkColor} />
@@ -344,7 +344,7 @@ export function DashboardTab() {
               <div className="flex-1 min-w-0 overflow-hidden">
                 <div className="flex animate-marquee whitespace-nowrap gap-8">
                   {(liveTicker && liveTicker.length > 0 ? liveTicker : [
-                    { text: 'Awaiting first analysis — start with Text or Image tab', type: 'info', icon: '🔵' },
+                    { text: 'Awaiting first analysis - start with Text or Image tab', type: 'info', icon: '🔵' },
                   ]).map((item, i) => (
                     <span key={i} className="text-xs text-muted-foreground flex items-center gap-2">
                       <span>{item.icon}</span>
@@ -387,7 +387,7 @@ export function DashboardTab() {
                   <div>
                     <p className="text-xs text-muted-foreground">AI Model</p>
                     <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 truncate">
-                      {liveConfig ? `${liveConfig.ai.provider} · ${liveConfig.ai.model}` : '—'}
+                      {liveConfig ? `${liveConfig.ai.provider} · ${liveConfig.ai.model}` : ' - '}
                     </p>
                   </div>
                 </div>
@@ -396,7 +396,7 @@ export function DashboardTab() {
                   <div>
                     <p className="text-xs text-muted-foreground">Queue / CPU</p>
                     <p className="text-sm font-medium">
-                      {liveHealth ? `${liveHealth.db.queuedAnalyses} queued · ${liveHealth.cpu.usagePct}%` : '—'}
+                      {liveHealth ? `${liveHealth.db.queuedAnalyses} queued · ${liveHealth.cpu.usagePct}%` : ' - '}
                     </p>
                   </div>
                 </div>
@@ -405,7 +405,7 @@ export function DashboardTab() {
                   <div>
                     <p className="text-xs text-muted-foreground">Process Uptime</p>
                     <p className="text-sm font-medium">
-                      {liveHealth ? formatUptime(liveHealth.uptime.processSec) : '—'}
+                      {liveHealth ? formatUptime(liveHealth.uptime.processSec) : ' - '}
                     </p>
                   </div>
                 </div>
@@ -516,7 +516,7 @@ export function DashboardTab() {
           <Card className="border rounded-xl hover:shadow-lg transition-all duration-300 overflow-hidden shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Analysis Trends</CardTitle>
-              <CardDescription>Daily analyses vs threats detected — last {s.trendData.length} days</CardDescription>
+              <CardDescription>Daily analyses vs threats detected - last {s.trendData.length} days</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
@@ -650,7 +650,7 @@ export function DashboardTab() {
                   <div className="space-y-0">
                     {timeline.length === 0 && (
                       <p className="text-xs text-muted-foreground py-6 text-center">
-                        No detections yet — run an analysis to populate this timeline.
+                        No detections yet - run an analysis to populate this timeline.
                       </p>
                     )}
                     {timeline.map((event, idx) => {

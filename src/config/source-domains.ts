@@ -3,8 +3,8 @@
  *
  * These are editorial/reputation constants (not runtime data). They used to be
  * inlined in `src/lib/ai.ts` and `src/lib/engines/source-credibility.ts`.
- * Centralised here so they can be reviewed, versioned, and — for an enterprise
- * deployment — moved to the database (`SourceCredibilityScore`) or an admin-editable
+ * Centralised here so they can be reviewed, versioned, and - for an enterprise
+ * deployment - moved to the database (`SourceCredibilityScore`) or an admin-editable
  * config without touching engine code.
  *
  * Enterprise TODO: load these from `SourceCredibilityScore` / a config service at

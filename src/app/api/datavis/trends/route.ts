@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Risk-level mix per bucket (stacked chart) — real counts, no invented months.
+    // Risk-level mix per bucket (stacked chart) - real counts, no invented months.
     const riskBuckets = Array.from({ length: cfg.bins }, () => ({ critical: 0, high: 0, medium: 0, low: 0 }))
     for (const r of reports) {
       const idx = Math.min(cfg.bins - 1, Math.floor((r.createdAt.getTime() - since.getTime()) / cfg.ms))
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
     for (const r of reports) typeCounts[r.analysisType] = (typeCounts[r.analysisType] ?? 0) + 1
     const types = Object.entries(typeCounts).map(([type, count]) => ({ type, count }))
 
-    // Per-region counts (heatmap) — same extraction the threat map uses.
+    // Per-region counts (heatmap) - same extraction the threat map uses.
     const regionCounts: Record<string, number> = {}
     for (const p of REGION_DICT) regionCounts[p.city] = 0
     for (const r of reports) {
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
       regionCounts[city] = (regionCounts[city] ?? 0) + 1
     }
 
-    // Platform breakdown — derived from MediaUpload.metadata.platform (if seeded) or proxied via deterministic hash
+    // Platform breakdown - derived from MediaUpload.metadata.platform (if seeded) or proxied via deterministic hash
     const uploads = await db.mediaUpload.findMany({ select: { id: true, metadata: true } })
     const platCounts: Record<string, number> = { 'WhatsApp': 0, 'Twitter/X': 0, 'Facebook': 0, 'Instagram': 0, 'Telegram': 0 }
     const PLATS = Object.keys(platCounts)

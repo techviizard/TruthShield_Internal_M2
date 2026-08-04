@@ -11,7 +11,7 @@ import { db } from '@/lib/db';
 import { detectStance, rollupStances } from '@/lib/engines/semantic';
 import { matchKnownHoaxes, recordHoaxHit } from '@/lib/engines/hoax-match';
 
-const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24h — viral claims get re-checked often
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24h - viral claims get re-checked often
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     const normalizedClaim = claim.trim();
 
-    // Step 0: Cache — return a recent identical check instead of re-running search + LLM
+    // Step 0: Cache - return a recent identical check instead of re-running search + LLM
     if (!skipCache) {
       const cached = await db.analysisReport.findFirst({
         where: {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
             cached: true,
           });
         } catch {
-          // corrupt cache entry — fall through to a fresh check
+          // corrupt cache entry - fall through to a fresh check
         }
       }
     }

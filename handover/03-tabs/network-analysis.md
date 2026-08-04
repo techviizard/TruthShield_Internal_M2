@@ -8,7 +8,7 @@ Watermark/provenance and distribution-network visualization: how a piece of medi
 ## How it's built
 Currently renders from inline data; the real endpoint `/api/network-graph` (backed by pHash + TF-IDF/MinHash provenance) is **not wired** into the tab yet.
 
-## How it works (logic — intended)
+## How it works (logic - intended)
 1. Fetch `/api/network-graph` for a subject (media id / claim).
 2. The route builds nodes/edges from **pHash near-duplicates** and **text similarity** (shared origin) across `AnalysisReport`/`PerceptualHash`.
 3. The tab renders the graph (spread, clusters, watermark/steganography flags).

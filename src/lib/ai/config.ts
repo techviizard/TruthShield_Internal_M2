@@ -55,12 +55,12 @@ export function getAIConfig(): ResolvedAIConfig {
   }
 }
 
-/** True when an AI key is configured — lets callers degrade instead of throwing. */
+/** True when an AI key is configured - lets callers degrade instead of throwing. */
 export function isAIConfigured(): boolean {
   return getConfig().ai.configured
 }
 
-/** Test helper — clear the memoized config (e.g. after changing env in tests). */
+/** Test helper - clear the memoized config (e.g. after changing env in tests). */
 export function resetAIConfig(): void {
   resetConfig()
 }

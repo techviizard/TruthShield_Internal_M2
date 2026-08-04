@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     // Read the file buffer
     const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
 
-    // Fingerprint before anything touches the bytes — this is the value quoted
+    // Fingerprint before anything touches the bytes - this is the value quoted
     // in the custody record and the court-ready report.
     const evidence = await fingerprint(imageBuffer, {
       fileName: imageFile.name,
@@ -129,7 +129,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
           trustScore: forensics.trustScore,
           riskLevel: forensics.riskLevel,
           flags: forensics.signals.filter((s) => s.contribution > 0).map((s) => s.id),
-          explanation: `${forensics.explanation} (Vision model unavailable — this verdict comes from pixel-level forensics and metadata alone; no semantic scene reasoning was performed.)`,
+          explanation: `${forensics.explanation} (Vision model unavailable - this verdict comes from pixel-level forensics and metadata alone; no semantic scene reasoning was performed.)`,
           confidence: 0.55,
           recommendations: [
             'Inspect the highlighted ELA regions against the visible image before concluding.',
@@ -163,7 +163,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
       };
 
       // Attach the measured evidence, and let it move the score. Pixel-level
-      // findings are not decoration on a model opinion — where they disagree
+      // findings are not decoration on a model opinion - where they disagree
       // with the model, the disagreement is reported rather than hidden.
       const modelTrust = usedFallback ? null : result.trustScore;
       const gap = modelTrust === null ? null : Math.abs(modelTrust - forensics.trustScore);

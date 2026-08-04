@@ -33,7 +33,7 @@ async function copyDir(from, to) {
 const standalone = path.join(root, '.next', 'standalone')
 
 if (!(await exists(standalone))) {
-  console.warn('[postbuild] .next/standalone not found — is output:"standalone" set in next.config.ts? Skipping.')
+  console.warn('[postbuild] .next/standalone not found - is output:"standalone" set in next.config.ts? Skipping.')
   process.exit(0)
 }
 

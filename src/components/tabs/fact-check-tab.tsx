@@ -211,7 +211,7 @@ export function FactCheckTab() {
                       )}
                       {factCheckResult.degraded && (
                         <Badge variant="outline" className="border-amber-500/40 text-xs text-amber-600 dark:text-amber-400">
-                          Offline verdict — stance + hoax registry only
+                          Offline verdict - stance + hoax registry only
                         </Badge>
                       )}
                     </div>

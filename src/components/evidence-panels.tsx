@@ -213,7 +213,7 @@ export function DetectorAgreement({ breakdown }: { breakdown: DetectorBreakdownV
           <div className="rounded-lg border bg-muted/30 p-3">
             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Language model</div>
             <div className="text-xl font-semibold tabular-nums">
-              {breakdown.model ? breakdown.model.trustScore : '—'}
+              {breakdown.model ? breakdown.model.trustScore : ' - '}
             </div>
             <div className="truncate text-[10px] text-muted-foreground">
               {breakdown.model?.label ?? 'unavailable'}

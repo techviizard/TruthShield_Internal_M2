@@ -14,7 +14,7 @@ Fetches `/api/system/health` (real, via the **system-metrics** engine). But the 
 
 ## Hardcoded-data note (🟡)
 Replace the synthetic series with real history: add a `SystemMetrics` time-series table sampled on an interval; render empty until data exists. See [audit](../04-operations/01-hardcoded-data-audit.md) + system-metrics engine doc.
-Note: pre-existing type errors here (`.bg`/`.color`) — see [known issues](../04-operations/03-known-issues.md).
+Note: pre-existing type errors here (`.bg`/`.color`) - see [known issues](../04-operations/03-known-issues.md).
 
 ## Future scope & enterprise enhancements
 - Prometheus/Grafana; per-dependency health (DB/AI provider/storage) with latency.

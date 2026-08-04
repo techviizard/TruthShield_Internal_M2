@@ -28,7 +28,7 @@
 | `--destructive` / `--danger` | error/threat | red |
 | `--chart-1..5` | data-viz | orange, teal, amber, emerald, rose |
 
-**Accent rule:** orange = primary action/brand. teal = secondary/interactive/active. Threat scale (emerald→amber→red→rose) is independent of both. **Never hard-code a hex in a component — use the token.**
+**Accent rule:** orange = primary action/brand. teal = secondary/interactive/active. Threat scale (emerald→amber→red→rose) is independent of both. **Never hard-code a hex in a component - use the token.**
 
 ## Gotcha: Tailwind v4 arbitrary color vars
 
@@ -45,7 +45,7 @@ HeroUI v3 components are **compositional** and built on react-aria:
 
 - Buttons use `onPress` (not `onClick`) and `isDisabled` (not `disabled`); `variant` ∈ `primary|secondary|tertiary|outline|ghost|danger|danger-soft`; `isIconOnly` for icon buttons.
 - `variant="primary"` uses the shared `--accent` token. In this app `--accent` is kept **neutral** (so shadcn hover states don't turn orange). For a brand-orange HeroUI button, add `className` with `bg-primary text-primary-foreground`.
-- Compound components: `Avatar` + `AvatarFallback`, `Tooltip` = `TooltipRoot/Trigger/Content`, `Kbd` takes children. Don't guess props — check `node_modules/@heroui/react/dist/components/<name>/*.d.ts`.
+- Compound components: `Avatar` + `AvatarFallback`, `Tooltip` = `TooltipRoot/Trigger/Content`, `Kbd` takes children. Don't guess props - check `node_modules/@heroui/react/dist/components/<name>/*.d.ts`.
 
 ## Migration state (shadcn → HeroUI)
 

@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 
 /**
- * Case record strip — FIR / case number / officer of record.
+ * Case record strip - FIR / case number / officer of record.
  * Rendered only when the case actually carries this metadata, so analyst-only
  * cases do not show a row of empty legal fields.
  */
@@ -471,10 +471,10 @@ export function InvestigationsTab() {
                   <Input value={newTags} onChange={(e) => setNewTags(e.target.value)} placeholder="e.g. deepfake, politics, media" />
                 </div>
 
-                {/* Case metadata — optional, but what makes an export citable in a case file */}
+                {/* Case metadata - optional, but what makes an export citable in a case file */}
                 <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
                   <p className="text-xs font-semibold text-muted-foreground">
-                    Case record <span className="font-normal">(optional — appears on exported reports)</span>
+                    Case record <span className="font-normal">(optional - appears on exported reports)</span>
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -684,7 +684,7 @@ export function InvestigationsTab() {
                         <div className="flex flex-col sm:flex-row gap-3">
                           <Button
                             className="bg-zinc-600 hover:bg-zinc-700 text-white flex-1"
-                            onClick={() => toast.success('Evidence form opened — feature coming soon!')}
+                            onClick={() => toast.success('Evidence form opened - feature coming soon!')}
                           >
                             <PlusCircle className="h-4 w-4 mr-2" />
                             Add Evidence

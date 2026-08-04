@@ -1,7 +1,7 @@
 /**
  * Perceptual hash (dHash 64-bit) and Hamming distance.
  * Used by Media Compare similarity + Provenance graph.
- * Pure sharp (already in deps) — no external service.
+ * Pure sharp (already in deps) - no external service.
  */
 
 import sharp from 'sharp'
@@ -34,7 +34,7 @@ export async function dHash(buffer: Buffer): Promise<string> {
 }
 
 /**
- * Average hash (aHash) — robust to color/brightness shifts.
+ * Average hash (aHash) - robust to color/brightness shifts.
  */
 export async function aHash(buffer: Buffer): Promise<string> {
   const { data } = await sharp(buffer)

@@ -28,9 +28,9 @@ all API values are inserted as text nodes rather than HTML.
 
 ## Architecture
 
-- `background.js` — the only place that talks to the console. Owns context menus and all fetches.
-- `content.js` — renders the overlay. Receives results by message; never calls the API itself.
-- `popup.js` / `options.js` — UI, delegating network work to the service worker.
+- `background.js` - the only place that talks to the console. Owns context menus and all fetches.
+- `content.js` - renders the overlay. Receives results by message; never calls the API itself.
+- `popup.js` / `options.js` - UI, delegating network work to the service worker.
 
 Keeping every request in the service worker means a page cannot influence where verification traffic
 is sent, and the console URL exists in one place.

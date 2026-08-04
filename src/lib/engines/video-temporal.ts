@@ -4,13 +4,13 @@
  * The problem statement asks for temporal and spatial artifact analysis rather
  * than a single opinion about a clip. Frames are sampled in the browser (no
  * ffmpeg dependency on the server) and analysed here one by one, then compared
- * across time — because the signature of a face-swap is not any single bad
+ * across time - because the signature of a face-swap is not any single bad
  * frame, it is inconsistency *between* frames that a real camera would not
  * produce.
  *
  * What this measures:
- *   spatial  — per-frame ELA region clustering, noise inconsistency, synthesis grid
- *   temporal — frame-to-frame perceptual distance, and the variance of each
+ *   spatial - per-frame ELA region clustering, noise inconsistency, synthesis grid
+ *   temporal - frame-to-frame perceptual distance, and the variance of each
  *              spatial signal across the clip
  *
  * What it does not do: identity matching, landmark tracking or lip-sync scoring.
@@ -51,7 +51,7 @@ export interface TemporalVerdict {
   sceneChanges: number[]
   /** Mean of the per-frame spatial scores. */
   meanScore: number
-  /** Spread of the per-frame scores — high spread means the clip is not uniform. */
+  /** Spread of the per-frame scores - high spread means the clip is not uniform. */
   scoreVariance: number
   /** 0..100. Higher = frames behave consistently, as a single capture should. */
   temporalConsistency: number
@@ -135,7 +135,7 @@ export async function analyzeFrames(frames: FrameInput[]): Promise<TemporalVerdi
     noiseValues.reduce((a, v) => a + (v - noiseMean) ** 2, 0) / noiseValues.length
   )
 
-  // Judge continuity only across frames that are not cuts — a cut is expected to
+  // Judge continuity only across frames that are not cuts - a cut is expected to
   // look different and must not be counted as manipulation evidence.
   const continuous = scored.filter((f) => f.distanceFromPrev !== null && !f.sceneChange)
   const meanDistance = continuous.length

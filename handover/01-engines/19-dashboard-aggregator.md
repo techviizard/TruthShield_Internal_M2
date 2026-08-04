@@ -3,7 +3,7 @@
 **File:** `src/lib/engines/dashboard-aggregator.ts` · **Deps:** `db`, `region-extractor` · **Status:** ✅ Real
 
 ## What it is
-Computes all dashboard/data-viz metrics directly from DB tables. No caching table — everything is derived at query time (fine at current scale). Backs `/api/dashboard/*`.
+Computes all dashboard/data-viz metrics directly from DB tables. No caching table - everything is derived at query time (fine at current scale). Backs `/api/dashboard/*`.
 
 ## How it's built
 Exported async functions, each returns a typed slice: `getThreatRegionStats`, `getModelPerformance`, `getSparklines`, `getTicker`, `getLanguageDistribution`. All read `AnalysisReport` / `Alert` / `MediaUpload` via Prisma.

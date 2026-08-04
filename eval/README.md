@@ -22,17 +22,17 @@ JSON Lines, one object per line:
 {"id":"en-fake-01","language":"en","label":1,"text":"…"}
 ```
 
-- `label: 1` — content that *should* be flagged (misinformation, hoax, manipulation)
-- `label: 0` — genuine content that should pass
-- `language` — used for the per-language breakdown; any ISO code
-- `id` — stable, so results are comparable across runs
+- `label: 1` - content that *should* be flagged (misinformation, hoax, manipulation)
+- `label: 0` - genuine content that should pass
+- `language` - used for the per-language breakdown; any ISO code
+- `id` - stable, so results are comparable across runs
 
 ## About the bundled corpus
 
 `corpora/text-smoke.jsonl` is a **small authored smoke corpus** (~36 items, en/hi/gu/ta),
 written for this repository to exercise the pipeline end to end and to check that Indic
 input is scored at all. It is *not* a benchmark, and a score on it is not a claim about
-field accuracy — the set is tiny, the fake items use obvious viral-forward patterns, and
+field accuracy - the set is tiny, the fake items use obvious viral-forward patterns, and
 it has never been held out from development.
 
 For numbers worth quoting, point `--dataset` at a real labeled set (e.g. an internal
@@ -44,4 +44,4 @@ can always be traced back to the exact file it came from.
 
 The harness calls the same `/api/analyze/text` path the product uses, and converts the
 returned trust score to a suspicion score (`100 - trustScore`). No separate evaluation-only
-code path exists — if the product regresses, the harness sees it.
+code path exists - if the product regresses, the harness sees it.

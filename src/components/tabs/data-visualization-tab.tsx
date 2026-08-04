@@ -145,7 +145,7 @@ export function DataVisualizationTab() {
     Array<{ label: string; value: string; up: boolean; icon: typeof Activity; sparkline: number[]; sparkColor: string; bgColor: string; textColor: string }>
   >([])
 
-  // Every panel below is fed by these endpoints — no static series.
+  // Every panel below is fed by these endpoints - no static series.
   useEffect(() => {
     let aborted = false
     fetch(`/api/datavis/trends?range=${dateRange}`)

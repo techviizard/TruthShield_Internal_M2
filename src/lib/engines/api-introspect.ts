@@ -1,5 +1,5 @@
 /**
- * Real API route introspection — walks src/app/api directory at runtime.
+ * Real API route introspection - walks src/app/api directory at runtime.
  * Replaces hardcoded API Docs tab content.
  */
 

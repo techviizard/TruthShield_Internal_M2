@@ -48,10 +48,10 @@ Browser (one SPA)
 
 ## What is real vs. demo
 
-Most detection logic is **real** (engines run actual algorithms; AI calls a real model; dashboards aggregate real DB rows). A handful of tabs seed themselves with **mock arrays** as fallback when the DB is empty. Those are being removed — tracked in [`04-operations/01-hardcoded-data-audit.md`](../04-operations/01-hardcoded-data-audit.md).
+Most detection logic is **real** (engines run actual algorithms; AI calls a real model; dashboards aggregate real DB rows). A handful of tabs seed themselves with **mock arrays** as fallback when the DB is empty. Those are being removed - tracked in [`04-operations/01-hardcoded-data-audit.md`](../04-operations/01-hardcoded-data-audit.md).
 
 ## Next reads
 
-- [`02-tech-stack.md`](02-tech-stack.md) — exact versions and why.
-- [`03-data-model.md`](03-data-model.md) — the 19 Prisma models.
-- [`06-state-management-store.md`](06-state-management-store.md) — the Zustand store.
+- [`02-tech-stack.md`](02-tech-stack.md) - exact versions and why.
+- [`03-data-model.md`](03-data-model.md) - the 19 Prisma models.
+- [`06-state-management-store.md`](06-state-management-store.md) - the Zustand store.

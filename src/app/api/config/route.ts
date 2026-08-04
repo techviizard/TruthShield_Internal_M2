@@ -1,5 +1,5 @@
 /**
- * GET /api/config — the secret-free view of the central configuration.
+ * GET /api/config - the secret-free view of the central configuration.
  *
  * Client components read runtime settings (feature flags, limits, refresh
  * intervals, provider/model in use, demo account info) from here instead of

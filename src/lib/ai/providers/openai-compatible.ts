@@ -2,7 +2,7 @@
  * OpenAI-compatible provider adapter.
  *
  * Works with OpenAI, Kimi (Moonshot), Qwen (DashScope), and any local
- * OpenAI-compatible server (Ollama, LM Studio, vLLM) — the only difference is
+ * OpenAI-compatible server (Ollama, LM Studio, vLLM) - the only difference is
  * the base URL + model, both from config/env.
  */
 import OpenAI from 'openai'

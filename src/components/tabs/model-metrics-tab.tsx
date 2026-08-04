@@ -18,7 +18,7 @@ import {
 import { EvalPanel } from '@/components/eval-panel'
 
 /**
- * Model Metrics — every number on this tab is computed from rows in the
+ * Model Metrics - every number on this tab is computed from rows in the
  * database (AnalysisReport) plus the live provider configuration. Metrics that
  * require labelled ground truth (ROC, confusion matrix) are intentionally not
  * shown: the platform has no verified label set to compute them from.
@@ -123,7 +123,7 @@ export function ModelMetricsTab() {
   const overviewCards = [
     {
       label: 'Active model',
-      value: config?.ai.model ?? '—',
+      value: config?.ai.model ?? ' - ',
       sub: config ? `${config.ai.provider}${config.ai.configured ? '' : ' (no API key)'}` : '',
       icon: Cpu,
     },
@@ -135,13 +135,13 @@ export function ModelMetricsTab() {
     },
     {
       label: 'Mean confidence',
-      value: perf ? `${perf.avgConfidence}%` : '—',
+      value: perf ? `${perf.avgConfidence}%` : ' - ',
       sub: 'model self-reported confidence',
       icon: Gauge,
     },
     {
       label: 'Mean latency',
-      value: perf ? `${(perf.avgProcessingMs / 1000).toFixed(2)}s` : '—',
+      value: perf ? `${(perf.avgProcessingMs / 1000).toFixed(2)}s` : ' - ',
       sub: 'end-to-end analysis time',
       icon: Timer,
     },
@@ -195,7 +195,7 @@ export function ModelMetricsTab() {
             </CardTitle>
             <CardDescription>
               Operational rates over {perf?.totalSamples ?? 0} stored analyses. These are workload
-              statistics, not accuracy — accuracy is measured against labeled data in the panel above.
+              statistics, not accuracy - accuracy is measured against labeled data in the panel above.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -237,7 +237,7 @@ export function ModelMetricsTab() {
           <CardContent>
             {(variants ?? []).length === 0 ? (
               <p className="text-sm text-muted-foreground py-8 text-center">
-                No analyses recorded yet — run an analysis (or seed the database) to populate these metrics.
+                No analyses recorded yet - run an analysis (or seed the database) to populate these metrics.
               </p>
             ) : (
               <div className="overflow-x-auto">
@@ -359,16 +359,16 @@ export function ModelMetricsTab() {
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-xs text-muted-foreground">Provider</p>
-              <p className="font-medium">{config?.ai.provider ?? '—'}</p>
+              <p className="font-medium">{config?.ai.provider ?? ' - '}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Text model</p>
-              <p className="font-medium truncate">{config?.ai.model ?? '—'}</p>
+              <p className="font-medium truncate">{config?.ai.model ?? ' - '}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Vision model</p>
               <p className="font-medium truncate">
-                {config?.ai.visionEnabled ? config?.ai.visionModel ?? '—' : 'disabled'}
+                {config?.ai.visionEnabled ? config?.ai.visionModel ?? ' - ' : 'disabled'}
               </p>
             </div>
             <div>

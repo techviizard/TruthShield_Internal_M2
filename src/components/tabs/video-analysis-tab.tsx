@@ -93,7 +93,7 @@ export function VideoAnalysisTab() {
 
   return (
     <div className="space-y-6">
-      {/* Frame-level pipeline — runs without a model, so it works offline too */}
+      {/* Frame-level pipeline - runs without a model, so it works offline too */}
       <VideoFrameAnalysis />
 
       {/* Upload Section */}

@@ -3,8 +3,8 @@ import { verifyAuditChain, auditChainHead, recordAudit, clientIp } from '@/lib/e
 
 /**
  * Tamper-evidence check over the audit hash chain.
- * GET  — replay and report divergence (read-only).
- * POST — same check, and record the verification itself as a chain entry so the
+ * GET - replay and report divergence (read-only).
+ * POST - same check, and record the verification itself as a chain entry so the
  *        fact that an officer verified at time T is itself part of the record.
  */
 export async function GET(req: NextRequest) {

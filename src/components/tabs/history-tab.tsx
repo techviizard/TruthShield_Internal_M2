@@ -137,7 +137,7 @@ export function HistoryTab() {
               <div>
                 <h2 className="text-xl font-bold">Analysis History</h2>
                 <p className="text-sm text-muted-foreground">
-                  View and manage all past analyses — {analysisHistoryTotal} total records
+                  View and manage all past analyses - {analysisHistoryTotal} total records
                 </p>
               </div>
             </div>
@@ -342,7 +342,7 @@ function HistoryRow({ item, isExpanded, onToggle }: { item: AnalysisHistoryItem;
             {item.riskLevel}
           </Badge>
         ) : (
-          <span className="text-sm text-muted-foreground">—</span>
+          <span className="text-sm text-muted-foreground"> - </span>
         )}
       </TableCell>
       <TableCell>

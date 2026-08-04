@@ -11,7 +11,7 @@ import gu from '../../messages/gu.json'
  *
  * The console is a single-page app with no per-locale URLs, so next-intl's
  * routing/middleware layer would add a URL scheme the product does not have.
- * Instead the locale is client state, persisted per device — which is also the
+ * Instead the locale is client state, persisted per device - which is also the
  * right model for a shared field terminal where the operator, not the link,
  * decides the language.
  *

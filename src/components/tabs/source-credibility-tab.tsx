@@ -19,7 +19,7 @@ import {
 import { toast } from 'sonner'
 
 /**
- * Source Credibility — every rating shown is derived from real data:
+ * Source Credibility - every rating shown is derived from real data:
  *   • how often the domain has been cited by stored fact-check matches
  *   • the average trust score of the analyses citing it
  *   • lexical bias skew of those analyses
@@ -127,7 +127,7 @@ function SourceCard({ source }: { source: Source }) {
           </div>
           <div className="p-2 rounded-lg bg-muted/30">
             <p className="text-sm font-bold">
-              {source.recencyDays < 0 ? '—' : source.recencyDays === 0 ? 'today' : `${source.recencyDays}d`}
+              {source.recencyDays < 0 ? ' - ' : source.recencyDays === 0 ? 'today' : `${source.recencyDays}d`}
             </p>
             <p className="text-[10px] text-muted-foreground">last cited</p>
           </div>
@@ -136,7 +136,7 @@ function SourceCard({ source }: { source: Source }) {
         {source.totalCitations === 0 && (
           <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5" />
-            No citations recorded yet — rating shown is the editorial reference only.
+            No citations recorded yet - rating shown is the editorial reference only.
           </p>
         )}
       </CardContent>
@@ -214,7 +214,7 @@ export function SourceCredibilityTab() {
               Source Credibility
             </CardTitle>
             <CardDescription>
-              Look up any domain — ratings are computed from citations recorded by this platform.
+              Look up any domain - ratings are computed from citations recorded by this platform.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -262,7 +262,7 @@ export function SourceCredibilityTab() {
               <Skeleton className="h-64 rounded-lg" />
             ) : sources.length === 0 ? (
               <p className="text-sm text-muted-foreground py-10 text-center">
-                No sources cited yet — run a fact check (or seed the database) to build the credibility index.
+                No sources cited yet - run a fact check (or seed the database) to build the credibility index.
               </p>
             ) : (
               <>
@@ -306,7 +306,7 @@ export function SourceCredibilityTab() {
                             </span>
                           </td>
                           <td className="py-2 pr-4 text-muted-foreground text-xs">
-                            {s.recencyDays < 0 ? '—' : s.recencyDays === 0 ? 'today' : `${s.recencyDays}d ago`}
+                            {s.recencyDays < 0 ? ' - ' : s.recencyDays === 0 ? 'today' : `${s.recencyDays}d ago`}
                           </td>
                         </tr>
                       ))}

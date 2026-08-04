@@ -18,3 +18,16 @@ Thin form component. Reads/writes `textInput`, `selectedLanguage` in the store; 
 - Multi-language prompt tuning (Indic languages) + per-language model selection.
 - Batch/paste-URL ingestion; store history per user.
 - Confidence calibration + human-review queue for borderline scores.
+
+## Scope of work
+
+Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
+
+| Item | Status | Note |
+|---|---|---|
+| Clickbait / manufactured urgency detection | ✅ Implemented | `text-heuristics.ts`, explainable per signal, no API key needed |
+| Known-hoax matching | ✅ Implemented | `hoax-match.ts` near-duplicate match against the recurring-hoax registry |
+| Misleading claim detection | 🟢 Needs enhancement | Lexical signals plus LLM. A classifier fine-tuned on an Indian-language corpus is the next step |
+| Article ingest by URL | ⏳ Planned | Paste only today. Needs readability extraction |
+| Indic language depth | 🟢 Needs enhancement | Hindi, Gujarati and Tamil surface forms exist. Native-speaker review pending |
+| Account or author attribution | ⛔ Constrained | Deliberately not built: [C4](../05-scope-of-work/02-constrained-and-deferred.md) |

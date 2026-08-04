@@ -9,7 +9,7 @@ Anti-gaming math for crowdsourced verification votes. Replaces a naive "count th
 `computeConsensus(votes)` → `ConsensusResult` (weighted agree %, confidence). `updateVoterTrust()` adjusts a voter's historical accuracy; `trustBadge()` maps a score to a label. Votes carry a hashed `voterFingerprint` (IP+UA), the vote, and the voter's trust score.
 
 ## How it works (logic)
-1. **Weight votes by voter trust** (0–100 historical accuracy) — a proven voter counts more than a fresh/anonymous one.
+1. **Weight votes by voter trust** (0–100 historical accuracy) - a proven voter counts more than a fresh/anonymous one.
 2. **Outlier/sybil detection:** clusters of identical fingerprints or coordinated bursts are down-weighted.
 3. **Weighted consensus %:** agree-weight ÷ total-weight, not raw headcount.
 4. **Voter trust update:** after ground truth is known, voters who matched the outcome gain trust; others lose it (a reputation feedback loop).

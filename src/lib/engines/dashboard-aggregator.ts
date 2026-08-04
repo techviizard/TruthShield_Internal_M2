@@ -1,7 +1,7 @@
 /**
  * Dashboard data aggregator.
  * Computes real metrics from AnalysisReport, Alert, MediaUpload tables.
- * All derived — no caching table needed at this scale.
+ * All derived - no caching table needed at this scale.
  */
 
 import { db } from '@/lib/db'
@@ -274,7 +274,7 @@ export async function getTicker(limit = 8): Promise<TickerEvent[]> {
       r.analysisType === 'fact_check' ? 'Fact check completed' :
       'Analysis completed'
     events.push({
-      text: region ? `${typeLabel} — ${region} region` : typeLabel,
+      text: region ? `${typeLabel} - ${region} region` : typeLabel,
       type: sev,
       icon: sev === 'critical' ? '🔴' : sev === 'high' ? '🟠' : sev === 'medium' ? '🟡' : sev === 'low' ? '🟢' : '🔵',
       timestamp: r.createdAt,

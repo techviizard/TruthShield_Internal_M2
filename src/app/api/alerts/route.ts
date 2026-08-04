@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Chained audit write — never db.auditLog.create directly, that breaks the hash chain.
+    // Chained audit write - never db.auditLog.create directly, that breaks the hash chain.
     await recordAudit({
       action: 'alert_triggered',
       resource: 'alert',

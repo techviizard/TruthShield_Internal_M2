@@ -109,7 +109,7 @@ export function SettingsTab() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      {/* Profile Section — the signed-in/demo account from the central config */}
+      {/* Profile Section - the signed-in/demo account from the central config */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
         <Card className="bg-gradient-to-br from-zinc-500/5 via-transparent to-zinc-500/5 border-zinc-500/20">
           <CardContent className="p-6">
@@ -125,20 +125,20 @@ export function SettingsTab() {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-lg font-semibold">{cfg?.demo.name ?? '—'}</h3>
+                  <h3 className="text-lg font-semibold">{cfg?.demo.name ?? ' - '}</h3>
                   <Badge className="bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20 hover:bg-zinc-500/20">
                     <ShieldCheck className="h-3 w-3 mr-1" />
                     {cfg?.demo.role ?? 'user'}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mt-0.5">{cfg?.demo.email ?? '—'}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{cfg?.demo.email ?? ' - '}</p>
                 <div className="flex items-center gap-3 mt-2">
                   <Badge variant="secondary" className="text-xs">
                     <User className="h-3 w-3 mr-1" />
                     {cfg?.demo.enabled ? 'Demo account' : 'Configured account'}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    Authentication is not enabled — single-tenant mode
+                    Authentication is not enabled - single-tenant mode
                   </span>
                 </div>
               </div>
@@ -147,7 +147,7 @@ export function SettingsTab() {
         </Card>
       </motion.div>
 
-      {/* Integration status — read from the central config, secrets never shown */}
+      {/* Integration status - read from the central config, secrets never shown */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <Card>
           <CardHeader>
@@ -168,7 +168,7 @@ export function SettingsTab() {
                   AI provider
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {cfg ? `${cfg.ai.provider} · ${cfg.ai.model}` : '—'}
+                  {cfg ? `${cfg.ai.provider} · ${cfg.ai.model}` : ' - '}
                 </p>
               </div>
               <Badge
@@ -189,7 +189,7 @@ export function SettingsTab() {
                   <Lock className="h-3 w-3" />
                   Vision model
                 </p>
-                <p className="text-xs text-muted-foreground truncate">{cfg?.ai.visionModel ?? '—'}</p>
+                <p className="text-xs text-muted-foreground truncate">{cfg?.ai.visionModel ?? ' - '}</p>
               </div>
               <Badge variant="outline">{cfg?.features.visionAnalysis ? 'enabled' : 'disabled'}</Badge>
             </div>
@@ -208,9 +208,9 @@ export function SettingsTab() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
-              <div>Max image upload: {cfg?.limits.maxImageUploadMB ?? '—'} MB</div>
-              <div>Max video upload: {cfg?.limits.maxVideoUploadMB ?? '—'} MB</div>
-              <div>Max audio upload: {cfg?.limits.maxAudioUploadMB ?? '—'} MB</div>
+              <div>Max image upload: {cfg?.limits.maxImageUploadMB ?? ' - '} MB</div>
+              <div>Max video upload: {cfg?.limits.maxVideoUploadMB ?? ' - '} MB</div>
+              <div>Max audio upload: {cfg?.limits.maxAudioUploadMB ?? ' - '} MB</div>
               <div>Dashboard refresh: {(cfg?.dashboard.refreshIntervalMs ?? 0) / 1000}s</div>
             </div>
           </CardContent>

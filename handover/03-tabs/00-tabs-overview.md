@@ -16,7 +16,7 @@ The 28 feature tabs live in `src/components/tabs/*`. Each is a **client componen
 
 | Tab | File | API / source | Status |
 |-----|------|--------------|--------|
-| Dashboard | `dashboard-tab.tsx` | `/api/dashboard/*` | 🟡 partial (stats via mock init — see audit) |
+| Dashboard | `dashboard-tab.tsx` | `/api/dashboard/*` | 🟡 partial (stats via mock init - see audit) |
 | Data Visualization | `data-visualization-tab.tsx` | `/api/datavis/trends` | ✅ |
 | Live Threat Feed | `live-threat-feed-tab.tsx` | `/api/live-feed` | 🟡 seeds mock |
 | Text Analysis | `text-analysis-tab.tsx` | store `analyzeText` → `/api/analyze/text` | ✅ |

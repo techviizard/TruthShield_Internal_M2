@@ -5,7 +5,7 @@
  *
  * Sends every labeled sample through the product's own analysis endpoint, stores
  * per-sample scores in the database, and prints the resulting metrics.
- * Requires the dev/prod server to be running — the harness deliberately exercises
+ * Requires the dev/prod server to be running - the harness deliberately exercises
  * the same HTTP path the UI uses rather than a private evaluation shortcut.
  */
 
@@ -70,7 +70,7 @@ async function main() {
       }
       if (!ping.ok && !health) throw new Error(`status ${ping.status}`)
     } catch (e) {
-      console.error(`Cannot reach ${base} — start the server first (npm run dev), or pass --base.`)
+      console.error(`Cannot reach ${base} - start the server first (npm run dev), or pass --base.`)
       console.error(`  ${e instanceof Error ? e.message : e}`)
       process.exit(1)
     }
@@ -116,7 +116,7 @@ async function main() {
   const durationMs = Date.now() - started
   const usable = scored.filter((s) => s.score !== null)
   if (!usable.length) {
-    console.error('\nNo sample scored successfully — nothing to report.')
+    console.error('\nNo sample scored successfully - nothing to report.')
     process.exit(1)
   }
 

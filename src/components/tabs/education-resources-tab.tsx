@@ -123,7 +123,7 @@ const REFERENCE_CARDS: ReferenceCard[] = [
       'Inconsistent lighting and shadows on the face',
       'Blurring or flickering around the edges of the face',
       'Audio-visual desync (lip movements don\'t match audio)',
-      'Unusual skin texture — too smooth or waxy appearance',
+      'Unusual skin texture - too smooth or waxy appearance',
     ],
   },
   {
@@ -156,7 +156,7 @@ const REFERENCE_CARDS: ReferenceCard[] = [
     points: [
       'Verify the domain matches the claimed organization',
       'Look for subtle misspellings (g00gle.com vs google.com)',
-      'Check for HTTPS — but remember HTTPS ≠ trustworthy',
+      'Check for HTTPS - but remember HTTPS ≠ trustworthy',
       'Use WHOIS lookup to check domain registration details',
       'Beware of URL shorteners hiding the real destination',
     ],
@@ -227,7 +227,7 @@ const COMMUNITY_TIPS: CommunityTip[] = [
     id: 'tip1',
     user: 'Priya Sharma',
     avatar: 'PS',
-    tip: 'Always check the date on viral images — I found a 2019 flood photo being shared as a 2024 event on WhatsApp. A simple reverse image search revealed the truth in seconds!',
+    tip: 'Always check the date on viral images - I found a 2019 flood photo being shared as a 2024 event on WhatsApp. A simple reverse image search revealed the truth in seconds!',
     upvotes: 47,
     downvotes: 2,
     timestamp: '2 hrs ago',
@@ -247,7 +247,7 @@ const COMMUNITY_TIPS: CommunityTip[] = [
     id: 'tip3',
     user: 'Anita Desai',
     avatar: 'AD',
-    tip: 'For WhatsApp forwards, look for formatting inconsistencies in government notices — real ones use specific fonts and layout. Also check the official website directly.',
+    tip: 'For WhatsApp forwards, look for formatting inconsistencies in government notices - real ones use specific fonts and layout. Also check the official website directly.',
     upvotes: 56,
     downvotes: 3,
     timestamp: '6 hrs ago',
@@ -267,7 +267,7 @@ const COMMUNITY_TIPS: CommunityTip[] = [
     id: 'tip5',
     user: 'Meera Nair',
     avatar: 'MN',
-    tip: 'Use the InVID plugin for video verification — it helps extract keyframes from videos for reverse image search. Extremely useful for detecting recycled old footage.',
+    tip: 'Use the InVID plugin for video verification - it helps extract keyframes from videos for reverse image search. Extremely useful for detecting recycled old footage.',
     upvotes: 41,
     downvotes: 1,
     timestamp: '10 hrs ago',
@@ -341,7 +341,7 @@ export function EducationResourcesTab() {
       setQuizScore(prev => prev + 1)
       toast.success('Correct! Great job!')
     } else {
-      toast.error('Not quite — the correct answer is highlighted.')
+      toast.error('Not quite - the correct answer is highlighted.')
     }
 
     // Check if quiz is complete
@@ -351,7 +351,7 @@ export function EducationResourcesTab() {
       const finalScore = isCorrect ? quizScore + 1 : quizScore
       setTimeout(() => {
         if (finalScore === QUIZ_QUESTIONS.length) {
-          toast.success(`Perfect score! ${finalScore}/${QUIZ_QUESTIONS.length} — You're a media literacy expert! 🏆`)
+          toast.success(`Perfect score! ${finalScore}/${QUIZ_QUESTIONS.length} - You're a media literacy expert! 🏆`)
         } else {
           toast.info(`Quiz complete! You scored ${finalScore}/${QUIZ_QUESTIONS.length}`)
         }
@@ -596,7 +596,7 @@ export function EducationResourcesTab() {
               <Lightbulb className="h-5 w-5 text-zinc-500" />
               Quick Reference Cards
             </CardTitle>
-            <CardDescription>Click to expand — essential tips at your fingertips</CardDescription>
+            <CardDescription>Click to expand - essential tips at your fingertips</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -682,7 +682,7 @@ export function EducationResourcesTab() {
                   <Trophy className="h-5 w-5 text-zinc-500" />
                   Test Your Media Literacy
                 </CardTitle>
-                <CardDescription>Interactive quiz — see how well you can spot misinformation</CardDescription>
+                <CardDescription>Interactive quiz - see how well you can spot misinformation</CardDescription>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-500/10 border border-zinc-500/20">
@@ -859,7 +859,7 @@ export function EducationResourcesTab() {
                     <div className="flex-1">
                       <h4 className="font-medium text-sm">TruthShield Browser Extension</h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Verify media directly in your browser — works on Chrome, Firefox, and Edge
+                        Verify media directly in your browser - works on Chrome, Firefox, and Edge
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="outline" className="text-[10px] border-zinc-500/30 text-zinc-600 dark:text-zinc-400">
@@ -892,7 +892,7 @@ export function EducationResourcesTab() {
                     <div className="flex-1">
                       <h4 className="font-medium text-sm">TruthShield Mobile App</h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Verify images and videos on the go — available for Android and iOS
+                        Verify images and videos on the go - available for Android and iOS
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="outline" className="text-[10px] border-zinc-500/30 text-zinc-600 dark:text-zinc-400">

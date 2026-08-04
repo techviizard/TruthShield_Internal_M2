@@ -1,6 +1,6 @@
 /**
  * Real model metrics over the AnalysisReport table.
- * Compares analysisType variants (text vs image vs video vs fact_check) — actual A/B-ish data.
+ * Compares analysisType variants (text vs image vs video vs fact_check) - actual A/B-ish data.
  */
 
 import { NextResponse } from 'next/server'

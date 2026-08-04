@@ -143,7 +143,7 @@ function ruleToExecutions(rule: ApiRule): Execution[] {
     workflowName: rule.name,
     trigger: rule.triggerType.replace(/_/g, ' '),
     status: (e.status === 'success' ? 'success' : e.status === 'failed' ? 'failed' : 'running') as ExecutionStatus,
-    duration: e.durationMs != null ? `${(e.durationMs / 1000).toFixed(2)}s` : '—',
+    duration: e.durationMs != null ? `${(e.durationMs / 1000).toFixed(2)}s` : ' - ',
     timestamp: relTime(e.triggeredAt),
   }))
 }
@@ -706,7 +706,7 @@ export function WorkflowAutomationTab() {
           { label: 'Active Workflows', value: String(activeCount), icon: GitBranch, color: 'text-zinc-500', bg: 'bg-zinc-500/10' },
           { label: 'Total Executions', value: allExecutions.length.toLocaleString(), icon: Play, color: 'text-blue-500', bg: 'bg-blue-500/10' },
           { label: 'Success Rate', value: `${successRate}%`, icon: CheckCircle2, color: 'text-zinc-500', bg: 'bg-zinc-500/10' },
-          { label: 'Avg Duration', value: avgDurationMs ? `${(avgDurationMs / 1000).toFixed(1)}s` : '—', icon: Timer, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          { label: 'Avg Duration', value: avgDurationMs ? `${(avgDurationMs / 1000).toFixed(1)}s` : ' - ', icon: Timer, color: 'text-amber-500', bg: 'bg-amber-500/10' },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -907,7 +907,7 @@ export function WorkflowAutomationTab() {
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Layers className="h-3 w-3" />
-                          {template.stepCount || '—'} steps
+                          {template.stepCount || ' - '} steps
                         </span>
                         <span className="flex items-center gap-1">
                           <Timer className="h-3 w-3" />

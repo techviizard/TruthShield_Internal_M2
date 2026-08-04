@@ -1,5 +1,5 @@
 /**
- * Evidence integrity engine — chain of custody primitives.
+ * Evidence integrity engine - chain of custody primitives.
  *
  * Two guarantees this file provides:
  *  1. Every artifact that enters the platform is fingerprinted at ingest
@@ -7,7 +7,7 @@
  *  2. Every audit entry is linked to its predecessor by hash, so removing or
  *     editing any historical row invalidates every hash after it.
  *
- * Both are pure Node crypto + sharp — no external notary service.
+ * Both are pure Node crypto + sharp - no external notary service.
  */
 
 import { createHash } from 'crypto'
@@ -22,9 +22,9 @@ export function sha256Text(text: string): string {
   return createHash('sha256').update(text, 'utf8').digest('hex')
 }
 
-/** Short display form for UIs — first 8 and last 8 hex chars. */
+/** Short display form for UIs - first 8 and last 8 hex chars. */
 export function shortHash(hash: string | null | undefined): string {
-  if (!hash) return '—'
+  if (!hash) return ' - '
   return hash.length <= 20 ? hash : `${hash.slice(0, 8)}…${hash.slice(-8)}`
 }
 
@@ -40,7 +40,7 @@ export interface ChainableEntry {
 
 /**
  * Canonical serialization of an audit entry.
- * Field order is fixed and explicit — JSON.stringify over an object literal is
+ * Field order is fixed and explicit - JSON.stringify over an object literal is
  * insertion-ordered, so this is stable across writes and verification reads.
  */
 export function canonicalizeEntry(e: ChainableEntry): string {
@@ -80,7 +80,7 @@ export interface ChainVerification {
     action: string
     resource: string
   }[]
-  /** Hash of the newest entry — the value to quote as the chain's current head. */
+  /** Hash of the newest entry - the value to quote as the chain's current head. */
   headHash: string | null
   checkedAt: string
 }

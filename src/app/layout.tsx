@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TruthShield by CyArt — Cyber Defence & Information Integrity Console",
+  title: "TruthShield by CyArt - Cyber Defence & Information Integrity Console",
   description: "Deepfake detection, misinformation analysis, and digital media verification console for cyber defence analysts. Detect manipulated media, verify claims, and track disinformation campaigns.",
   keywords: ["TruthShield", "cyber defence", "deepfake detection", "misinformation", "fact-check", "digital forensics", "information warfare", "OSINT"],
   authors: [{ name: "CyArt" }],

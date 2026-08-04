@@ -139,7 +139,7 @@ export async function PATCH(
       updateData.assignedTo = assignedTo?.trim() || null;
     }
 
-    // Law-enforcement case metadata — all optional, all free text.
+    // Law-enforcement case metadata - all optional, all free text.
     for (const [key, value] of Object.entries({
       caseNumber, firNumber, officerName, officerBadge, jurisdiction,
     })) {

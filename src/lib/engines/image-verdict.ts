@@ -4,7 +4,7 @@
  * Every signal contributes a visible number of points from a fixed weight table,
  * so the final score can be read backwards: "35/100 because ELA localised two
  * spliced regions and the metadata names Photoshop". The language model, when
- * available, is treated as one more opinion layered on top — not as the source
+ * available, is treated as one more opinion layered on top - not as the source
  * of truth that the other signals decorate.
  */
 
@@ -64,7 +64,7 @@ export async function analyzeImageForensics(buffer: Buffer): Promise<ImageForens
       id: 'ela_regions',
       label: 'Localised recompression anomalies',
       contribution: Math.min(38, 10 + strongRegions.length * 3),
-      detail: `${strongRegions.length} adjacent tile(s) deviate sharply from this image's own error-level baseline (${regions.baseline}) — the signature of content pasted in from a differently-compressed source.`,
+      detail: `${strongRegions.length} adjacent tile(s) deviate sharply from this image's own error-level baseline (${regions.baseline}) - the signature of content pasted in from a differently-compressed source.`,
     })
   }
 
@@ -93,7 +93,7 @@ export async function analyzeImageForensics(buffer: Buffer): Promise<ImageForens
       id: 'edge_density',
       label: 'Unusually smooth fine detail',
       contribution: Math.round(edges.aiSuspicion * 0.16),
-      detail: `Fine-edge density is ${edges.edgePct}% — below the range typical of camera captures, a pattern common in generated imagery.`,
+      detail: `Fine-edge density is ${edges.edgePct}% - below the range typical of camera captures, a pattern common in generated imagery.`,
     })
   }
 

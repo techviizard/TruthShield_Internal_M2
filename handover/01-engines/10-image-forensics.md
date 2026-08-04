@@ -3,7 +3,7 @@
 **File:** `src/lib/engines/image-forensics.ts` · **Deps:** `sharp` · **Status:** ✅ Real
 
 ## What it is
-In-house image tamper-detection. Real Error-Level Analysis (ELA), noise-variance, edge-density and pixel-diff — no third-party forensic API. Called by `/api/analyze/image` and `/api/forensics/compare`.
+In-house image tamper-detection. Real Error-Level Analysis (ELA), noise-variance, edge-density and pixel-diff - no third-party forensic API. Called by `/api/analyze/image` and `/api/forensics/compare`.
 
 ## How it's built
 Exports typed functions, each takes an image `Buffer` and returns a metrics object. Uses `sharp` for decode/resize/recompress/raw-pixel access. Outputs include base64 PNG heatmap overlays for the UI.

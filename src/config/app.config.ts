@@ -1,6 +1,6 @@
 /**
  * ─────────────────────────────────────────────────────────────────────────────
- * TruthShield by CyArt — SINGLE CENTRALIZED CONFIGURATION
+ * TruthShield by CyArt - SINGLE CENTRALIZED CONFIGURATION
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * This is the ONE place where every application setting lives:
@@ -12,13 +12,13 @@
  *   • feature flags
  *
  * Everything is read from environment variables with sane defaults, so a
- * deployment is fully configured by `.env.local` alone — no code changes.
+ * deployment is fully configured by `.env.local` alone - no code changes.
  * Nothing outside this file should read `process.env` (except `NODE_ENV`
  * guards inside framework glue).
  *
  * ── Two exports ──
- *   `appConfig`    — full config, SERVER ONLY (contains secrets).
- *   `publicConfig` — secret-free subset, safe to import in client components.
+ *   `appConfig` - full config, SERVER ONLY (contains secrets).
+ *   `publicConfig` - secret-free subset, safe to import in client components.
  *
  * See `.env.example` for the documented variable list.
  */
@@ -78,7 +78,7 @@ export const PROVIDER_PRESETS: Record<string, ProviderPreset> = {
     defaultVisionModel: 'claude-sonnet-4-5',
   },
   kimi: {
-    // Moonshot / Kimi — OpenAI-compatible
+    // Moonshot / Kimi - OpenAI-compatible
     kind: 'openai',
     baseUrl: 'https://api.moonshot.cn/v1',
     defaultModel: 'moonshot-v1-8k',
@@ -136,7 +136,7 @@ export interface AppConfig {
   }
   database: {
     url: string
-    /** Log every Prisma query (noisy — dev only by default). */
+    /** Log every Prisma query (noisy - dev only by default). */
     logQueries: boolean
   }
   ai: {
@@ -150,7 +150,7 @@ export interface AppConfig {
     maxTokens: number
     visionEnabled: boolean
     requestTimeoutMs: number
-    /** false when no usable key is configured — callers degrade gracefully. */
+    /** false when no usable key is configured - callers degrade gracefully. */
     configured: boolean
   }
   search: {
@@ -160,7 +160,7 @@ export interface AppConfig {
     enabled: boolean
   }
   demo: {
-    /** Demo/testing account — seeded by `npm run db:seed`. */
+    /** Demo/testing account - seeded by `npm run db:seed`. */
     enabled: boolean
     email: string
     password: string
@@ -268,7 +268,7 @@ function buildConfig(): AppConfig {
       shortName: 'TruthShield',
       version: env('APP_VERSION', '3.3.0'),
       description:
-        'TruthShield by CyArt — AI-Powered Digital Media Verification Platform: detect deepfakes, combat misinformation, verify facts in real-time',
+        'TruthShield by CyArt - AI-Powered Digital Media Verification Platform: detect deepfakes, combat misinformation, verify facts in real-time',
       defaultLanguage: env('APP_DEFAULT_LANGUAGE', 'en'),
       supportedLanguages: env('APP_SUPPORTED_LANGUAGES', 'en,hi,ta,te,bn,mr,gu,kn,ml,pa')
         .split(',')
@@ -345,7 +345,7 @@ export function getConfig(): AppConfig {
   return cached
 }
 
-/** Clear the memo — used by tests after mutating env. */
+/** Clear the memo - used by tests after mutating env. */
 export function resetConfig(): void {
   cached = null
 }

@@ -131,7 +131,7 @@ function rowToEntry(row: {
     details: typeof meta.summary === 'string' ? meta.summary : `${getActionLabel(action)} on ${row.resource}`,
     severity: sev,
     user: row.userId ?? 'System',
-    ipAddress: row.ipAddress ?? '—',
+    ipAddress: row.ipAddress ?? ' - ',
     metadata: flatMeta,
     seq: typeof row.seq === 'number' ? row.seq : null,
     entryHash: row.entryHash ?? null,

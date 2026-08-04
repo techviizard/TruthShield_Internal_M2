@@ -15,7 +15,7 @@ Aggregates over `FactCheckMatch.url` hostnames and the `AnalysisReport` explanat
 4. **recencyDays:** days since the domain was last cited.
 5. **type:** `fact-checker` (in `FACT_CHECKER_DOMAINS`), `mainstream`, or `unknown`.
 
-Key property: the score is **earned from observed behaviour**, so it improves as the DB grows — no editorial hardcoding.
+Key property: the score is **earned from observed behaviour**, so it improves as the DB grows - no editorial hardcoding.
 
 ## Future scope & enterprise enhancements
 - Persist scores to `SourceCredibilityScore` and recompute on a schedule (currently derived per request).

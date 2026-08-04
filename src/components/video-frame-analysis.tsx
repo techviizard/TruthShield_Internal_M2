@@ -87,7 +87,7 @@ export function VideoFrameAnalysis() {
 
     try {
       if (!video.duration || Number.isNaN(video.duration)) {
-        throw new Error('Video metadata has not loaded yet — wait a moment and try again.')
+        throw new Error('Video metadata has not loaded yet - wait a moment and try again.')
       }
 
       const canvas = document.createElement('canvas')
@@ -116,7 +116,7 @@ export function VideoFrameAnalysis() {
         const blob = await new Promise<Blob | null>((resolve) =>
           canvas.toBlob(resolve, 'image/jpeg', 0.92)
         )
-        if (!blob) throw new Error('Frame capture failed — the video may be protected by DRM.')
+        if (!blob) throw new Error('Frame capture failed - the video may be protected by DRM.')
         form.append(`frame_${i}`, blob, `frame_${i}.jpg`)
         timestamps.push(Math.round(t * 100) / 100)
         setProgress(Math.round(((i + 1) / TARGET_FRAMES) * 100))
@@ -211,7 +211,7 @@ export function VideoFrameAnalysis() {
           <div>
             <Progress value={progress} className="h-1.5" />
             <p className="mt-1 text-[11px] text-muted-foreground">
-              Decoding frames locally — the clip itself is never uploaded.
+              Decoding frames locally - the clip itself is never uploaded.
             </p>
           </div>
         )}
@@ -222,7 +222,7 @@ export function VideoFrameAnalysis() {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
-                { label: 'Trust score', value: `${trustScore ?? '—'}/100` },
+                { label: 'Trust score', value: `${trustScore ?? ' - '}/100` },
                 { label: 'Frames flagged', value: `${verdict.flaggedFrames.length}/${verdict.frameCount}` },
                 { label: 'Temporal consistency', value: `${verdict.temporalConsistency}/100` },
                 { label: 'Scene cuts', value: verdict.sceneChanges.length },
@@ -236,7 +236,7 @@ export function VideoFrameAnalysis() {
 
             <div>
               <p className="mb-1 text-xs font-semibold text-muted-foreground">
-                Per-frame manipulation evidence — click a point to jump to that moment
+                Per-frame manipulation evidence - click a point to jump to that moment
               </p>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -332,7 +332,7 @@ export function VideoFrameAnalysis() {
                   ))}
                 </div>
                 <p className="mt-2 text-[10px] text-muted-foreground">
-                  The player above has jumped to this frame — compare it against its neighbours.
+                  The player above has jumped to this frame - compare it against its neighbours.
                 </p>
               </div>
             )}
@@ -359,7 +359,7 @@ export function VideoFrameAnalysis() {
             {evidenceHash && (
               <p className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
                 <Fingerprint className="h-3 w-3 text-emerald-500" />
-                sha256 {evidenceHash.slice(0, 24)}… — covers the sampled frames, not the source container
+                sha256 {evidenceHash.slice(0, 24)}… - covers the sampled frames, not the source container
               </p>
             )}
 

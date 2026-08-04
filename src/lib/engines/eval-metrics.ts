@@ -1,7 +1,7 @@
 /**
  * Detection-quality metrics engine.
  *
- * Pure functions over (label, score) pairs — no I/O, no model calls — so the
+ * Pure functions over (label, score) pairs - no I/O, no model calls - so the
  * same code computes metrics for a batch run, for a threshold the analyst drags
  * in the UI, and for any future modality.
  *
@@ -36,7 +36,7 @@ export interface ClassificationMetrics extends ConfusionMatrix {
   f1: number
   falsePositiveRate: number
   falseNegativeRate: number
-  /** Matthews correlation coefficient — honest on imbalanced sets. */
+  /** Matthews correlation coefficient - honest on imbalanced sets. */
   mcc: number
 }
 
@@ -139,7 +139,7 @@ export interface CalibrationBin {
 
 /**
  * Reliability curve: within each score band, how often was the sample actually
- * positive? A calibrated detector tracks the diagonal — a score of 80 should be
+ * positive? A calibrated detector tracks the diagonal - a score of 80 should be
  * wrong about one time in five.
  */
 export function calibration(samples: ScoredSample[], bins = 10): CalibrationBin[] {
@@ -159,14 +159,14 @@ export function calibration(samples: ScoredSample[], bins = 10): CalibrationBin[
   return out
 }
 
-/** Expected calibration error — the count-weighted gap from the diagonal. */
+/** Expected calibration error - the count-weighted gap from the diagonal. */
 export function expectedCalibrationError(samples: ScoredSample[], bins = 10): number {
   const cal = calibration(samples, bins)
   const n = samples.length || 1
   return cal.reduce((acc, b) => acc + (b.count / n) * Math.abs(b.meanScore / 100 - b.observedRate), 0)
 }
 
-/** Threshold that maximises F1 — the operating point the tuner defaults to. */
+/** Threshold that maximises F1 - the operating point the tuner defaults to. */
 export function bestF1Threshold(samples: ScoredSample[], step = 1): ClassificationMetrics {
   let best = metricsAt(samples, 50)
   for (let t = 0; t <= 100; t += step) {

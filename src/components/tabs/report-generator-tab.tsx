@@ -303,7 +303,7 @@ export function ReportGeneratorTab() {
     setIsGenerating(true)
     setTimeout(() => {
       setIsGenerating(false)
-      toast.success(`Report generated as ${format} — ${estimatedPages} pages`)
+      toast.success(`Report generated as ${format} - ${estimatedPages} pages`)
     }, 2000)
   }
 

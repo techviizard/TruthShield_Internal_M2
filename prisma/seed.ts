@@ -1,5 +1,5 @@
 /**
- * Database seed — driven entirely by the central config (`src/config/app.config.ts`).
+ * Database seed - driven entirely by the central config (`src/config/app.config.ts`).
  *
  *   npm run db:seed
  *
@@ -8,7 +8,7 @@
  *   • its saved preferences
  *   • when DEMO_SEED_SAMPLE_DATA=true, a realistic corpus of analyses, alerts,
  *     investigations, watchlist items, community reports, audit logs, source
- *     credibility scores and workflow rules — so every dashboard widget and tab
+ *     credibility scores and workflow rules - so every dashboard widget and tab
  *     renders REAL database rows instead of mock arrays.
  *
  * Idempotent: re-running replaces the demo corpus (tagged rows) but keeps any
@@ -45,7 +45,7 @@ const ANALYSIS_TYPES = [
   'audio_deepfake',
 ] as const
 
-/** Clustered narratives — several near-duplicates each, so campaign detection finds real clusters. */
+/** Clustered narratives - several near-duplicates each, so campaign detection finds real clusters. */
 const NARRATIVES: Record<(typeof ANALYSIS_TYPES)[number], string[]> = {
   text_fake_news: [
     'Viral message claims the election commission approved electronic vote tampering in state polls; no official record supports the claim and the cited order does not exist.',
@@ -58,11 +58,11 @@ const NARRATIVES: Record<(typeof ANALYSIS_TYPES)[number], string[]> = {
     'Photograph shows inconsistent ELA response around the inserted crowd region and duplicated texture blocks, indicating copy-move manipulation of the rally image.',
     'Rally photograph exhibits copy-move duplication in the crowd area with mismatched compression levels between the pasted region and background.',
     'Image of a flood scene shows spliced sky region: lighting direction on the foreground conflicts with the added cloud layer and EXIF shows editing software.',
-    'Screenshot of a news headline was edited — font metrics of the headline differ from the outlet template and pixel-level noise around the text differs from the page.',
+    'Screenshot of a news headline was edited - font metrics of the headline differ from the outlet template and pixel-level noise around the text differs from the page.',
   ],
   video_deepfake: [
     'Video of a public figure shows lip-sync drift against the audio track and unnatural blink cadence, consistent with a face-reenactment deepfake.',
-    'Clip of a public figure exhibits audio-visual desync and irregular blink pattern with blending artifacts along the jawline — likely face-swap deepfake.',
+    'Clip of a public figure exhibits audio-visual desync and irregular blink pattern with blending artifacts along the jawline - likely face-swap deepfake.',
     'Speech video shows temporal flicker around the mouth region across frames and GAN-typical texture on the cheeks, indicating synthetic reenactment.',
   ],
   fact_check: [
@@ -73,7 +73,7 @@ const NARRATIVES: Record<(typeof ANALYSIS_TYPES)[number], string[]> = {
   ],
   audio_deepfake: [
     'Voice note attributed to an official shows spectral flatness in the 4-8kHz band and absent breath artifacts, consistent with TTS voice cloning.',
-    'Audio clip shows synthetic prosody with uniform pitch contours and no room reverb tail — indicators of a cloned voice.',
+    'Audio clip shows synthetic prosody with uniform pitch contours and no room reverb tail - indicators of a cloned voice.',
   ],
 }
 
@@ -133,7 +133,7 @@ async function clearDemoData() {
   await db.knownHoax.deleteMany({ where: { debunkSource: 'internal' } })
 
   // Deleting seeded audit rows leaves holes in the hash chain, so relink whatever
-  // survives. Tamper-evidence therefore covers everything since the last reseed —
+  // survives. Tamper-evidence therefore covers everything since the last reseed - 
   // reseeding is an explicit administrative reset, not a silent rewrite.
   await rechainAuditLog()
 }
@@ -255,7 +255,7 @@ async function seedReports(investigationIds: string[]) {
       },
     })
 
-    // Fact-check citations for verified claims — feeds source credibility + network graph.
+    // Fact-check citations for verified claims - feeds source credibility + network graph.
     if (type === 'fact_check') {
       const sources = [
         { source: 'pib', url: 'https://pib.gov.in/factcheck', verdict: 'false' },
@@ -299,7 +299,7 @@ async function seedAlerts(reports: { risk: string; type: string; createdAt: Date
         type: 'threat',
         severity: r.risk === 'critical' ? 'critical' : 'warning',
         title: titleFor(r.type),
-        message: `${titleFor(r.type)} — automated triage flagged this item as ${r.risk} risk and queued it for analyst review.`,
+        message: `${titleFor(r.type)} - automated triage flagged this item as ${r.risk} risk and queued it for analyst review.`,
         source: DEMO_TAG,
         isRead: i > 5,
         createdAt: r.createdAt,
@@ -351,7 +351,7 @@ async function seedCommunity() {
     const created = await db.communityReport.create({
       data: {
         title: r.title,
-        description: `${r.title} — submitted by a community contributor for verification.`,
+        description: `${r.title} - submitted by a community contributor for verification.`,
         mediaType: r.mediaType,
         submitterName: cfg.demo.name,
         status: r.status,
@@ -524,7 +524,7 @@ async function refreshDashboardStats() {
  * in Indian messaging apps, written here in their canonical form. The registry
  * matches re-worded variants; it is not a claim that any specific message came
  * from any specific source. `debunkUrl` is left null unless a published debunk
- * is recorded by an operator — the seed does not invent citations.
+ * is recorded by an operator - the seed does not invent citations.
  */
 async function seedKnownHoaxes() {
   const entries = [
@@ -560,10 +560,10 @@ async function main() {
 
   const user = await seedDemoUser()
   console.log(`  demo account: ${user.email} (role: ${user.role})`)
-  console.log('  demo password is read from config (DEMO_USER_PASSWORD) — used once auth is enabled')
+  console.log('  demo password is read from config (DEMO_USER_PASSWORD) - used once auth is enabled')
 
   if (!cfg.demo.seedSampleData) {
-    console.log('  DEMO_SEED_SAMPLE_DATA=false — skipping sample corpus')
+    console.log('  DEMO_SEED_SAMPLE_DATA=false - skipping sample corpus')
     return
   }
 

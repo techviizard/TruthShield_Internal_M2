@@ -48,7 +48,7 @@ const languageNames: Record<string, string> = {
 export function WatchlistTab() {
   const { watchlistItems, fetchWatchlist, addWatchlistItem, removeWatchlistItem, toggleWatchlistItem } = useAppStore()
 
-  // Watchlist rows live in the database — load them on mount.
+  // Watchlist rows live in the database - load them on mount.
   useEffect(() => {
     void fetchWatchlist()
   }, [fetchWatchlist])

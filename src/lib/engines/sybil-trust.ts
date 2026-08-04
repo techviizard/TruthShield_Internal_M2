@@ -16,7 +16,7 @@ export interface ConsensusResult {
   status: 'pending' | 'verified' | 'disputed'
   effectiveVoters: number    // post-sybil-filter count
   flaggedSybil: number       // votes excluded
-  confidence: number         // 0..100 — how reliable is this consensus
+  confidence: number         // 0..100 - how reliable is this consensus
 }
 
 const MIN_VOTES_FOR_STATUS = 10
@@ -27,7 +27,7 @@ const DISPUTED_THRESHOLD = 40
  * Trust-weighted consensus with sybil filtering.
  *
  * Strategy:
- *  1. Group votes by fingerprint — only most recent vote per fingerprint counts (no ballot stuffing).
+ *  1. Group votes by fingerprint - only most recent vote per fingerprint counts (no ballot stuffing).
  *  2. Weight each vote by voterTrustScore / 100. New voters (trustScore < 30) get 0.3 weight.
  *  3. Detect coordinated voting bursts (same fingerprint cluster within 1 minute = downweight).
  *  4. Consensus = sum(weighted agree) / sum(weighted total) * 100.
@@ -92,7 +92,7 @@ export function computeConsensus(votes: Vote[]): ConsensusResult {
 }
 
 /**
- * Voter trust score update — Bayesian-ish.
+ * Voter trust score update - Bayesian-ish.
  * After a community report resolves, voters who agreed with majority gain trust, others lose.
  */
 export function updateVoterTrust(currentScore: number, votedWithMajority: boolean): number {

@@ -56,7 +56,7 @@ function HashChip({ label, value }: { label: string; value: string | null }) {
       <Fingerprint className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
       <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</span>
       <span className="font-mono text-xs">
-        {value ? `${value.slice(0, 10)}…${value.slice(-6)}` : '—'}
+        {value ? `${value.slice(0, 10)}…${value.slice(-6)}` : ' - '}
       </span>
       {value && (copied
         ? <Check className="h-3 w-3 text-emerald-500" />
@@ -67,7 +67,7 @@ function HashChip({ label, value }: { label: string; value: string | null }) {
 
 /**
  * Tamper-evidence panel for the audit hash chain.
- * "Verify" replays every entry server-side and reports the first divergence —
+ * "Verify" replays every entry server-side and reports the first divergence - 
  * the check an officer runs before a record is relied on in a case file.
  */
 export function ChainIntegrityPanel() {
@@ -79,7 +79,7 @@ export function ChainIntegrityPanel() {
 
   const load = useCallback(async (record: boolean, initial = false) => {
     // On the first (effect-driven) run the component already renders busy, so
-    // no state is set before the first await — which keeps the effect free of
+    // no state is set before the first await - which keeps the effect free of
     // synchronous cascading renders.
     if (!initial) {
       setBusy(true)
@@ -161,7 +161,7 @@ export function ChainIntegrityPanel() {
                 { label: 'Records', value: state.totalEntries },
                 { label: 'Verified', value: state.verifiedEntries },
                 { label: 'Breaks', value: state.breaks.length },
-                { label: 'Head seq', value: head ? `#${head.seq}` : '—' },
+                { label: 'Head seq', value: head ? `#${head.seq}` : ' - ' },
               ].map((s) => (
                 <div key={s.label} className="rounded-lg border bg-background/60 px-3 py-2">
                   <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{s.label}</div>

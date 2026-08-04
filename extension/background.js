@@ -2,7 +2,7 @@
  * TruthShield extension service worker.
  *
  * Owns the context menus and every network call to the console. Content scripts
- * never call the API directly — keeping the console URL and the fetch in one
+ * never call the API directly - keeping the console URL and the fetch in one
  * place means a page cannot influence where verification requests are sent.
  */
 
@@ -109,14 +109,14 @@ async function showInPage(tabId, payload) {
   try {
     await chrome.tabs.sendMessage(tabId, { type: 'truthshield-result', payload })
   } catch {
-    // Content script is not present (e.g. chrome:// pages) — notify instead.
+    // Content script is not present (e.g. chrome:// pages) - notify instead.
     chrome.notifications.create({
       type: 'basic',
       iconUrl: 'icons/icon-128.png',
       title: 'TruthShield',
       message: payload.error
         ? `Failed: ${payload.error}`
-        : `Trust ${payload.trustScore ?? payload.verdict} — ${String(payload.explanation ?? '').slice(0, 120)}`,
+        : `Trust ${payload.trustScore ?? payload.verdict} - ${String(payload.explanation ?? '').slice(0, 120)}`,
     })
   }
 }

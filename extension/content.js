@@ -2,7 +2,7 @@
  * In-page result overlay.
  *
  * Renders inside a shadow root so page CSS cannot restyle a verification verdict
- * — a site should not be able to make a "manipulated" badge look like a clean one.
+ * - a site should not be able to make a "manipulated" badge look like a clean one.
  * All content is inserted as text nodes, never innerHTML from API data.
  */
 
@@ -96,11 +96,11 @@ function render(payload) {
       `confidence ${payload.confidence ?? 0}%`))
     if (payload.stanceRollup) {
       card.appendChild(el('div', 'muted',
-        `sources — support ${payload.stanceRollup.support}, refute ${payload.stanceRollup.refute}, neutral ${payload.stanceRollup.neutral}`))
+        `sources - support ${payload.stanceRollup.support}, refute ${payload.stanceRollup.refute}, neutral ${payload.stanceRollup.neutral}`))
     }
   } else {
     const risk = riskClass(payload.riskLevel, payload.trustScore)
-    card.appendChild(el('div', 'score', `${payload.trustScore ?? '—'}/100`))
+    card.appendChild(el('div', 'score', `${payload.trustScore ?? ' - '}/100`))
     card.appendChild(el('span', `pill ${risk}`, `${risk} risk`))
     if (payload.kind === 'image') {
       card.appendChild(el('div', 'muted',

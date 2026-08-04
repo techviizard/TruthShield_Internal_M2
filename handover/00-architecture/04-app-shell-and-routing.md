@@ -8,12 +8,12 @@ TruthShield is a **single page**. It does **not** use Next.js file routing for f
 
 - `page.tsx` renders a **sidebar + header + footer + content area**.
 - The content area shows **one of 28 tab components**, chosen by a `activeTab` value in the Zustand store (`src/lib/store.ts`).
-- Switching "pages" = calling `setActiveTab(id)` — no URL change, no navigation.
+- Switching "pages" = calling `setActiveTab(id)` - no URL change, no navigation.
 
 ```
 page.tsx
  ├─ <header>  brand, command-palette trigger (⌘K), status, notifications, theme toggle, avatar
- ├─ <aside>   SidebarNav — nav items grouped by section
+ ├─ <aside>   SidebarNav - nav items grouped by section
  ├─ <main>    renderTab() → the active tab component (wrapped in Framer Motion)
  └─ <footer>  version, stats, clock
 ```
@@ -55,10 +55,10 @@ The content area wraps the active tab in:
 
 - Loads Geist + Geist Mono fonts.
 - `next-themes` `ThemeProvider` (`attribute="class"`, `defaultTheme="dark"`).
-- Mounts the shadcn `Toaster`. (HeroUI has its own `ToastProvider` — pick one when finishing the migration.)
+- Mounts the shadcn `Toaster`. (HeroUI has its own `ToastProvider` - pick one when finishing the migration.)
 
 ## Future scope
 
-- **Real routing:** promote heavy tabs to real Next routes (`/analyze/text`, …) for deep-linking, code-splitting, and SSR of read-only views. The `activeTab` switch is the single biggest scalability limiter — every tab is imported eagerly into one bundle.
+- **Real routing:** promote heavy tabs to real Next routes (`/analyze/text`, …) for deep-linking, code-splitting, and SSR of read-only views. The `activeTab` switch is the single biggest scalability limiter - every tab is imported eagerly into one bundle.
 - **Lazy-load tabs** with `next/dynamic` to cut the initial bundle (28 tabs currently ship together).
 - **Auth + role-gated nav** (see `User.role`): hide/disable nav items by permission.

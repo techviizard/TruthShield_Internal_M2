@@ -17,7 +17,7 @@ import {
 } from 'recharts'
 
 /**
- * Campaign Detection — coordinated-narrative clusters produced by the TF-IDF
+ * Campaign Detection - coordinated-narrative clusters produced by the TF-IDF
  * clustering engine over stored text/fact-check analyses (`/api/campaigns`).
  * Cluster labels, member counts, severity, timing and region spread are all
  * computed from the database; nothing here is pre-authored.
@@ -105,7 +105,7 @@ export function CampaignDetectionTab() {
     { label: 'Detected campaigns', value: String((clusters ?? []).length), icon: Radar, sub: `from ${totalAnalyzed} analyses`, color: 'text-red-500' },
     { label: 'Clustered content', value: String(flaggedContent), icon: FileText, sub: 'analyses inside a cluster', color: 'text-orange-500' },
     { label: 'Regions involved', value: String(regionsCovered), icon: Globe, sub: 'distinct regions detected', color: 'text-purple-500' },
-    { label: 'Mean campaign span', value: meanSpanHours >= 1 ? `${meanSpanHours.toFixed(1)} hrs` : '—', icon: Timer, sub: 'first to last sighting', color: 'text-zinc-500' },
+    { label: 'Mean campaign span', value: meanSpanHours >= 1 ? `${meanSpanHours.toFixed(1)} hrs` : ' - ', icon: Timer, sub: 'first to last sighting', color: 'text-zinc-500' },
   ]
 
   if (clusters === null) {
@@ -171,7 +171,7 @@ export function CampaignDetectionTab() {
             <p className="text-sm font-medium">No campaigns detected yet</p>
             <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
               Clustering needs several similar analyses inside the lookback window
-              {totalAnalyzed > 0 ? ` — ${totalAnalyzed} analysed so far, none similar enough to group.` : '. Run some text or fact-check analyses first.'}
+              {totalAnalyzed > 0 ? ` - ${totalAnalyzed} analysed so far, none similar enough to group.` : '. Run some text or fact-check analyses first.'}
             </p>
           </CardContent>
         </Card>
@@ -246,7 +246,7 @@ export function CampaignDetectionTab() {
 
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">
-                        Cluster cohesion — mean similarity of members to the cluster seed
+                        Cluster cohesion - mean similarity of members to the cluster seed
                       </p>
                       <Progress
                         value={
@@ -341,7 +341,7 @@ export function CampaignDetectionTab() {
         <CardContent className="p-4 text-xs text-muted-foreground flex items-start gap-2">
           <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
           <span>
-            Clusters are unlabelled statistical groupings of similar analysis text — they indicate repeated
+            Clusters are unlabelled statistical groupings of similar analysis text - they indicate repeated
             narratives, not proven coordination. Similarity threshold and minimum cluster size are set in the
             central configuration (<code>CAMPAIGN_SIMILARITY</code>, <code>CAMPAIGN_MIN_CLUSTER_SIZE</code>).
             <Clock className="inline h-3 w-3 ml-1" /> Lookback window: <code>CAMPAIGN_LOOKBACK_DAYS</code>.

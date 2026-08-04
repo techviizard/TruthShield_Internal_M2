@@ -199,7 +199,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
         fileName: mediaUpload.fileName,
         mimeType: mediaUpload.mimeType,
         fileSize: mediaUpload.fileSize,
-        // A URL source has no local bytes to hash — recorded as such rather than faked.
+        // A URL source has no local bytes to hash - recorded as such rather than faked.
         sha256: evidence?.sha256 ?? null,
         sourceType: videoFile ? 'upload' : 'url',
         sourceUrl: videoUrl,

@@ -15,7 +15,7 @@
 
 import { tokenize, termFrequency, cosineSim } from '@/lib/engines/tfidf'
 
-/** Character trigrams — script-agnostic, survives inflection and transliteration drift. */
+/** Character trigrams - script-agnostic, survives inflection and transliteration drift. */
 export function trigrams(text: string): Set<string> {
   const norm = text.toLowerCase().replace(/\s+/g, ' ').trim()
   const out = new Set<string>()
@@ -30,7 +30,7 @@ export function jaccard(a: Set<string>, b: Set<string>): number {
   return inter / (a.size + b.size - inter)
 }
 
-/** Cosine over raw term frequencies, normalised — no corpus IDF needed for a pair. */
+/** Cosine over raw term frequencies, normalised - no corpus IDF needed for a pair. */
 function pairCosine(a: string, b: string): number {
   const ta = termFrequency(tokenize(a))
   const tb = termFrequency(tokenize(b))
@@ -67,7 +67,7 @@ export type Stance = 'support' | 'refute' | 'neutral' | 'unrelated'
 
 export interface StanceResult {
   stance: Stance
-  /** 0..1 — how strongly the cues point at the reported stance. */
+  /** 0..1 - how strongly the cues point at the reported stance. */
   confidence: number
   relatedness: number
   cues: string[]

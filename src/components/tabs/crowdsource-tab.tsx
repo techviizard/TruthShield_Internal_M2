@@ -379,7 +379,7 @@ export function CrowdsourceTab() {
                     >
                       <p className="text-xs font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1">
                         <AlertTriangle className="h-3 w-3" />
-                        Similar reports found — please review before submitting
+                        Similar reports found - please review before submitting
                       </p>
                       {similarReports.map((report, i) => (
                         <motion.div

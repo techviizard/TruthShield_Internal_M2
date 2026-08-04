@@ -20,3 +20,14 @@ On API failure show an error state (not `setResult(mockResult)`); source history
 - Trained anti-spoofing model (RawNet2/AASIST) behind the route; MFCC/jitter features.
 - Server-side decoding (ffmpeg); streaming for long clips.
 - Speaker diarization + voiceprint matching against a watchlist.
+
+## Scope of work
+
+Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
+
+| Item | Status | Note |
+|---|---|---|
+| Spectral / ZCR / flatness DSP features | ✅ Implemented | `audio-dsp.ts`, in-house, offline |
+| Audio track extracted from uploaded video | 🟡 In Progress | Engine exists, video route does not call it yet. High value, low effort |
+| Speaker diarization, emotion scoring | ❌ Not Started | Panels say so rather than inventing values |
+| Voice identity matching | ⛔ Constrained | Voiceprints are biometric data: [C1](../05-scope-of-work/02-constrained-and-deferred.md) |

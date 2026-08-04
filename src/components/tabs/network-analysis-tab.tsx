@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 
 /**
- * Network / Provenance analysis — renders the real relationship graph returned
+ * Network / Provenance analysis - renders the real relationship graph returned
  * by `/api/network-graph`: analysis reports linked by shared fact-check source
  * domains or by membership of the same investigation. Node risk, type and label
  * all come from the database.
@@ -75,7 +75,7 @@ export function NetworkAnalysisTab() {
     void load()
   }, [load])
 
-  // Degree per node — only connected nodes are worth drawing.
+  // Degree per node - only connected nodes are worth drawing.
   const degree = useMemo(() => {
     const d = new Map<string, number>()
     for (const e of edges) {
@@ -321,7 +321,7 @@ export function NetworkAnalysisTab() {
         <CardContent className="p-4 text-xs text-muted-foreground flex items-start gap-2">
           <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
           <span>
-            Edges are structural (shared citation domain or shared investigation) — they show related material,
+            Edges are structural (shared citation domain or shared investigation) - they show related material,
             not proven common authorship. Graph size is capped by <code>NETWORK_GRAPH_NODE_LIMIT</code> in the
             central configuration.
           </span>

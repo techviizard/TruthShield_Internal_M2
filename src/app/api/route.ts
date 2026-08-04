@@ -1,5 +1,5 @@
 /**
- * GET /api — health + integration status.
+ * GET /api - health + integration status.
  *
  * Reports whether each configured integration is actually wired: database
  * reachable, AI provider keyed, web search enabled. Useful as a deployment

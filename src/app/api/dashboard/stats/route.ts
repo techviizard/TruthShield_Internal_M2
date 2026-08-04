@@ -7,7 +7,7 @@ import { getTrustHistogram, getLanguageDistribution } from '@/lib/engines/dashbo
  * GET /api/dashboard/stats
  *
  * Single aggregation endpoint for the dashboard. Everything here is computed
- * from the database — counts, trends, risk mix, recent activity, top threats,
+ * from the database - counts, trends, risk mix, recent activity, top threats,
  * trust histogram, detection timeline and language mix. No placeholder values.
  * Shapes match the `DashboardStats` UI type consumed by the Zustand store.
  */
@@ -52,7 +52,7 @@ const TIMELINE_TYPE: Record<string, string> = {
   audio_deepfake: 'deepfake',
 };
 
-/** Local calendar-day key (YYYY-MM-DD) — avoids UTC/local drift near midnight. */
+/** Local calendar-day key (YYYY-MM-DD) - avoids UTC/local drift near midnight. */
 function dayKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
@@ -65,7 +65,7 @@ function relativeTime(date: Date): string {
   return `${Math.floor(diff / 86400)} d ago`;
 }
 
-/** First sentence of the model explanation — the human-readable detection summary. */
+/** First sentence of the model explanation - the human-readable detection summary. */
 function summarize(explanation: string | null, fallback: string): string {
   if (!explanation) return fallback;
   const sentence = explanation.split(/(?<=[.!?])\s/)[0]?.trim();
@@ -193,7 +193,7 @@ export async function GET() {
       id: r.id,
       action: summarize(
         r.explanation,
-        `${ACTION_LABEL[r.analysisType] ?? 'Analysis completed'}${r.mediaUpload?.fileName ? ` — ${r.mediaUpload.fileName}` : ''}`,
+        `${ACTION_LABEL[r.analysisType] ?? 'Analysis completed'}${r.mediaUpload?.fileName ? ` - ${r.mediaUpload.fileName}` : ''}`,
       ),
       timestamp: relativeTime(r.createdAt),
       type: UI_TYPE[r.analysisType] ?? 'system',
@@ -224,7 +224,7 @@ export async function GET() {
     const topThreats = threatRows.map((r) => ({
       title: summarize(
         r.explanation,
-        `${TYPE_LABEL[r.analysisType] ?? r.analysisType} threat — ${r.mediaUpload?.fileName ?? 'unknown source'}`,
+        `${TYPE_LABEL[r.analysisType] ?? r.analysisType} threat - ${r.mediaUpload?.fileName ?? 'unknown source'}`,
       ),
       type: THREAT_LABEL[r.analysisType] ?? r.analysisType,
       risk: (r.riskLevel ?? 'high') as 'low' | 'medium' | 'high' | 'critical',

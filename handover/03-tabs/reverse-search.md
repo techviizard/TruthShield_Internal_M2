@@ -14,7 +14,7 @@ Image upload → `/api/analyze/reverse-image`. Renders candidate matches/origins
 3. The tab lists sources/first-seen candidates.
 
 ## Note
-The route has a pre-existing type issue (`string | null` arg) — see [known issues](../04-operations/03-known-issues.md).
+The route has a pre-existing type issue (`string | null` arg) - see [known issues](../04-operations/03-known-issues.md).
 
 ## Future scope & enterprise enhancements
 - Integrate a dedicated reverse-image provider + internal pHash index for known media.

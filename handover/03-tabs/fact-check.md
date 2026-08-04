@@ -17,3 +17,15 @@ Form → `verifyFact()` → renders `factCheckResult` (`FactCheckResult`).
 - **Claim extraction/decomposition** (multi-claim inputs) + per-claim verdicts.
 - Retrieval upgrades: dedicated fact-check APIs (Google Fact Check Tools, ClaimReview schema).
 - Cache verdicts; show evidence provenance + freshness; multilingual claim handling.
+
+## Scope of work
+
+Tracked centrally in [`05-scope-of-work/`](../05-scope-of-work/README.md).
+
+| Item | Status | Note |
+|---|---|---|
+| Verdict synthesis + credibility ranking | ✅ Implemented | Domain-scoped search, `getDomainCredibility` ranking |
+| Stance detection + semantic similarity | ✅ Implemented | `semantic.ts`, in-house and offline-capable |
+| PIB / AltNews / Boom structured retrieval | 🔒 Gated | No public APIs. Google Fact Check Tools API is the recommended unblock, two days: [C7](../05-scope-of-work/02-constrained-and-deferred.md) |
+| Embedding-based similarity | 🟢 Needs enhancement | Lexical + trigram today, chosen so it runs offline with no key |
+| Claim decomposition for multi-claim inputs | ⏳ Planned | |

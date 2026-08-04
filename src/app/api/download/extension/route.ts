@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 // archiver v8 ships named exports only (no default), and its bundled .d.ts still
-// declares the v7 surface — `ZipArchive` exists at runtime but is not typed.
+// declares the v7 surface - `ZipArchive` exists at runtime but is not typed.
 // Narrow the cast to exactly the constructor being used rather than `any`.
 import * as archiverPkg from 'archiver'
 import type { Archiver } from 'archiver'

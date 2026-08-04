@@ -89,7 +89,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
         trustScore: heuristic.trustScore,
         riskLevel: heuristic.riskLevel,
         flags: heuristic.signals.filter((s) => s.weight > 0).map((s) => s.id),
-        explanation: `${heuristic.explanation} (Language model unavailable — this verdict comes from the in-house pattern detector alone.)`,
+        explanation: `${heuristic.explanation} (Language model unavailable - this verdict comes from the in-house pattern detector alone.)`,
         confidence: 0.5,
         recommendations: [
           'Corroborate with a fact-check source before acting on this verdict.',
@@ -144,7 +144,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
       knownHoaxMatches: hoaxMatches,
     };
 
-    // A strong registry match is decisive on its own — a message that is a
+    // A strong registry match is decisive on its own - a message that is a
     // re-wording of an already-debunked narrative should not pass because the
     // model was hedging.
     const strongHoax = hoaxMatches.find((m) => m.similarity >= 45);
@@ -198,7 +198,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
         flagsFound: String(result.flags.length),
         riskLevel: result.riskLevel,
         trustScore: result.trustScore,
-        summary: `Text analysis completed. Trust score: ${result.trustScore}/100 — ${result.riskLevel} risk.`,
+        summary: `Text analysis completed. Trust score: ${result.trustScore}/100 - ${result.riskLevel} risk.`,
       },
     });
 

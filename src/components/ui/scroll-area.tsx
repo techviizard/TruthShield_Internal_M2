@@ -21,7 +21,7 @@ function ScrollArea({
         className={cn(
           "focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1",
           // Radix renders the viewport's inner wrapper as `display:table`, which
-          // shrink-wraps to its widest child — a single nowrap row (ticker, chart)
+          // shrink-wraps to its widest child - a single nowrap row (ticker, chart)
           // then stretches the whole page. Force a block box constrained to the
           // viewport width instead.
           "[&>div]:!block [&>div]:!w-full [&>div]:!min-w-0",

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "TruthShield — Verify Media & Claims",
+  "name": "TruthShield - Verify Media & Claims",
   "version": "1.0.0",
   "description": "Check selected text, images and links against your TruthShield console for misinformation patterns, known hoaxes and manipulation.",
   "permissions": ["contextMenus", "storage", "activeTab", "scripting", "notifications"],

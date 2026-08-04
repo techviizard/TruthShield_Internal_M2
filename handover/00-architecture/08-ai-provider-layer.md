@@ -2,7 +2,7 @@
 
 **Location:** `src/lib/ai/` · **Public import:** `@/lib/ai`
 
-TruthShield is **not tied to any AI vendor**. It previously used a proprietary SDK (ZAI); that dependency is gone. The app now talks to a small provider-agnostic layer, and you switch providers **with environment variables only — no code changes.**
+TruthShield is **not tied to any AI vendor**. It previously used a proprietary SDK (ZAI); that dependency is gone. The app now talks to a small provider-agnostic layer, and you switch providers **with environment variables only - no code changes.**
 
 ## Supported providers
 
@@ -12,8 +12,8 @@ TruthShield is **not tied to any AI vendor**. It previously used a proprietary S
 | `anthropic` | anthropic | Claude (Messages API) |
 | `kimi` | openai-compatible | Moonshot/Kimi endpoint |
 | `qwen` | openai-compatible | Alibaba DashScope (OpenAI-compatible) |
-| `ollama` | openai-compatible | **Local** — `http://localhost:11434/v1` |
-| `lmstudio` | openai-compatible | **Local** — `http://localhost:1234/v1` |
+| `ollama` | openai-compatible | **Local** - `http://localhost:11434/v1` |
+| `lmstudio` | openai-compatible | **Local** - `http://localhost:1234/v1` |
 | `custom` | openai-compatible | Any OpenAI-compatible server (`AI_BASE_URL` required) |
 
 Anything speaking the OpenAI Chat Completions protocol works out of the box (Groq, Together, OpenRouter, vLLM, Azure, …) via `custom` + `AI_BASE_URL`.
@@ -46,7 +46,7 @@ interface LLMProvider {
 
 `ChatMessage.content` is either a string or `ContentPart[]` (text + image parts). Each adapter translates that into its own wire format (OpenAI `image_url` blocks vs. Anthropic `image` source blocks; Anthropic also lifts `system` messages to the top-level field).
 
-## Public helpers (`index.ts`) — unchanged names
+## Public helpers (`index.ts`) - unchanged names
 
 The rest of the app imports these exactly as before, so routes barely changed:
 
@@ -70,8 +70,8 @@ The rest of the app imports these exactly as before, so routes barely changed:
 
 Two features were provider-specific in the old SDK and are handled explicitly now:
 
-1. **Web search** — not part of any LLM chat API. It's a **separate optional provider** (`SEARCH_PROVIDER`=`tavily`/`brave`/`none`). If unset, `webSearch` returns `[]` and fact-check degrades gracefully (model reasoning only, no live sources).
-2. **Video** — no mainstream provider accepts raw video. `vlmVideoAnalysis` routes through the vision path (thumbnail/frame) as a best effort. **True per-frame video analysis needs server-side frame extraction (ffmpeg)** — see [enterprise roadmap](../04-operations/04-enterprise-roadmap.md).
+1. **Web search** - not part of any LLM chat API. It's a **separate optional provider** (`SEARCH_PROVIDER`=`tavily`/`brave`/`none`). If unset, `webSearch` returns `[]` and fact-check degrades gracefully (model reasoning only, no live sources).
+2. **Video** - no mainstream provider accepts raw video. `vlmVideoAnalysis` routes through the vision path (thumbnail/frame) as a best effort. **True per-frame video analysis needs server-side frame extraction (ffmpeg)** - see [enterprise roadmap](../04-operations/04-enterprise-roadmap.md).
 
 ## Adding a new provider
 

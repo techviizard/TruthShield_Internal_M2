@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       take: 50,
       include: { votes: true },
     })
-    // Submitter reputation — derived from the consensus their past reports reached.
+    // Submitter reputation - derived from the consensus their past reports reached.
     const bySubmitter = new Map<string, { sum: number; n: number }>()
     for (const r of reports) {
       const b = bySubmitter.get(r.submitterName) ?? { sum: 0, n: 0 }

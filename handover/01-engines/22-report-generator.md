@@ -3,7 +3,7 @@
 **File:** `src/lib/engines/report-generator.ts` · **Deps:** `db` · **Status:** ✅ Real
 
 ## What it is
-Generates verification reports without a heavy PDF library — emits standards-compliant **HTML** (browser Print-to-PDF) plus a structured **JSON** export. Backs `/api/reports/generate`.
+Generates verification reports without a heavy PDF library - emits standards-compliant **HTML** (browser Print-to-PDF) plus a structured **JSON** export. Backs `/api/reports/generate`.
 
 ## How it's built
 `generateReport(options)` takes `reportIds`, a title, and flags (`includeMetadata`, `includeRawJson`, `format: 'html' | 'json'`). Pulls the referenced `AnalysisReport` rows and renders.
@@ -14,7 +14,7 @@ Generates verification reports without a heavy PDF library — emits standards-c
 3. **JSON format:** emit the structured data for programmatic use.
 4. Flags toggle metadata and raw-JSON appendices.
 
-Design choice: avoids `puppeteer`/`pdfkit` — zero heavy deps, works offline, and print-to-PDF is good enough for demo/most needs.
+Design choice: avoids `puppeteer`/`pdfkit` - zero heavy deps, works offline, and print-to-PDF is good enough for demo/most needs.
 
 ## Future scope & enterprise enhancements
 - **Server-side PDF** (headless Chrome/Playwright) for automated, pixel-consistent exports + digital signatures.

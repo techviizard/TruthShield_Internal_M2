@@ -2,7 +2,7 @@
  * In-house lexical detector for viral misinformation patterns.
  *
  * Why this exists alongside the LLM path:
- *  1. It runs with no API key and no network — the offline mode and the
+ *  1. It runs with no API key and no network - the offline mode and the
  *     evaluation harness both need a detector that always answers.
  *  2. Its weights are visible and tunable, so a flagged verdict can be explained
  *     signal by signal rather than as "the model said so".
@@ -10,7 +10,7 @@
  *
  * It is a *pattern* detector, not a fact checker: it scores how strongly a
  * message resembles a coordinated forward, not whether the claim is false.
- * Multilingual by construction — every signal carries Latin plus Devanagari,
+ * Multilingual by construction - every signal carries Latin plus Devanagari,
  * Gujarati and Tamil surface forms, because Indic messages are the actual
  * distribution channel here.
  */
@@ -245,7 +245,7 @@ export function scoreText(text: string): HeuristicResult {
       (negatives.length ? ` Offset by checkable attribution (${negatives.map((h) => h.label.toLowerCase()).join('; ')}).` : '')
     : negatives.length
       ? 'No manipulation patterns matched; the text attributes its claim to a checkable source.'
-      : 'No manipulation patterns matched. This is a pattern check only — it does not verify whether the claim is true.'
+      : 'No manipulation patterns matched. This is a pattern check only - it does not verify whether the claim is true.'
 
   return {
     score,

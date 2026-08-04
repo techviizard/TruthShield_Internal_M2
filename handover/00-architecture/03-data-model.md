@@ -12,7 +12,7 @@ MediaUpload 1──* AnalysisReport 1──* FactCheckMatch
 ```
 
 ### `MediaUpload`
-The uploaded artifact (image/video/audio/text). Fields: `fileName, fileType, mimeType, fileSize, storagePath, thumbnailPath, metadata(JSON), status`. **`storagePath` is currently local/absent — production needs object storage (S3/GCS).**
+The uploaded artifact (image/video/audio/text). Fields: `fileName, fileType, mimeType, fileSize, storagePath, thumbnailPath, metadata(JSON), status`. **`storagePath` is currently local/absent - production needs object storage (S3/GCS).**
 
 ### `AnalysisReport`
 The central record. One per analysis run. Fields: `analysisType` (`text_fake_news | image_forensics | video_deepfake | fact_check`), `status`, `results(JSON)`, `trustScore(0-100)`, `riskLevel`, `aiModel`, `processingTime(ms)`, `explanation`, `confidence(0-1)`, `flags(JSON)`, `recommendations(JSON)`. Almost every dashboard number aggregates this table.
@@ -64,6 +64,6 @@ npx prisma migrate dev    # create a migration (preferred once on Postgres)
 
 - Move to **Postgres**; convert JSON-string columns to real `Json`/arrays and string-enums to Prisma `enum`.
 - Add `userId` FKs everywhere and **row-level tenancy** for multi-org.
-- Add indexes on `AnalysisReport(createdAt, analysisType, riskLevel)` — every dashboard query filters on these.
+- Add indexes on `AnalysisReport(createdAt, analysisType, riskLevel)` - every dashboard query filters on these.
 - Introduce **migrations** (currently `db push`, no history) and seed scripts.
 - Object storage for `MediaUpload` binaries + signed URLs.

@@ -1,4 +1,4 @@
-# TruthShield — Complete Project Context & Architecture Reference
+# TruthShield - Complete Project Context & Architecture Reference
 
 > **Version**: v3.3.0 | **Phase**: 21 | **Last Updated**: 2025-05-20
 > This document contains EVERY insight, strategy, logic, and architectural decision in the TruthShield platform.
@@ -10,14 +10,14 @@
 1. [Project Overview](#1-project-overview)
 2. [Technology Stack](#2-technology-stack)
 3. [File Structure & Architecture](#3-file-structure--architecture)
-4. [Navigation System — 30 Tabs](#4-navigation-system--30-tabs)
-5. [State Management — Zustand Store](#5-state-management--zustand-store)
+4. [Navigation System - 30 Tabs](#4-navigation-system--30-tabs)
+5. [State Management - Zustand Store](#5-state-management--zustand-store)
 6. [AI Integration Layer](#6-ai-integration-layer)
-7. [Backend API Routes — Complete Logic](#7-backend-api-routes--complete-logic)
-8. [Database Schema — Prisma/SQLite](#8-database-schema--prismasqlite)
-9. [Tab Components — Detailed Breakdown](#9-tab-components--detailed-breakdown)
+7. [Backend API Routes - Complete Logic](#7-backend-api-routes--complete-logic)
+8. [Database Schema - Prisma/SQLite](#8-database-schema--prismasqlite)
+9. [Tab Components - Detailed Breakdown](#9-tab-components--detailed-breakdown)
 10. [Shared Components](#10-shared-components)
-11. [Page Layout — Shell Architecture](#11-page-layout--shell-architecture)
+11. [Page Layout - Shell Architecture](#11-page-layout--shell-architecture)
 12. [CSS Animation System](#12-css-animation-system)
 13. [Design System & Color Strategy](#13-design-system--color-strategy)
 14. [Error Handling & Graceful Degradation](#14-error-handling--graceful-degradation)
@@ -34,12 +34,12 @@
 
 **TruthShield** is a comprehensive AI-powered Digital Media Verification & Deepfake Detection Platform. It provides 30 navigation tabs covering analysis, tools, management, and system features. The platform integrates with `z-ai-web-dev-sdk` for LLM (text generation), VLM (vision-language model), and Web Search capabilities.
 
-**Core Value Proposition**: Verify any digital media — text, image, video, audio — for misinformation, deepfakes, manipulation, and propaganda, with a focus on the Indian media ecosystem.
+**Core Value Proposition**: Verify any digital media - text, image, video, audio - for misinformation, deepfakes, manipulation, and propaganda, with a focus on the Indian media ecosystem.
 
 **Version History**:
-- v2.5.0 — Phase 10 (14 tabs)
-- v2.7.0 — Phase 14 (enhanced dashboard)
-- v3.3.0 — Phase 21 (30 tabs, full feature set)
+- v2.5.0 - Phase 10 (14 tabs)
+- v2.7.0 - Phase 14 (enhanced dashboard)
+- v3.3.0 - Phase 21 (30 tabs, full feature set)
 
 ---
 
@@ -50,24 +50,24 @@
 | Framework | Next.js 16 (App Router) | 16.1.1 | Full-stack React framework |
 | Language | TypeScript | 5.x | Type safety throughout |
 | Styling | Tailwind CSS 4 | 4.x | Utility-first CSS |
-| UI Library | shadcn/ui (New York style) | — | Radix-based components |
+| UI Library | shadcn/ui (New York style) | - | Radix-based components |
 | State | Zustand | ^5.0.6 | Client-side global store |
 | Database | Prisma ORM + SQLite | ^6.11.1 | Data persistence |
 | AI SDK | z-ai-web-dev-sdk | ^0.0.18 | LLM, VLM, Web Search |
 | Animations | Framer Motion | ^11.x | Page transitions, micro-interactions |
 | Charts | Recharts | ^2.15.4 | Data visualization |
-| Icons | Lucide React | — | Consistent icon system |
-| Toast | Sonner | — | Notification toasts |
+| Icons | Lucide React | - | Consistent icon system |
+| Toast | Sonner | - | Notification toasts |
 | Auth | NextAuth.js v4 | ^4.24.11 | Available (not yet active) |
 | i18n | next-intl | ^4.3.4 | Available (not yet active) |
-| Markdown | react-markdown | — | Chat tab rendering |
+| Markdown | react-markdown | - | Chat tab rendering |
 | Archive | archiver | ^8.0.0 | Project ZIP download |
-| Runtime | Bun | — | Package manager & dev server |
+| Runtime | Bun | - | Package manager & dev server |
 
 **Key Config** (`next.config.ts`):
-- `output: "standalone"` — self-contained production build
-- `typescript.ignoreBuildErrors: true` — skips TS checking during build
-- `reactStrictMode: false` — disabled for performance
+- `output: "standalone"` - self-contained production build
+- `typescript.ignoreBuildErrors: true` - skips TS checking during build
+- `reactStrictMode: false` - disabled for performance
 
 ---
 
@@ -77,7 +77,7 @@
 /home/z/my-project/
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx                    # Main SPA — 600 lines, shell layout
+│   │   ├── page.tsx                    # Main SPA - 600 lines, shell layout
 │   │   ├── layout.tsx                  # Root layout with ThemeProvider
 │   │   ├── globals.css                 # 1200+ lines, 40+ animations
 │   │   └── api/
@@ -121,11 +121,11 @@
 └── Context.md                          # This file
 ```
 
-**Architecture Pattern**: Single-Page Application (SPA) with sidebar navigation. All 30 tabs are client components rendered inside a single `page.tsx` shell. No routing — tab switching is pure state change via Zustand.
+**Architecture Pattern**: Single-Page Application (SPA) with sidebar navigation. All 30 tabs are client components rendered inside a single `page.tsx` shell. No routing - tab switching is pure state change via Zustand.
 
 ---
 
-## 4. Navigation System — 30 Tabs
+## 4. Navigation System - 30 Tabs
 
 Tabs are organized into **5 sections** in the sidebar:
 
@@ -188,7 +188,7 @@ Tabs are organized into **5 sections** in the sidebar:
 
 ---
 
-## 5. State Management — Zustand Store
+## 5. State Management - Zustand Store
 
 **File**: `src/lib/store.ts`
 
@@ -272,7 +272,7 @@ All mock data is pre-populated in the store so the UI always renders:
 4. `sourceCredibility` = top 5 sources with rating derived from confidence
 5. On failure: hardcoded fallback
 
-**`voteOnReport(id, vote)`** — Community Voting Algorithm:
+**`voteOnReport(id, vote)`** - Community Voting Algorithm:
 1. Increment agree or disagree count
 2. `consensus = (agree / total) × 100`
 3. Auto-transition status:
@@ -295,7 +295,7 @@ export async function getZAI(): Promise<ZAI> {
 }
 ```
 
-### `structuredLLMAnalysis(system, user)` — Core LLM Call
+### `structuredLLMAnalysis(system, user)` - Core LLM Call
 - Sends to LLM with system + user prompts
 - **JSON Parsing Strategy** (3-tier fallback):
   1. Direct `JSON.parse(response)`
@@ -304,17 +304,17 @@ export async function getZAI(): Promise<ZAI> {
   - If all fail, throws error
 - Returns parsed object with `trustScore`, `riskLevel`, `flags`, `explanation`, `confidence`, `recommendations`
 
-### `vlmImageAnalysis(url, prompt)` — Vision-Language Model
+### `vlmImageAnalysis(url, prompt)` - Vision-Language Model
 - Sends `image_url` content type with image data URL
 - Returns same structured format as LLM
 - Used for: image forensics, video frame analysis (base64), reverse search step 1
 
-### `vlmVideoAnalysis(url, prompt)` — Video VLM
+### `vlmVideoAnalysis(url, prompt)` - Video VLM
 - Sends `video_url` content type with video URL
 - Only works with URL (not base64)
 - Used for: video analysis when URL provided (not file upload)
 
-### `webSearchFactCheck(claim, numResults)` — Multi-Query Web Search
+### `webSearchFactCheck(claim, numResults)` - Multi-Query Web Search
 - **Strategy**: Runs 2 parallel queries:
   1. `"{claim} site:pib.gov.in OR site:altnews.in OR site:boomlive.in OR site:factly.in OR site:snopes.com"`
   2. `"{claim} fact check verify"`
@@ -322,15 +322,15 @@ export async function getZAI(): Promise<ZAI> {
 - Each query wrapped in try-catch (failure in one doesn't block other)
 - Returns `{ query, results: [...] }`
 
-### `bufferToDataUrl(buffer, mimeType)` — Base64 Conversion
+### `bufferToDataUrl(buffer, mimeType)` - Base64 Conversion
 - Converts Node.js Buffer to `data:{mimeType};base64,{base64}` string
 - Used for VLM image analysis of uploaded files
 
 ---
 
-## 7. Backend API Routes — Complete Logic
+## 7. Backend API Routes - Complete Logic
 
-### 7.1 `/api/analyze/text` — POST
+### 7.1 `/api/analyze/text` - POST
 
 **Validation**: `text` required, ≤50,000 chars; optional `language`
 
@@ -346,7 +346,7 @@ export async function getZAI(): Promise<ZAI> {
 
 **Error Handling**: Outer try-catch logs error, attempts to create failed `AnalysisReport`, returns 500
 
-### 7.2 `/api/analyze/image` — POST
+### 7.2 `/api/analyze/image` - POST
 
 **Validation**: `image` FormData field required; allowed MIME: jpeg/png/webp/gif/bmp/tiff; max 20MB
 
@@ -356,9 +356,9 @@ export async function getZAI(): Promise<ZAI> {
 3. Call `vlmImageAnalysis()` with forensic system prompt
 4. System prompt covers: AI generation detection, manipulation detection, metadata analysis, face region analysis
 5. Create DB records
-6. **Cleanup**: `finally { unlink(tempFile) }` — ignores cleanup errors
+6. **Cleanup**: `finally { unlink(tempFile) }` - ignores cleanup errors
 
-### 7.3 `/api/analyze/video` — POST
+### 7.3 `/api/analyze/video` - POST
 
 **Dual Input Support**:
 - `multipart/form-data` with `video` file → save to `/tmp`, convert to base64, use `vlmImageAnalysis()` (as image_url)
@@ -368,17 +368,17 @@ export async function getZAI(): Promise<ZAI> {
 
 **Validation**: Allowed MIME: mp4/avi/mov/quicktime/x-msvideo/webm/x-matroska; max 100MB
 
-### 7.4 `/api/analyze/reverse-image` — POST
+### 7.4 `/api/analyze/reverse-image` - POST
 
 **3-Step Pipeline** (with independent error handling per step):
 
-1. **Step 1 — VLM Description**: Describe the image (visual features, manipulation indicators, aiGeneratedLikelihood). If fails, proceed with empty description.
-2. **Step 2 — Web Search**: Search using image description + "source OR origin OR original". If fails, proceed with empty results.
-3. **Step 3 — LLM Context Analysis**: Analyze search results for context, manipulation likelihood, authenticity score, similar images. If fails, limited context.
+1. **Step 1 - VLM Description**: Describe the image (visual features, manipulation indicators, aiGeneratedLikelihood). If fails, proceed with empty description.
+2. **Step 2 - Web Search**: Search using image description + "source OR origin OR original". If fails, proceed with empty results.
+3. **Step 3 - LLM Context Analysis**: Analyze search results for context, manipulation likelihood, authenticity score, similar images. If fails, limited context.
 
 **DB Records**: Created in own try-catch (non-blocking on failure)
 
-### 7.5 `/api/factcheck` — POST
+### 7.5 `/api/factcheck` - POST
 
 **Validation**: `claim` required, ≤10,000 chars
 
@@ -387,28 +387,28 @@ export async function getZAI(): Promise<ZAI> {
 2. Construct prompt with search context
 3. `structuredLLMAnalysis()`
 4. **Verdict → TrustScore Mapping**: true→90, partially_true→60, misleading→30, false→10, unverified→50
-5. **Source Detection** — `determineSource(url)`:
+5. **Source Detection** - `determineSource(url)`:
    - Maps URLs to: pib, altnews, boomlive, factly, snopes, google_fact_check, reuters, apnews, bbc, fullfact
    - Unknown URLs → 'other'
 6. Create `FactCheckMatch` records per source
 
-### 7.6 `/api/chat` — POST
+### 7.6 `/api/chat` - POST
 
-**System Prompt**: TruthShield AI Assistant persona — expert in deepfake detection, fact-checking, image forensics, propaganda recognition.
+**System Prompt**: TruthShield AI Assistant persona - expert in deepfake detection, fact-checking, image forensics, propaganda recognition.
 
 **Conversation Management**: Accepts `history[]`; keeps last 20 messages for context window
 
-### 7.7 `/api/export` — GET & POST
+### 7.7 `/api/export` - GET & POST
 
 **GET**: Fetches report by `reportId` from DB → returns as JSON or formatted text
 
 **POST**: Accepts `{ reportData, format, filename }` → generates download
 
-**Text Report Format**: `generateTextReport()` — Unicode box-drawing characters for decorative headers, recursive `formatReportData()` for nested data
+**Text Report Format**: `generateTextReport()` - Unicode box-drawing characters for decorative headers, recursive `formatReportData()` for nested data
 
 **CORS**: All responses include `Access-Control-Allow-Origin: *`; OPTIONS handler returns 204
 
-### 7.8 `/api/analysis/history` — GET
+### 7.8 `/api/analysis/history` - GET
 
 **Query Params**: type, riskLevel, search (searches explanation, fileName, analysisType), page, limit (default 10), sortBy, sortOrder
 
@@ -416,7 +416,7 @@ export async function getZAI(): Promise<ZAI> {
 
 **Response**: `{ items, total, page, limit, totalPages }`
 
-### 7.9 `/api/dashboard/stats` — GET
+### 7.9 `/api/dashboard/stats` - GET
 
 **8 Parallel Aggregations** via `Promise.all`:
 1. Total analyses
@@ -432,25 +432,25 @@ export async function getZAI(): Promise<ZAI> {
 
 **Materialized View**: Updates/creates `DashboardStats` record with computed values
 
-### 7.10 `/api/alerts` — GET, POST, PATCH
+### 7.10 `/api/alerts` - GET, POST, PATCH
 
 - **GET**: List with type/severity/isRead filters, paginated, includes unreadCount
 - **POST**: Create with type validation (threat/verification_complete/system/escalation), severity (info/warning/error/critical); creates `AuditLog`
 - **PATCH**: Mark read by alertIds[] or markAllRead
 
-### 7.11 `/api/investigations` — GET, POST
+### 7.11 `/api/investigations` - GET, POST
 
 - **GET**: List with status/priority/search filters, includes related analyses
 - **POST**: Create with title validation, creates `AuditLog`
 
-### 7.12 `/api/investigations/[id]` — GET, PATCH, DELETE
+### 7.12 `/api/investigations/[id]` - GET, PATCH, DELETE
 
 - **GET**: Single investigation with full analyses including mediaUpload + factChecks
 - **PATCH**: Update fields, creates `AuditLog` with changed fields list
 - **DELETE**: Soft-unlink (sets investigationId:null on related AnalysisReports), then delete; creates `AuditLog`
 - Uses Next.js 16 `params: Promise<{ id: string }>` pattern (awaited)
 
-### 7.13 `/api/download/project` — GET
+### 7.13 `/api/download/project` - GET
 
 **Purpose**: Generate ZIP of entire project source code
 
@@ -462,7 +462,7 @@ export async function getZAI(): Promise<ZAI> {
 
 ---
 
-## 8. Database Schema — Prisma/SQLite
+## 8. Database Schema - Prisma/SQLite
 
 **Provider**: SQLite (`DATABASE_URL` env var)
 
@@ -470,15 +470,15 @@ export async function getZAI(): Promise<ZAI> {
 
 | Model | Key Fields | Relations |
 |---|---|---|
-| **User** | id(cuid), email(unique), name?, role(default "analyst"), avatar? | — |
+| **User** | id(cuid), email(unique), name?, role(default "analyst"), avatar? | - |
 | **MediaUpload** | id, userId?, fileName, fileType, mimeType, fileSize, storagePath?, thumbnailPath?, metadata?(Json), status | → analyses: AnalysisReport[] |
 | **AnalysisReport** | id, mediaUploadId, analysisType, status, results?(Json), trustScore?(0-100), riskLevel?, aiModel?, processingTime?(ms), explanation?, confidence?(0-1), flags?(Json), recommendations?(Json) | → mediaUpload, factChecks[], investigation? |
 | **FactCheckMatch** | id, analysisReportId, source, claim?, verdict?, confidence?, url?, snippet?, publishedDate? | → analysisReport |
 | **Investigation** | id, title, description?, status, priority, tags?(Json), assignedTo? | → analyses: AnalysisReport[] |
-| **Alert** | id, type, severity, title, message, source?, isRead, actionUrl? | — |
-| **AuditLog** | id, userId?, action, resource, details?(Json), ipAddress? | — |
-| **WatchlistItem** | id, keyword, type, language, isActive, hitCount, lastHitAt? | — |
-| **DashboardStats** | id, totalAnalyses, fakeNewsDetected, deepfakesDetected, imagesAnalyzed, factChecksRun, activeAlerts, openInvestigations, avgTrustScore | — |
+| **Alert** | id, type, severity, title, message, source?, isRead, actionUrl? | - |
+| **AuditLog** | id, userId?, action, resource, details?(Json), ipAddress? | - |
+| **WatchlistItem** | id, keyword, type, language, isActive, hitCount, lastHitAt? | - |
+| **DashboardStats** | id, totalAnalyses, fakeNewsDetected, deepfakesDetected, imagesAnalyzed, factChecksRun, activeAlerts, openInvestigations, avgTrustScore | - |
 
 **Cascade Deletes**: MediaUpload→AnalysisReport, AnalysisReport→FactCheckMatch
 
@@ -491,33 +491,33 @@ if (process.env.NODE_ENV !== 'production') globalForDb.prisma = db
 
 ---
 
-## 9. Tab Components — Detailed Breakdown
+## 9. Tab Components - Detailed Breakdown
 
-### 9.1 Dashboard Tab (`dashboard-tab.tsx` — 697 lines)
+### 9.1 Dashboard Tab (`dashboard-tab.tsx` - 697 lines)
 
-**Store Hooks**: `useAppStore()` — dashboardStats, setActiveTab
+**Store Hooks**: `useAppStore()` - dashboardStats, setActiveTab
 **Charts**: AreaChart (trends), PieChart (risk distribution), BarChart (multilingual, horizontal)
 
 **UI Sections**:
-1. **Hero Section** — Shield icon with glow, gradient text, version badge, HeroParticles (20 floating dots with Framer Motion)
-2. **Stat Cards** — 6 cards with sparkline charts (custom SVG polyline from normalized data)
-3. **Charts Row** — Area chart (7-day trends) + Pie chart (risk distribution)
-4. **Model Performance** — 4 circular gauges (Detection Accuracy 94.7%, False Positive 3.2%, Processing Speed 1.2s, Model Confidence 91.3%)
-5. **Platform Health + Quick Actions** — API/Model/Queue/Uptime status, 5 action buttons
-6. **Second Row** — Multilingual horizontal bar chart + Detection Timeline (vertical timeline with connecting line) + Recent Activity + Top Threats
-7. **Live Activity Ticker** — Marquee animation with LIVE indicator
-8. **Threat Intel Map** — Interactive SVG India map
+1. **Hero Section** - Shield icon with glow, gradient text, version badge, HeroParticles (20 floating dots with Framer Motion)
+2. **Stat Cards** - 6 cards with sparkline charts (custom SVG polyline from normalized data)
+3. **Charts Row** - Area chart (7-day trends) + Pie chart (risk distribution)
+4. **Model Performance** - 4 circular gauges (Detection Accuracy 94.7%, False Positive 3.2%, Processing Speed 1.2s, Model Confidence 91.3%)
+5. **Platform Health + Quick Actions** - API/Model/Queue/Uptime status, 5 action buttons
+6. **Second Row** - Multilingual horizontal bar chart + Detection Timeline (vertical timeline with connecting line) + Recent Activity + Top Threats
+7. **Live Activity Ticker** - Marquee animation with LIVE indicator
+8. **Threat Intel Map** - Interactive SVG India map
 
 **Custom Components**:
-- `Sparkline` — SVG polyline from 7-point trend data
-- `CircularGauge` — SVG circle with strokeDasharray animation
-- `HeroParticles` — 20 floating dots with random positions
+- `Sparkline` - SVG polyline from 7-point trend data
+- `CircularGauge` - SVG circle with strokeDasharray animation
+- `HeroParticles` - 20 floating dots with random positions
 
 **Color Logic**: riskBadgeClass maps critical→red, high→orange, medium→yellow, low→green
 
-### 9.2 Text Analysis Tab (`text-analysis-tab.tsx` — 348 lines)
+### 9.2 Text Analysis Tab (`text-analysis-tab.tsx` - 348 lines)
 
-**Store Hooks**: `useAppStore()` — textInput, selectedLanguage, textLoading, textResult, analyzeText, resetTextResult
+**Store Hooks**: `useAppStore()` - textInput, selectedLanguage, textLoading, textResult, analyzeText, resetTextResult
 **Components**: TrustScoreGauge, ExportButton
 **Languages**: 10 Indian languages (English, Hindi, Gujarati, Tamil, Bengali, Marathi, Telugu, Punjabi, Urdu, Malayalam, Kannada)
 
@@ -533,9 +533,9 @@ ad_hominem→AlertTriangle, straw_man→Brain, fake_expert→Shield,
 toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipulation→Heart
 ```
 
-### 9.3 Image Forensics Tab (`image-forensics-tab.tsx` — 468 lines)
+### 9.3 Image Forensics Tab (`image-forensics-tab.tsx` - 468 lines)
 
-**Store Hooks**: `useAppStore()` — imageLoading, imageResult, analyzeImage, resetImageResult
+**Store Hooks**: `useAppStore()` - imageLoading, imageResult, analyzeImage, resetImageResult
 **Components**: TrustScoreGauge, ExportButton, Tooltip
 
 **UI Flow**: Upload zone (animated dashed border) → Analysis progress → Results
@@ -544,9 +544,9 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 **Scan Line Animation**: CSS `animate-scan-line` overlay during analysis
 **ELA Visualization**: Mock error level analysis with colored regions
 
-### 9.4 Video Analysis Tab (`video-analysis-tab.tsx` — 388 lines)
+### 9.4 Video Analysis Tab (`video-analysis-tab.tsx` - 388 lines)
 
-**Store Hooks**: `useAppStore()` — videoLoading, videoResult, analyzeVideo, resetVideoResult
+**Store Hooks**: `useAppStore()` - videoLoading, videoResult, analyzeVideo, resetVideoResult
 **Components**: ExportButton, custom `ProgressRing` (SVG circle with stroke-dasharray)
 
 **UI Flow**: Upload or URL input → Analysis → Results
@@ -554,25 +554,25 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 
 **ProgressRing Component**: SVG circle with `circumference = 2πr`, `strokeDashoffset = circumference × (1 - value/100)`
 
-### 9.5 Fact Check Tab (`fact-check-tab.tsx` — 253 lines)
+### 9.5 Fact Check Tab (`fact-check-tab.tsx` - 253 lines)
 
-**Store Hooks**: `useAppStore()` — factCheckLoading, factCheckResult, verifyFact, resetFactCheckResult
+**Store Hooks**: `useAppStore()` - factCheckLoading, factCheckResult, verifyFact, resetFactCheckResult
 **Components**: ExportButton
 
 **Verdict Config**: true→CheckCircle(green), false→XCircle(red), misleading→AlertCircle(amber), unverified→HelpCircle(gray), partially_true→AlertCircle(blue)
 
 **Languages**: Same 10+1 Indian languages as text analysis
 
-### 9.6 History Tab (`history-tab.tsx` — 378 lines)
+### 9.6 History Tab (`history-tab.tsx` - 378 lines)
 
-**Store Hooks**: `useAppStore()` — analysisHistory, fetchAnalysisHistory
+**Store Hooks**: `useAppStore()` - analysisHistory, fetchAnalysisHistory
 **Features**: Search, filter (type/risk), sort, pagination, CSV export, expandable rows
 
 **Type Icons**: text→FileText, image→ImageIcon, video→Video, fact_check→CheckCircle, image_reverse_search→Search
 
 **CSV Export**: Converts analysis history to CSV string → blob download
 
-### 9.7 Reverse Search Tab (`reverse-search-tab.tsx` — 530 lines)
+### 9.7 Reverse Search Tab (`reverse-search-tab.tsx` - 530 lines)
 
 **State**: `useState` for analysisStep (idle/uploading/describing/searching/analyzing/complete/error)
 **API**: POST `/api/analyze/reverse-image` with FormData or URL
@@ -581,18 +581,18 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 
 **Results**: Original description + Web matches (with similarity scores) + Context analysis + Authenticity score
 
-### 9.8 Chat Tab (`chat-tab.tsx` — 230 lines)
+### 9.8 Chat Tab (`chat-tab.tsx` - 230 lines)
 
-**Store Hooks**: `useAppStore()` — chatMessages, chatLoading, sendChatMessage, clearChatHistory
+**Store Hooks**: `useAppStore()` - chatMessages, chatLoading, sendChatMessage, clearChatHistory
 **Rendering**: `ReactMarkdown` for assistant messages
 **Quick Prompts**: 6 pre-built questions about deepfakes, fact-checking, image forensics, etc.
 
 **Auto-scroll**: `useRef` + `scrollIntoView()` on new messages
 **Typing Indicator**: 3 bouncing dots with staggered animation
 
-### 9.9 Investigations Tab (`investigations-tab.tsx` — 673 lines)
+### 9.9 Investigations Tab (`investigations-tab.tsx` - 673 lines)
 
-**Store Hooks**: `useAppStore()` — investigations, setActiveTab
+**Store Hooks**: `useAppStore()` - investigations, setActiveTab
 **Features**: List view + Detail panel with risk gauge, evidence, timeline, action buttons
 
 **Risk Assessment Gauge**: Horizontal gradient bar with animated spring marker
@@ -602,18 +602,18 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 **Timeline Events**: 26 events with 6 color-coded types (created/analysis/evidence/update/escalation/closed)
 **Action Buttons**: Add Evidence, Escalate, Close Investigation (with toast notifications)
 
-### 9.10 Alerts Tab (`alerts-tab.tsx` — 238 lines)
+### 9.10 Alerts Tab (`alerts-tab.tsx` - 238 lines)
 
-**Store Hooks**: `useAppStore()` — alerts, markAlertRead
+**Store Hooks**: `useAppStore()` - alerts, markAlertRead
 
 **Severity Config**: critical→red(Bell), high→orange(AlertTriangle), medium→yellow(Clock), low→green(Eye), info→blue(Settings)
 **Type Icons**: deepfake→Video, fake_news→FileText, manipulation→ImageIcon, trend→TrendingUp, system→Settings
 
 **Features**: Filter by severity/type, review progress bar, severity summary cards, mark read
 
-### 9.11 Watchlist Tab (`watchlist-tab.tsx` — 474 lines)
+### 9.11 Watchlist Tab (`watchlist-tab.tsx` - 474 lines)
 
-**Store Hooks**: `useAppStore()` — watchlistItems, addWatchlistItem, removeWatchlistItem, toggleWatchlistItem
+**Store Hooks**: `useAppStore()` - watchlistItems, addWatchlistItem, removeWatchlistItem, toggleWatchlistItem
 **Chart**: BarChart showing hit counts by item
 
 **Type Icons**: keyword→Search, url→Globe, hashtag→Hash, account→AtSign
@@ -621,17 +621,17 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 
 **Features**: Add new item dialog, toggle active/inactive, remove items, hit count tracking
 
-### 9.12 Community Tab (`crowdsource-tab.tsx` — 861 lines)
+### 9.12 Community Tab (`crowdsource-tab.tsx` - 861 lines)
 
-**Store Hooks**: `useAppStore()` — communityReports, addCommunityReport, voteOnReport
+**Store Hooks**: `useAppStore()` - communityReports, addCommunityReport, voteOnReport
 **Features**: Submit report dialog, upvote/downvote, collapsible report details, trust badges, status transitions
 
 **Badge Styles**: Bronze→🥉, Silver→🥈, Gold→🥇, Platinum→💎
 **Community Stats**: Total Reports, Verified, Active Users, Consensus Rate
 
-### 9.13 Settings Tab (`settings-tab.tsx` — 784 lines)
+### 9.13 Settings Tab (`settings-tab.tsx` - 784 lines)
 
-**Store Hooks**: `useAppStore()` — analysisSensitivity, notificationsEnabled
+**Store Hooks**: `useAppStore()` - analysisSensitivity, notificationsEnabled
 
 **7 Sections**:
 1. Profile (avatar, name, email, role badge)
@@ -639,17 +639,17 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 3. Data Management (storage usage bar, auto-delete, retention, export/clear)
 4. Appearance & Theme (light/dark/system, accent color picker, font size, compact mode, animations toggle)
 5. Security & Privacy (2FA, session timeout, audit retention, encryption status, delete account)
-6. Integrations (Google Fact Check, PIB, AltNews, BoomLive — connected/available/offline)
+6. Integrations (Google Fact Check, PIB, AltNews, BoomLive - connected/available/offline)
 7. Notifications (email, push, critical alerts, digest frequency)
 
-### 9.14 Audit Log Tab (`audit-log-tab.tsx` — 787 lines)
+### 9.14 Audit Log Tab (`audit-log-tab.tsx` - 787 lines)
 
-**Mock Data**: `generateMockEntries()` — 24 entries with Indian analyst names (Arjun Patel, Priya Sharma, etc.)
+**Mock Data**: `generateMockEntries()` - 24 entries with Indian analyst names (Arjun Patel, Priya Sharma, etc.)
 **Features**: Timeline visualization, search/filter (action type, severity), expandable metadata, auto-refresh indicator (simulated every 15s)
 
 **Summary Stats**: Total Events, Critical Events, Analyses Today, Active Users
 
-### 9.15 Media Comparison Tab (`media-comparison-tab.tsx` — 1014 lines)
+### 9.15 Media Comparison Tab (`media-comparison-tab.tsx` - 1014 lines)
 
 **State**: Two media panels (Media A/B), comparison mode, slider position, analysis result
 **API**: POST `/api/analyze/image` for each panel
@@ -658,7 +658,7 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 **Comparison Modes**: Side by Side, Overlay, Difference Map
 **Difference Regions**: Detected areas with bounding boxes and severity ratings
 
-### 9.16 Browser Extension Tab (`browser-extension-tab.tsx` — 582 lines)
+### 9.16 Browser Extension Tab (`browser-extension-tab.tsx` - 582 lines)
 
 **Mock Browsers**: Chrome, Firefox, Edge with install buttons
 **Features**: Extension demo overlay, settings panel (sensitivity, auto-analyze, notifications, whitelist), permissions list, feature list
@@ -666,15 +666,15 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 **Permissions**: Read browsing data, Access active tab, Send notifications, Store settings locally
 **Features**: Real-time detection, Visual overlay, One-click analysis, Confidence indicators
 
-### 9.17 Model Metrics Tab (`model-metrics-tab.tsx` — 957 lines)
+### 9.17 Model Metrics Tab (`model-metrics-tab.tsx` - 957 lines)
 
-**Custom Component**: `CircularGauge` — SVG circle with animated stroke-dasharray
+**Custom Component**: `CircularGauge` - SVG circle with animated stroke-dasharray
 **Features**: Model comparison (Text/Image/Video/Audio models), A/B test results, performance metrics, API usage tracking, version history
 
 **Model Data**: Text Model v2.1, Image Model v3.0, Video Model v1.8, Audio Model v1.2
 **A/B Test**: Variant A vs B with accuracy, precision, recall, F1 scores
 
-### 9.18 API Docs Tab (`api-docs-tab.tsx` — 1020 lines)
+### 9.18 API Docs Tab (`api-docs-tab.tsx` - 1020 lines)
 
 **Features**: Interactive API documentation with code examples, copy button, endpoint list
 **Endpoints Documented**: All 13 API routes with request/response examples
@@ -682,28 +682,28 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 
 **Custom Components**: `CopyButton`, `CodeBlock` with language-specific styling
 
-### 9.19 Network Analysis Tab (`network-analysis-tab.tsx` — 1012 lines)
+### 9.19 Network Analysis Tab (`network-analysis-tab.tsx` - 1012 lines)
 
 **Features**: File upload for watermark/steganography detection, network graph visualization, provenance tracking, metadata extraction timeline
 
 **SVG Network Graph**: Animated nodes and edges with `motion.g`, `motion.circle`, `motion.line`
 **Watermark Detection**: Simulated visible/invisible watermark scanning
 
-### 9.20 Campaign Detection Tab (`campaign-detection-tab.tsx` — 786 lines)
+### 9.20 Campaign Detection Tab (`campaign-detection-tab.tsx` - 786 lines)
 
 **Types**: CampaignSeverity (critical/high/medium/low), CampaignStatus (Active/Monitoring/Contained)
 **Features**: Campaign list with severity indicators, pattern detection visualization, timeline of coordinated activities, influence network graph
 
 **Mock Campaigns**: "Operation Election Shield", "Health Misinfo Wave", etc.
 
-### 9.21 OCR Scanner Tab (`ocr-scanner-tab.tsx` — 1116 lines)
+### 9.21 OCR Scanner Tab (`ocr-scanner-tab.tsx` - 1116 lines)
 
 **Features**: Upload image for text extraction, language selection (auto/Hindi/Tamil/Bengali/English), extraction results with confidence scores, extracted text display with line-by-line breakdown
 
 **Languages**: auto→Auto-detect, hi→Hindi, ta→Tamil, bn→Bengali, en→English
 **Table Display**: Character position, confidence score, language detection per line
 
-### 9.22 Audio Deepfake Tab (`audio-deepfake-tab.tsx` — 1111 lines)
+### 9.22 Audio Deepfake Tab (`audio-deepfake-tab.tsx` - 1111 lines)
 
 **Interfaces**: DetectedSpeaker, EmotionScore, DeepfakeIndicator, ArtifactItem, AudioHistoryEntry
 **Features**: Audio upload/playback, waveform visualization (SVG), speaker detection, emotion analysis, deepfake indicators, spectral analysis
@@ -711,7 +711,7 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 **Waveform**: SVG path with animated bars using `motion.line`
 **Emotion Scores**: Happy, Sad, Angry, Fearful, Neutral, Surprised, Disgusted
 
-### 9.23 Source Credibility Tab (`source-credibility-tab.tsx` — 1108 lines)
+### 9.23 Source Credibility Tab (`source-credibility-tab.tsx` - 1108 lines)
 
 **Types**: SourceType (News/Social/Blog/Government/Fact-check), FactualRating, BiasPosition (Left→Right), FactCheckStatus, RedFlagSeverity
 **Features**: Source search, credibility analysis, bias meter, factual rating, red flags, comparison view
@@ -719,7 +719,7 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 **Mock Sources**: NDTV, Times of India, Aaj Tak, The Hindu, India Today, Dainik Jagran, etc.
 **Bias Meter**: Visual horizontal scale from Left to Right
 
-### 9.24 Live Threat Feed Tab (`live-threat-feed-tab.tsx` — 1035 lines)
+### 9.24 Live Threat Feed Tab (`live-threat-feed-tab.tsx` - 1035 lines)
 
 **Types**: ThreatType (Deepfake/Misinformation/Manipulation/Phishing), ThreatSeverity, Platform (WhatsApp/Twitter/Facebook/Instagram/Telegram)
 **Features**: Real-time threat stream (simulated), auto-scroll, pause/resume, alert rules, filtering by type/severity/platform
@@ -727,7 +727,7 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 **Simulated Feed**: New threats appear every few seconds with mock data
 **Alert Rules**: User-configurable rules for automatic notifications
 
-### 9.25 Education Resources Tab (`education-resources-tab.tsx` — 989 lines)
+### 9.25 Education Resources Tab (`education-resources-tab.tsx` - 989 lines)
 
 **Interfaces**: Course, Tutorial, ReferenceCard, QuizQuestion
 **Features**: Course catalog, tutorial library, reference cards, interactive quiz, progress tracking
@@ -735,7 +735,7 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 **Quiz**: Multiple choice questions about deepfake detection, media literacy
 **Courses**: "Understanding Deepfakes", "Fact-Checking Essentials", etc.
 
-### 9.26 Report Generator Tab (`report-generator-tab.tsx` — 799 lines)
+### 9.26 Report Generator Tab (`report-generator-tab.tsx` - 799 lines)
 
 **Interfaces**: ReportSection, ReportTemplate, RecentReport
 **Features**: Report title/author/date configuration, section management (drag to reorder, toggle visibility), template selection, preview, export
@@ -743,7 +743,7 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 **Templates**: Full Verification, Quick Check, Investigation Report, Statistical Summary
 **Sections**: Executive Summary, Methodology, Findings, Risk Assessment, Recommendations, Appendix
 
-### 9.27 System Health Tab (`system-health-tab.tsx` — 801 lines)
+### 9.27 System Health Tab (`system-health-tab.tsx` - 801 lines)
 
 **Custom Component**: `CircularGauge` (same as model metrics)
 **Features**: CPU/Memory/Disk/Network gauges, service status list, deployment history, alert configuration
@@ -751,14 +751,14 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 **Mock Services**: API Gateway, AI Model Server, Database, Cache, Queue, CDN
 **Deployment History**: Version tracking with rollback capability
 
-### 9.28 Data Visualization Tab (`data-visualization-tab.tsx` — 792 lines)
+### 9.28 Data Visualization Tab (`data-visualization-tab.tsx` - 792 lines)
 
 **Charts**: AreaChart (threat trends), PieChart (distribution), BarChart (by category), RadarChart (multi-dimensional)
 **Time Ranges**: 7d, 30d, 90d, 1y with different data per range
 
 **Export**: Download chart as PNG via canvas conversion
 
-### 9.29 Workflow Automation Tab (`workflow-automation-tab.tsx` — 988 lines)
+### 9.29 Workflow Automation Tab (`workflow-automation-tab.tsx` - 988 lines)
 
 **Types**: WorkflowStatus (active/inactive), ExecutionStatus (success/failed/running), StepType (trigger/analyze/verify/notify/export), TriggerType, ScheduleFrequency
 **Features**: Pipeline builder with drag-and-drop steps, execution history, workflow templates, scheduling
@@ -812,7 +812,7 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 
 ---
 
-## 11. Page Layout — Shell Architecture
+## 11. Page Layout - Shell Architecture
 
 **File**: `src/app/page.tsx`
 
@@ -882,7 +882,7 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 
 ## 12. CSS Animation System
 
-**File**: `src/app/globals.css` — 1200+ lines
+**File**: `src/app/globals.css` - 1200+ lines
 
 ### 40+ Custom Animations
 
@@ -917,7 +917,7 @@ toxic_language→AlertTriangle, factual_error→AlertTriangle, emotional_manipul
 | `text-gradient-flow` | Gradient text | 6s | `.text-gradient-animated` |
 | `shimmer-border` | Border shimmer | 1.5s | `.shimmer-border-hover:hover::before` |
 | `badge-shimmer` | Premium badges | 3s | `.badge-premium` |
-| `data-stream` | Live feed items | — | — |
+| `data-stream` | Live feed items | - | - |
 | `waveform-bar` | Audio waveforms | 1.5s | `.animate-waveform-bar` |
 | `live-pulse` | Live indicators | 2s | `.animate-live-pulse` |
 | `typing-dot` | Chat typing dots | 1.4s | `.animate-typing-dot` |
@@ -1128,17 +1128,17 @@ Every store action has hardcoded fallback data:
 - Forwards headers: Host, X-Forwarded-For, X-Forwarded-Proto, X-Real-IP
 
 ### Build Configuration
-- `output: "standalone"` — self-contained production build
-- `bun run dev` — development server on port 3000
-- `bun run build` — production build with `cp -r` for static files
-- `bun run start` — production standalone server
+- `output: "standalone"` - self-contained production build
+- `bun run dev` - development server on port 3000
+- `bun run build` - production build with `cp -r` for static files
+- `bun run start` - production standalone server
 
 ### Development Scripts
-- `bun run dev` — `next dev --port 3000 2>&1 | tee dev.log`
-- `bun run lint` — ESLint check
-- `bun run db:push` — Push Prisma schema to SQLite
-- `bun run db:generate` — Generate Prisma client
-- `bun run db:reset` — Reset database
+- `bun run dev` - `next dev --port 3000 2>&1 | tee dev.log`
+- `bun run lint` - ESLint check
+- `bun run db:push` - Push Prisma schema to SQLite
+- `bun run db:generate` - Generate Prisma client
+- `bun run db:reset` - Reset database
 
 ---
 
@@ -1149,7 +1149,7 @@ Every store action has hardcoded fallback data:
 - TypeScript throughout with strict typing
 - ES6+ import/export syntax
 - shadcn/ui components preferred over custom implementations
-- Prisma schema: primitive types only (no lists — use Json for arrays)
+- Prisma schema: primitive types only (no lists - use Json for arrays)
 - Database file in `/db` directory
 - API routes use `NextRequest` / `NextResponse`
 
@@ -1182,19 +1182,19 @@ Every store action has hardcoded fallback data:
 
 ## 20. Known Issues & Risks
 
-1. **Fact Check Source Credibility** — All sources show similar credibility ratings derived from overall confidence. Needs per-source credibility data.
-2. **Sentiment Score** — Neutral sentiment shows as "0%" which could be confusing. Consider bipolar scale.
-3. **Chart Labels on Mobile** — Recharts auto-layout truncates labels at small widths.
-4. **Deepfake Detection Accuracy** — VLM-based detection is experimental. Not guaranteed reliable under compression or adversarial conditions.
-5. **API Rate Limits** — z-ai-web-dev-sdk may have rate limits for heavy usage.
-6. **Large Video Files** — Video upload limited to 100MB. Large videos may timeout during VLM analysis.
-7. **Marquee Animation** — Uses CSS only, items don't loop seamlessly (starts over).
-8. **No Authentication** — Download endpoint and all API routes are unauthenticated.
-9. **Mock Data Dependency** — Many tabs use hardcoded mock data rather than real API calls.
-10. **Bundle Size** — 30 tab components all loaded in single page (no lazy loading).
-11. **archiver v8** — Uses named exports (`ZipArchive`), not default export. Must use `import { ZipArchive } from 'archiver'`.
-12. **Next.js 16 Params** — Route params are `Promise<>` type, must be `await`ed.
+1. **Fact Check Source Credibility** - All sources show similar credibility ratings derived from overall confidence. Needs per-source credibility data.
+2. **Sentiment Score** - Neutral sentiment shows as "0%" which could be confusing. Consider bipolar scale.
+3. **Chart Labels on Mobile** - Recharts auto-layout truncates labels at small widths.
+4. **Deepfake Detection Accuracy** - VLM-based detection is experimental. Not guaranteed reliable under compression or adversarial conditions.
+5. **API Rate Limits** - z-ai-web-dev-sdk may have rate limits for heavy usage.
+6. **Large Video Files** - Video upload limited to 100MB. Large videos may timeout during VLM analysis.
+7. **Marquee Animation** - Uses CSS only, items don't loop seamlessly (starts over).
+8. **No Authentication** - Download endpoint and all API routes are unauthenticated.
+9. **Mock Data Dependency** - Many tabs use hardcoded mock data rather than real API calls.
+10. **Bundle Size** - 30 tab components all loaded in single page (no lazy loading).
+11. **archiver v8** - Uses named exports (`ZipArchive`), not default export. Must use `import { ZipArchive } from 'archiver'`.
+12. **Next.js 16 Params** - Route params are `Promise<>` type, must be `await`ed.
 
 ---
 
-*End of Context.md — Every insight, strategy, and logic documented.*
+*End of Context.md - Every insight, strategy, and logic documented.*

@@ -73,7 +73,7 @@ export function TextAnalysisTab() {
   /**
    * Detect the script as the analyst types and switch the analysis language to
    * match. Devanagari pasted while the selector says English would otherwise be
-   * analysed under the wrong language prompt — the most likely way to get a bad
+   * analysed under the wrong language prompt - the most likely way to get a bad
    * verdict on Indic content.
    *
    * Only fires while the selector is still on the default, so it never overrides
@@ -201,7 +201,7 @@ export function TextAnalysisTab() {
       <AnimatePresence>
         {textResult && !textLoading && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
-            {/* Registry hit first — the cheapest and strongest piece of evidence */}
+            {/* Registry hit first - the cheapest and strongest piece of evidence */}
             <KnownHoaxMatches matches={textResult.knownHoaxMatches ?? []} />
 
             {/* Top Results Row */}

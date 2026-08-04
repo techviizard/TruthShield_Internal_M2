@@ -18,7 +18,7 @@
     "connected": "જોડાયેલ",
     "workingOffline": "ઓફલાઇન કાર્યરત",
     "fullPipeline": "સંપૂર્ણ પાઇપલાઇન ઉપલબ્ધ છે.",
-    "onDeviceOnly": "ફક્ત ડિવાઇસ પર પેટર્ન તપાસ — મોડેલ વિશ્લેષણ કે વેબ પુષ્ટિ નહીં.",
+    "onDeviceOnly": "ફક્ત ડિવાઇસ પર પેટર્ન તપાસ - મોડેલ વિશ્લેષણ કે વેબ પુષ્ટિ નહીં.",
     "sync": "સિંક",
     "queueEmpty": "કતાર ખાલી છે. ઓફલાઇન મોકલેલા વિશ્લેષણ અહીં દેખાશે.",
     "install": "ઇન્સ્ટોલ",
@@ -76,7 +76,7 @@
     "flagsDetected": "ચિહ્નિત સંકેતો",
     "detectedClaims": "શોધાયેલા દાવા",
     "recommendations": "ભલામણો",
-    "scriptDetected": "{script} લિપિ ઓળખાઈ — વિશ્લેષણ ભાષા {language} પર સેટ કરી."
+    "scriptDetected": "{script} લિપિ ઓળખાઈ - વિશ્લેષણ ભાષા {language} પર સેટ કરી."
   },
   "evidence": {
     "hoaxTitle": "વારંવાર ફરતી અફવા સાથે મેળ",

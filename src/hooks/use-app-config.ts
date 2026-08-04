@@ -8,7 +8,7 @@ import type { PublicConfig } from '@/config/app.config'
  *
  * Fetched once per page load and cached in module scope, so upload limits,
  * feature flags and provider info shown in the UI always match what the server
- * actually enforces — no duplicated constants in components.
+ * actually enforces - no duplicated constants in components.
  */
 let cache: PublicConfig | null = null
 let inflight: Promise<PublicConfig | null> | null = null

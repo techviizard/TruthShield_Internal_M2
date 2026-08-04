@@ -15,7 +15,7 @@ Thin helper to write `AuditLog` rows from any API route, so the Audit Log tab sh
 4. `listAudit()` powers the Audit Log tab.
 
 ## Future scope & enterprise enhancements
-- **Call it everywhere:** many routes don't record audit events yet — that's why the tab still falls back to mock. Wire `recordAudit` into every mutating route (see audit doc).
+- **Call it everywhere:** many routes don't record audit events yet - that's why the tab still falls back to mock. Wire `recordAudit` into every mutating route (see audit doc).
 - Make audit writes **tamper-evident** (hash chaining / append-only store) for compliance.
 - Add actor identity once auth exists (`userId`), plus before/after diffs for changes.
 - Ship to a SIEM; add retention + export.

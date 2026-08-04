@@ -72,12 +72,12 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: `No citations or reference entry for "${wanted}" — this domain has not appeared in any analysis yet.`,
+            error: `No citations or reference entry for "${wanted}" - this domain has not appeared in any analysis yet.`,
           },
           { status: 404 },
         )
       }
-      // Known registry domain that hasn't been cited yet — return the reference only.
+      // Known registry domain that hasn't been cited yet - return the reference only.
       const refOnly: EnrichedSource = {
         domain: wanted,
         totalCitations: 0,

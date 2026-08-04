@@ -14,7 +14,7 @@ A dictionary (`REGION_DICT`) of cities → lat/lng. `extractRegion(text)` finds 
 3. No match → `fallbackRegion()` (a sensible default so the map isn't empty).
 4. `regionToPoint()` projects geo coordinates to the map's pixel space.
 
-Deliberately simple — it's a display aid, not a geocoder.
+Deliberately simple - it's a display aid, not a geocoder.
 
 ## Future scope & enterprise enhancements
 - Replace the dictionary with a **proper NER + gazetteer** (spaCy/geonames) for coverage beyond the seed list.

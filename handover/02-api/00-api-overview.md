@@ -1,6 +1,6 @@
 # API Layer Overview
 
-~36 route handlers under `src/app/api/*` (`route.ts` files). They are the orchestration layer: validate input → call engines / AI / DB → return JSON. No business logic should live in the UI; heavy logic lives in engines, not here — routes glue them together.
+~36 route handlers under `src/app/api/*` (`route.ts` files). They are the orchestration layer: validate input → call engines / AI / DB → return JSON. No business logic should live in the UI; heavy logic lives in engines, not here - routes glue them together.
 
 ## Conventions
 
@@ -8,7 +8,7 @@
 - **DB:** `import { db } from '@/lib/db'` (Prisma singleton).
 - **AI:** helpers in `src/lib/ai.ts` (`structuredLLMAnalysis`, `vlmImageAnalysis`, `vlmVideoAnalysis`, `webSearchFactCheck`).
 - **Engines:** `import { … } from '@/lib/engines/*'`.
-- **Shape:** most return `{ success, …data }`. **Not standardized** — a shared response envelope + error format is a recommended enhancement.
+- **Shape:** most return `{ success, …data }`. **Not standardized** - a shared response envelope + error format is a recommended enhancement.
 
 ## Route families
 

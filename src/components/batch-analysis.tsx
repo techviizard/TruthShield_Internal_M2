@@ -314,7 +314,7 @@ export function BatchAnalysis() {
                   {isDragging ? 'Drop files here...' : 'Drag & drop files here, or click to browse'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Supports images (JPG, PNG, WebP — max {cfg?.limits.maxImageUploadMB ?? 20}MB) and videos (MP4, AVI, MOV — max {cfg?.limits.maxVideoUploadMB ?? 100}MB)
+                  Supports images (JPG, PNG, WebP - max {cfg?.limits.maxImageUploadMB ?? 20}MB) and videos (MP4, AVI, MOV - max {cfg?.limits.maxVideoUploadMB ?? 100}MB)
                 </p>
               </motion.div>
             </div>
