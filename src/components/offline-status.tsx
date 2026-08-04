@@ -62,9 +62,23 @@ export function OfflineStatus() {
     void refresh()
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch((err) => {
-        console.warn('Service worker registration failed:', err)
-      })
+      if (process.env.NODE_ENV === 'production') {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          console.warn('Service worker registration failed:', err)
+        })
+      } else {
+        // A caching worker in dev serves assets from a previous build and hides
+        // edits behind a stale shell — unregister anything left over and drop the
+        // caches it wrote, which outlive the registration.
+        void navigator.serviceWorker.getRegistrations().then((regs) =>
+          regs.forEach((r) => void r.unregister())
+        )
+        if ('caches' in window) {
+          void caches.keys().then((keys) =>
+            keys.filter((k) => k.startsWith('truthshield-')).forEach((k) => void caches.delete(k))
+          )
+        }
+      }
     }
 
     const goOnline = () => { void refresh() }

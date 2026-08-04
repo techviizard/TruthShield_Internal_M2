@@ -4,7 +4,11 @@
  * Field deployments in low-connectivity areas need the console to open and stay
  * usable without a network. Strategy per request class:
  *
- *   app shell / static  → stale-while-revalidate (instant open, updates in background)
+ *   hashed build assets → stale-while-revalidate (instant open, updates in background).
+ *                         Safe cache-first because the URL changes when the file does.
+ *   documents / RSC     → network-first with a cache fallback. NEVER cache-first: a
+ *                         cached document references build-hashed chunk URLs that no
+ *                         longer exist after a redeploy, which renders a blank page.
  *   API GET             → network-first with a cache fallback, so a dropped link
  *                         shows the last known data instead of an error page
  *   API POST            → never cached; the page queues these itself in IndexedDB
@@ -15,7 +19,7 @@
  * see and manage the queue rather than have work replay invisibly.
  */
 
-const VERSION = 'truthshield-v1'
+const VERSION = 'truthshield-v2'
 const SHELL_CACHE = `${VERSION}-shell`
 const DATA_CACHE = `${VERSION}-data`
 
@@ -56,6 +60,25 @@ function isApi(url) {
   return url.pathname.startsWith('/api/')
 }
 
+/**
+ * Only content-hashed assets may be served cache-first. Everything else can go
+ * stale against a newer build, and a stale document is a blank page.
+ */
+function isImmutableAsset(url) {
+  return url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/')
+}
+
+/** Documents and React Server Component payloads — both are build-coupled. */
+function isDocument(request, url) {
+  return (
+    request.mode === 'navigate' ||
+    request.destination === 'document' ||
+    request.headers.get('RSC') === '1' ||
+    url.searchParams.has('_rsc') ||
+    (request.headers.get('Accept') || '').includes('text/html')
+  )
+}
+
 async function networkFirst(request) {
   const cache = await caches.open(DATA_CACHE)
   try {
@@ -85,6 +108,24 @@ async function networkFirst(request) {
   }
 }
 
+/**
+ * Documents always try the network first, so a new deployment is picked up on the
+ * first load instead of replaying a document that points at deleted chunks. The
+ * cached copy is only a fallback for a genuinely failed request.
+ */
+async function documentNetworkFirst(request) {
+  const cache = await caches.open(SHELL_CACHE)
+  try {
+    const fresh = await fetch(request)
+    if (fresh.ok && request.mode === 'navigate') cache.put(request, fresh.clone())
+    return fresh
+  } catch {
+    const cached = (await cache.match(request)) ?? (await cache.match('/'))
+    if (cached) return cached
+    return (await cache.match('/offline')) ?? new Response('Offline', { status: 503 })
+  }
+}
+
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(SHELL_CACHE)
   const cached = await cache.match(request)
@@ -98,12 +139,6 @@ async function staleWhileRevalidate(request) {
   if (cached) return cached
   const fresh = await network
   if (fresh) return fresh
-
-  // Navigations get the offline page; other misses simply fail.
-  if (request.mode === 'navigate') {
-    return (await cache.match('/offline')) ?? (await cache.match('/')) ??
-      new Response('Offline', { status: 503 })
-  }
   return new Response('', { status: 504 })
 }
 
@@ -114,5 +149,12 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
   if (url.origin !== self.location.origin) return
 
-  event.respondWith(isApi(url) ? networkFirst(request) : staleWhileRevalidate(request))
+  if (isApi(url)) {
+    event.respondWith(networkFirst(request))
+  } else if (isDocument(request, url)) {
+    event.respondWith(documentNetworkFirst(request))
+  } else if (isImmutableAsset(url)) {
+    event.respondWith(staleWhileRevalidate(request))
+  }
+  // Anything else falls through to the network untouched.
 })
