@@ -1,3 +1,6 @@
+> **CONFIDENTIAL - NOT FOR EXTERNAL DISTRIBUTION**
+> Restricted to personnel under NDA with the deploying authority and CyArt.
+
 # Claim vs Implementation
 
 ⚠️ **Highest priority in this folder.** Everything else here is work that is missing. This file

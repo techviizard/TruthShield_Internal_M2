@@ -1,8 +1,14 @@
+> **CONFIDENTIAL - NOT FOR EXTERNAL DISTRIBUTION**
+> Restricted to personnel under NDA with the deploying authority and CyArt.
+
 # Scope of Work
 
 **Audience:** the team taking TruthShield from its current build to a deployable product.
-**Purpose:** state plainly what is built, what is partly built, what is not built, and what was
-deliberately *not* built because policy, regulation or licensing forbids it.
+**Purpose:** state plainly what is built, what is partly built, what is not built, and what is
+waiting on an instrument, an accreditation or a licence from outside the engineering team.
+
+**Classification:** confidential. TruthShield is a non-commercial system deployed by an Indian
+government authority; this folder is restricted to personnel under NDA with the authority and CyArt.
 
 This folder is the single place where remaining work is tracked. Every component doc in
 `01-engines/`, `02-api/` and `03-tabs/` carries a short "Scope of work" pointer back to here so the

@@ -18,7 +18,7 @@ Start here, then go top-to-bottom. Each numbered area builds on the one before i
 | 02 | [`02-api/`](02-api/) | The API routes (`src/app/api/*`) - how the frontend talks to the engines and DB. |
 | 03 | [`03-tabs/`](03-tabs/) | The 28 feature tabs (`src/components/tabs/*`) - one doc each. |
 | 04 | [`04-operations/`](04-operations/) | Cross-cutting: hardcoded-data audit, testing, security, enterprise roadmap. |
-| 05 | [`05-scope-of-work/`](05-scope-of-work/README.md) | **What is left to build.** Problem-statement traceability, the constrained-scope register, the sequenced backlog, and the claim-vs-implementation list. |
+| 05 | [`05-scope-of-work/`](05-scope-of-work/README.md) | **What is left to build.** Problem-statement traceability, the gated-scope register, the sequenced backlog, and the claim-vs-implementation list. **CONFIDENTIAL** - NDA personnel only. |
 
 ## Document template
 

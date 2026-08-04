@@ -1,3 +1,6 @@
+> **CONFIDENTIAL - NOT FOR EXTERNAL DISTRIBUTION**
+> Restricted to personnel under NDA with the deploying authority and CyArt.
+
 # Delivery Backlog
 
 The remaining work, sequenced. Every item traces to a row in
@@ -52,7 +55,7 @@ Ordered by value per day.
 | 2.3 | `messages/ta.json`. The detector already covers Tamil, only the UI is untranslated | 1 | PRD 5.6 |
 | 2.4 | URL ingest for text analysis: readability extraction, canonical URL resolution | 2 | PRD 2.2 |
 | 2.5 | Remaining locale files (te, bn, mr, kn, ml, pa), plus native-speaker review of the Hindi and Gujarati detector signals | 5 | PRD 5.4, 5.5, 5.7 |
-| 2.6 | Labelled evaluation corpus per modality and language, run through the existing harness, publish the accuracy figures | 5 | PRD 6.2, 6.3 / [C5](02-constrained-and-deferred.md#c5) |
+| 2.6 | Labelled evaluation corpus per modality and language, run through the existing harness, publish the accuracy figures. Research use agreements are available to a non-commercial government institution | 5 | PRD 6.2, 6.3 / [C5](02-constrained-and-deferred.md#c5) |
 | 2.7 | Server-side ffmpeg frame extraction with scene-change sampling, replacing the 48-frame browser cap | 3 | PRD 3.4, 3.11 |
 | 2.8 | C2PA signature chain verification using the c2pa toolkit and trust anchors, upgrading "present, unverified" to actually verified | 3 | PRD 4.5 |
 | 2.9 | Sentence-embedding similarity (multilingual E5 or IndicBERT) behind the existing `semanticSimilarity()` signature, keeping the lexical path as the offline fallback | 3 | PRD 2.12 |
@@ -86,7 +89,7 @@ applies once the licence or key is in hand. Tracked in
 
 | # | Task | Instrument | Effort after |
 |---|---|---|---|
-| 4.1 | Licensed pretrained deepfake model behind `video-temporal.ts` | Licence or paid subscription ([C6](02-constrained-and-deferred.md#c6)) | 4 |
+| 4.1 | Pretrained deepfake model behind `video-temporal.ts` | Research licence. Non-commercial deployment qualifies for MesoNet and FaceForensics++ ([C6](02-constrained-and-deferred.md#c6)) | 4 |
 | 4.2 | Section 65B certificate workflow for evidence export | Legal opinion + named signatory ([C8](02-constrained-and-deferred.md#c8)) | 3 |
 | 4.3 | PIB direct feed | Internal request within government ([C7](02-constrained-and-deferred.md#c7)) | 2 |
 

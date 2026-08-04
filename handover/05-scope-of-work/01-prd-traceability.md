@@ -1,3 +1,6 @@
+> **CONFIDENTIAL - NOT FOR EXTERNAL DISTRIBUTION**
+> Restricted to personnel under NDA with the deploying authority and CyArt.
+
 # PRD Traceability Matrix
 
 Every requirement from the problem statement, mapped to the code that satisfies it and the work that
