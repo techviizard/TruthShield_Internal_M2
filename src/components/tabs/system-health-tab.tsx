@@ -138,11 +138,18 @@ export function SystemHealthTab() {
     setLastRefresh(new Date())
   }, [])
 
-  useEffect(() => {
+useEffect(() => {
+  const initialLoad = setTimeout(() => {
     void load()
-    const t = setInterval(() => void load(), 15_000)
-    return () => clearInterval(t)
-  }, [load])
+  }, 0)
+
+  const t = setInterval(() => void load(), 15_000)
+
+  return () => {
+    clearTimeout(initialLoad)
+    clearInterval(t)
+  }
+}, [load])
 
   if (!live) {
     return (

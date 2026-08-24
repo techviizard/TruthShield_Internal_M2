@@ -85,9 +85,13 @@ export function CampaignDetectionTab() {
     }
   }, [])
 
-  useEffect(() => {
-    void load()
-  }, [load])
+ useEffect(() => {
+  const loadCampaigns = async () => {
+    await load()
+  }
+
+  void loadCampaigns()
+}, [load])
 
   const selected = (clusters ?? []).find((c) => c.id === selectedId) ?? (clusters ?? [])[0] ?? null
 

@@ -323,17 +323,25 @@ export function MediaComparisonTab() {
   const rightInputRef = useRef<HTMLInputElement>(null)
 
   // Simulate trust scores on file load
-  useEffect(() => {
+useEffect(() => {
+  const simulateLeftTrustScore = async () => {
     if (leftPanel.previewUrl && leftPanel.trustScore === null) {
       setLeftPanel((p) => ({ ...p, trustScore: 82 }))
     }
-  }, [leftPanel.previewUrl, leftPanel.trustScore])
+  }
 
-  useEffect(() => {
+  void simulateLeftTrustScore()
+}, [leftPanel.previewUrl, leftPanel.trustScore])
+
+useEffect(() => {
+  const simulateRightTrustScore = async () => {
     if (rightPanel.previewUrl && rightPanel.trustScore === null) {
       setRightPanel((p) => ({ ...p, trustScore: 41 }))
     }
-  }, [rightPanel.previewUrl, rightPanel.trustScore])
+  }
+
+  void simulateRightTrustScore()
+}, [rightPanel.previewUrl, rightPanel.trustScore])
 
   // Handle file selection
   const handleLeftFile = useCallback((file: File) => {

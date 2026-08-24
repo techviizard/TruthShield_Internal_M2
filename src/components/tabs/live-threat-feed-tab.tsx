@@ -397,7 +397,13 @@ export function LiveThreatFeedTab() {
     } catch { /* keep current */ }
   }, [])
 
-  useEffect(() => { refetchLive() }, [refetchLive])
+  useEffect(() => {
+  const loadThreatFeed = async () => {
+    await refetchLive()
+  }
+
+  void loadThreatFeed()
+}, [refetchLive])
 
   // Filter state
   const [typeFilter, setTypeFilter] = useState<'All' | ThreatType>('All')

@@ -161,7 +161,13 @@ export function AuditLogTab() {
     setEntries([])
   }, [])
 
-  useEffect(() => { fetchEntries() }, [fetchEntries])
+ useEffect(() => {
+  const loadEntries = async () => {
+    await fetchEntries()
+  }
+
+  void loadEntries()
+}, [fetchEntries])
 
   useEffect(() => {
     if (!isAutoRefresh) return

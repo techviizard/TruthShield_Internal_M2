@@ -171,8 +171,12 @@ export function SourceCredibilityTab() {
   }, [])
 
   useEffect(() => {
-    void load()
-  }, [load])
+  const loadSources = async () => {
+    await load()
+  }
+
+  void loadSources()
+}, [load])
 
   const runLookup = async () => {
     const domain = query.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0]

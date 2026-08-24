@@ -46,7 +46,6 @@ export class OpenAICompatibleProvider implements LLMProvider {
       messages: messages.map((m) => ({
         role: m.role,
         content: toOpenAIContent(m.content),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       })) as any,
     })
     const content = res.choices[0]?.message?.content

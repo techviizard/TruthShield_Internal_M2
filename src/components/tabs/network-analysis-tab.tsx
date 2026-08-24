@@ -71,9 +71,13 @@ export function NetworkAnalysisTab() {
     }
   }, [])
 
-  useEffect(() => {
-    void load()
-  }, [load])
+ useEffect(() => {
+  const loadNetworkData = async () => {
+    await load()
+  }
+
+  void loadNetworkData()
+}, [load])
 
   // Degree per node - only connected nodes are worth drawing.
   const degree = useMemo(() => {

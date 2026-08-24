@@ -95,10 +95,13 @@ export function ModelMetricsTab() {
     setLoading(false)
   }
 
-  useEffect(() => {
-    void load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+useEffect(() => {
+  const loadMetrics = async () => {
+    await load()
+  }
+
+  void loadMetrics()
+}, [])
 
   if (loading && !variants) {
     return (

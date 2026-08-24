@@ -291,14 +291,18 @@ function SidebarNav({ activeTab, setActiveTab, onClose }: { activeTab: TabId; se
 }
 
 function IstClock() {
-  const [now, setNow] = useState<string>('')
+  const fmt = () =>
+    new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).format(new Date())
+
+  const [now, setNow] = useState<string>(() => fmt())
+
   useEffect(() => {
-    const fmt = () =>
-      new Intl.DateTimeFormat('en-IN', {
-        timeZone: 'Asia/Kolkata',
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
-      }).format(new Date())
-    setNow(fmt())
     const t = setInterval(() => setNow(fmt()), 1000)
     return () => clearInterval(t)
   }, [])

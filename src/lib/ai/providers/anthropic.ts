@@ -61,7 +61,7 @@ export class AnthropicProvider implements LLMProvider {
       max_tokens: opts?.maxTokens ?? this.cfg.maxTokens,
       temperature: opts?.temperature ?? this.cfg.temperature,
       ...(systemText ? { system: systemText } : {}),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       messages: convo as any,
     })
 

@@ -59,21 +59,21 @@ export function FactCheckTab() {
   const [language, setLanguage] = useState('en')
   const [stage, setStage] = useState(0)
 
-  useEffect(() => {
-    if (!factCheckLoading) {
-      setStage(0)
-      return
-    }
-    const timer = setInterval(() => {
-      setStage((s) => Math.min(s + 1, loadingStages.length - 1))
-    }, 4000)
-    return () => clearInterval(timer)
-  }, [factCheckLoading])
+useEffect(() => {
+  if (!factCheckLoading) return
 
-  const handleVerify = () => {
-    if (!claim.trim()) return
-    verifyFact(claim, language)
-  }
+  const timer = setInterval(() => {
+    setStage((s) => Math.min(s + 1, loadingStages.length - 1))
+  }, 4000)
+
+  return () => clearInterval(timer)
+}, [factCheckLoading])
+
+const handleVerify = () => {
+  if (!claim.trim()) return
+  setStage(0)
+  verifyFact(claim, language)
+}
 
   const handleReset = () => {
     resetFactCheckResult()
