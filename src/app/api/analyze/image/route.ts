@@ -9,6 +9,7 @@ import { fingerprint } from '@/lib/engines/integrity';
 import { recordAudit, clientIp } from '@/lib/engines/audit-logger';
 import { analyzeImageForensics } from '@/lib/engines/image-verdict';
 import { matchKnownHoaxImages, recordHoaxHit } from '@/lib/engines/hoax-match';
+import { error } from 'console';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -21,6 +22,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Image file is required. Use "image" as the form field name.' },
         { status: 400 }
+      );
+    }
+
+    //check image size(max 20MB)
+    const MAX_IMAGE_SIZE = 20 * 1024 * 1024;
+    if (imageFile.size > MAX_IMAGE_SIZE) {
+      return NextResponse.json (
+        {error: "Image too large. Max size 20MB" },
+        { status: 400}
       );
     }
 
