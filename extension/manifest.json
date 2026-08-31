@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "TruthShield - Verify Media & Claims",
+  "version": "1.0.0",
+  "description": "Check selected text, images and links against your TruthShield console for misinformation patterns, known hoaxes and manipulation.",
+  "permissions": ["contextMenus", "storage", "activeTab", "scripting", "notifications"],
+  "host_permissions": ["http://localhost/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TruthShield",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

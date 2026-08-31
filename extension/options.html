@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>TruthShield settings</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; padding: 24px; font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #0b0f14; color: #e6edf3; }
+    .wrap { max-width: 520px; margin: 0 auto; }
+    h1 { font-size: 16px; margin: 0 0 4px; }
+    p.muted { color: #8b98a5; font-size: 12px; margin-top: 0; }
+    label { display: block; font-size: 12px; margin: 16px 0 6px; color: #c9d4de; }
+    input {
+      width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid #1f2a33; background: #0f151c; color: #e6edf3; font: inherit;
+    }
+    button {
+      margin-top: 14px; cursor: pointer; font: inherit; font-weight: 600; padding: 8px 14px;
+      border-radius: 8px; border: 1px solid rgba(16,185,129,.3); background: rgba(16,185,129,.12); color: #34d399;
+    }
+    .status { margin-top: 10px; font-size: 12px; min-height: 18px; }
+    .ok { color: #34d399 } .bad { color: #f87171 }
+    .note { margin-top: 22px; padding: 12px; border: 1px solid #1f2a33; border-radius: 8px; font-size: 12px; color: #8b98a5 }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>TruthShield console</h1>
+    <p class="muted">Where this extension sends text, claims and images for verification.</p>
+
+    <label for="endpoint">Console URL</label>
+    <input id="endpoint" type="url" placeholder="http://localhost:3000" />
+    <button id="save">Save and test</button>
+    <div class="status" id="status"></div>
+
+    <div class="note">
+      Everything you verify is sent to this console and stored there as an analysis report with an
+      evidence hash. Point it only at a console you control or are authorised to use.
+    </div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
