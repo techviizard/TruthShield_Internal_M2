@@ -62,7 +62,15 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-    }
+
+      if (videoFile.size === 0) {
+          return NextResponse.json(
+            { error: 'Uploaded video file is empty.'}, 
+            {status: 400}
+          );
+        }
+
+    
 
     const systemPrompt = `You are an expert video deepfake detection and digital forensics analyst. You specialize in analyzing videos for signs of AI manipulation and deepfake creation. You have deep expertise in:
 
@@ -158,7 +166,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
     // Ensure the result has all required fields with defaults
     const result: AnalysisResult = {
       trustScore: typeof analysisResult.trustScore === 'number'
-        ? Math.max(0, Math.min(100, analysisResult.trustScore))
+        ? Math.max(0, Math.min(100, analysisResult.trustScore ?? 0))
         : 50,
       riskLevel: ['low', 'medium', 'high', 'critical'].includes(analysisResult.riskLevel as string)
         ? (analysisResult.riskLevel as AnalysisResult['riskLevel'])
@@ -240,7 +248,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
     return NextResponse.json(
       {
         error: 'Failed to analyze video',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: 'An unexpected error occurred. Please try again later.',
         processingTime,
       },
       { status: 500 }
