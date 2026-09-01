@@ -189,6 +189,7 @@ export interface AppConfig {
     auditLogPageSize: number
     liveFeedLimit: number
     networkGraphNodeLimit: number
+    maxBatchFiles: number
   }
   dashboard: {
     /** Client poll interval for dashboard widgets (ms). 0 disables polling. */
@@ -317,6 +318,7 @@ function buildConfig(): AppConfig {
       auditLogPageSize: envInt('AUDIT_LOG_PAGE_SIZE', 50),
       liveFeedLimit: envInt('LIVE_FEED_LIMIT', 20),
       networkGraphNodeLimit: envInt('NETWORK_GRAPH_NODE_LIMIT', 200),
+      maxBatchFiles: envInt('MAX_BATCH_FILES', 10),
     },
     dashboard: {
       refreshIntervalMs: envInt('DASHBOARD_REFRESH_MS', 60_000),

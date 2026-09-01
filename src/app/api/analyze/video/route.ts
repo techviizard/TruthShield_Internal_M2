@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-    
+      }
 
     const systemPrompt = `You are an expert video deepfake detection and digital forensics analyst. You specialize in analyzing videos for signs of AI manipulation and deepfake creation. You have deep expertise in:
 

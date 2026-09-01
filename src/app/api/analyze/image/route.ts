@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     const fileExtension = imageFile.name.toLocaleLowerCase().slice(imageFile.name.lastIndexOf('.'));
     if (!allowedExtensions.includes(fileExtension)){
       return NextResponse.json(
-        { error: 'Unsupported file extension: ${fileExtension}. Supported: ${allowedExtensions.join(',')}'},
+        { error: `Unsupported file extension: ${fileExtension}. Supported: ${allowedExtensions.join(',')}`},
         { status: 400 }
       );
     }

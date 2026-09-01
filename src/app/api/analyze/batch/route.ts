@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
 
     // 3. Validation: Loop through files and check types/sizes
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4'];
-    const maxFileSize = appConfig.limits.maxUploadMB * 1024 * 1024;
 
     for (const file of files) {
       if (!allowedTypes.includes(file.type)) {
@@ -33,16 +32,22 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+
+      const maxFileSize = file.type.startsWith('video/')
+        ? appConfig.limits.maxVideoUploadMB * 1024 * 1024
+        : appConfig.limits.maxImageUploadMB * 1024 * 1024;
+
       if (file.size > maxFileSize) {
         return NextResponse.json(
-          { error: `File ${file.name} exceeds the ${appConfig.limits.maxUploadMB} MB limit.` },
+          { error: `File ${file.name} exceeds the size limit.` },
           { status: 400 }
         );
       }
     }
 
     // 4. Processing placeholder (This is where you will call your engines later)
-    const results = [];
+    const results: { filename: string; status: string }[] = [];
+    
     for (const file of files) {
       // TODO: Pass the file to your image/video engine here
       // For now, we just return that it was accepted
@@ -58,7 +63,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Batch analysis error:', error);
     return NextResponse.json(
-      { error: 'Failed to analyse batch files', details: 'An unexpected error occurred. Please try again later.' },
+      { 
+        error: 'Failed to analyse batch files', 
+        details: 'An unexpected error occurred. Please try again later.' 
+      },
       { status: 500 }
     );
   }
