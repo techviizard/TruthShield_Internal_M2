@@ -43,6 +43,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    //validate file extension matches expected types (defence against MIME spoofing)
+    const allowedExtensions = ['.jpg','.jpeg','.png','.webp','.gif','.bmp','.tiff'];
+    const fileExtension = imageFile.name.toLocaleLowerCase().slice(imageFile.name.lastIndexOf('.'));
+    if (!allowedExtensions.includes(fileExtension)){
+      return NextResponse.json(
+        { error: 'Unsupported file extension: ${fileExtension}. Supported: ${allowedExtensions.join(',')}'},
+        { status: 400 }
+      );
+    }
+
     // Validate file size (limit from central config)
     const maxImageMB = appConfig.limits.maxImageUploadMB;
     if (imageFile.size > maxImageMB * 1024 * 1024) {
