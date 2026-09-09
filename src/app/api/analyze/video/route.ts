@@ -126,7 +126,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
         fileName: videoFile.name,
         mimeType: videoFile.type,
       });
-      tempFilePath = path.join('/tmp', `video-${randomUUID()}-${videoFile.name}`);
+      tempFilePath = path.join(tmpdir(), `video-${randomUUID()}-${videoFile.name}`);
       await writeFile(tempFilePath, videoBuffer);
 
       try {
