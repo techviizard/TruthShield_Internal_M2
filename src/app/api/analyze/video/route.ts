@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-    
+      }
 
     const systemPrompt = `You are an expert video deepfake detection and digital forensics analyst. You specialize in analyzing videos for signs of AI manipulation and deepfake creation. You have deep expertise in:
 
@@ -126,7 +126,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
         fileName: videoFile.name,
         mimeType: videoFile.type,
       });
-      tempFilePath = path.join('/tmp', `video-${randomUUID()}-${videoFile.name}`);
+      tempFilePath = path.join(tmpdir(), `video-${randomUUID()}-${videoFile.name}`);
       await writeFile(tempFilePath, videoBuffer);
 
       try {
