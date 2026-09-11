@@ -3,19 +3,36 @@
  * Handles: raw JSON, ```json fenced blocks, or a bare {...} embedded in prose.
  * (Preserves the parsing behaviour the app relied on with the previous SDK.)
  */
-export function extractJson(content: string): Record<string, unknown> {
+export function extractJson(text: string): any {
   try {
-    return JSON.parse(content)
-  } catch {
-    const fenced = content.match(/```(?:json)?\s*([\s\S]*?)```/)
-    if (fenced && fenced[1]) {
-      return JSON.parse(fenced[1].trim())
+    // 1. First, try to parse it as-is just in case it is already clean
+    return JSON.parse(text);
+  } catch (e) {
+    // 2. If that fails, look for Markdown JSON blocks: ```json { ... } ```
+    const markdownMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    
+    if (markdownMatch && markdownMatch[1]) {
+      try {
+        return JSON.parse(markdownMatch[1].trim());
+      } catch (err) {
+        console.error("Failed to parse extracted markdown:", markdownMatch[1]);
+      }
     }
-    const objectMatch = content.match(/\{[\s\S]*\}/)
-    if (objectMatch) {
-      return JSON.parse(objectMatch[0])
+
+    // 3. Fallback: Find the first { and the last } in the whole string
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      const possibleJson = text.substring(firstBrace, lastBrace + 1);
+      try {
+        return JSON.parse(possibleJson);
+      } catch (err) {
+        // Fall through to the final error throw below
+      }
     }
-    throw new Error('Could not parse model response as JSON')
+
+    throw new Error('Could not parse model response as JSON');
   }
 }
 
