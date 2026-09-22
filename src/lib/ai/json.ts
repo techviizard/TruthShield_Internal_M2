@@ -3,20 +3,39 @@
  * Handles: raw JSON, ```json fenced blocks, or a bare {...} embedded in prose.
  * (Preserves the parsing behaviour the app relied on with the previous SDK.)
  */
-export function extractJson(content: string): Record<string, unknown> {
+
+export function extractJson<T = unknown>(text: string): T {
+  const trimmed = text.trim();
+
   try {
-    return JSON.parse(content)
+    return JSON.parse(trimmed) as T;
   } catch {
-    const fenced = content.match(/```(?:json)?\s*([\s\S]*?)```/)
-    if (fenced && fenced[1]) {
-      return JSON.parse(fenced[1].trim())
-    }
-    const objectMatch = content.match(/\{[\s\S]*\}/)
-    if (objectMatch) {
-      return JSON.parse(objectMatch[0])
-    }
-    throw new Error('Could not parse model response as JSON')
+    // Continue with fenced or embedded JSON.
   }
+
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fenced) {
+    try {
+      return JSON.parse(fenced[1]) as T;
+    } catch {
+      // Fall through to the embedded-object fallback.
+    }
+  }
+
+  // 3. Fallback: Find the first { and the last } in the whole string
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    const possibleJson = text.substring(firstBrace, lastBrace + 1);
+    try {
+      return JSON.parse(possibleJson) as T;
+    } catch {
+      // Fall through to the final error throw below.
+    }
+  }
+
+  throw new Error('Could not parse model response as JSON');
 }
 
 /** Split a data URL ("data:image/png;base64,....") into media type + base64 payload. */

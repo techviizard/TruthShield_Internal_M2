@@ -9,28 +9,20 @@ import { fingerprint } from '@/lib/engines/integrity';
 import { recordAudit, clientIp } from '@/lib/engines/audit-logger';
 import { analyzeImageForensics } from '@/lib/engines/image-verdict';
 import { matchKnownHoaxImages, recordHoaxHit } from '@/lib/engines/hoax-match';
-import { error } from 'console';
+import os from 'os';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
-
+  
   try {
     const formData = await request.formData();
     const imageFile = formData.get('image') as File | null;
+    const aiPayload = formData.get('aiPayload') as string | null; // The compressed string for OpenRouter
 
     if (!imageFile) {
       return NextResponse.json(
         { error: 'Image file is required. Use "image" as the form field name.' },
         { status: 400 }
-      );
-    }
-
-    //check image size(max 20MB)
-    const MAX_IMAGE_SIZE = 20 * 1024 * 1024;
-    if (imageFile.size > MAX_IMAGE_SIZE) {
-      return NextResponse.json (
-        {error: "Image too large. Max size 20MB" },
-        { status: 400}
       );
     }
 
@@ -64,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     // Save temporarily to /tmp
     const tempFileName = `image-${randomUUID()}-${imageFile.name}`;
-    const tempFilePath = path.join('/tmp', tempFileName);
+    const tempFilePath = path.join(os.tmpdir(), tempFileName);
     await writeFile(tempFilePath, imageBuffer);
 
     try {
@@ -129,9 +121,9 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
       for (const m of hoaxMatches) await recordHoaxHit(m.id);
 
       let analysisResult: Record<string, unknown>;
-      let usedFallback = false;
+      let usedFallback = true;
       try {
-        analysisResult = await vlmImageAnalysis(dataUrl, `${systemPrompt}\n\n${userPrompt}`);
+       analysisResult = await vlmImageAnalysis(aiPayload || dataUrl, `${systemPrompt}\n\n${userPrompt}`);
       } catch (vlmError) {
         usedFallback = true;
         console.warn('Vision model unavailable, serving in-house forensics only:', vlmError);
@@ -140,6 +132,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
           riskLevel: forensics.riskLevel,
           flags: forensics.signals.filter((s) => s.contribution > 0).map((s) => s.id),
           explanation: `${forensics.explanation} (Vision model unavailable - this verdict comes from pixel-level forensics and metadata alone; no semantic scene reasoning was performed.)`,
+          forensicFindings: ["Vision model analysis failed due to size/timeout. Relying on pixel-level forensics."],
           confidence: 0.55,
           recommendations: [
             'Inspect the highlighted ELA regions against the visible image before concluding.',

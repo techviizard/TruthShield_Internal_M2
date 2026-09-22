@@ -38,18 +38,52 @@ export class OpenAICompatibleProvider implements LLMProvider {
     this.supportsVision = this.cfg.visionEnabled
   }
 
-  async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<string> {
-    const res = await this.client.chat.completions.create({
-      model: opts?.model || this.cfg.model,
-      temperature: opts?.temperature ?? this.cfg.temperature,
-      max_tokens: opts?.maxTokens ?? this.cfg.maxTokens,
-      messages: messages.map((m) => ({
-        role: m.role,
-        content: toOpenAIContent(m.content),
-      })) as any,
-    })
-    const content = res.choices[0]?.message?.content
-    if (!content) throw new Error(`No response from ${this.name}`)
-    return content
+async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<string> {
+  try {
+    // 1. Grab the OpenRouter URL from your .env file
+    const baseUrl = process.env.AI_BASE_URL || "https://openrouter.ai/api/v1";
+    const exactUrl = baseUrl.endsWith('/') ? `${baseUrl}chat/completions` : `${baseUrl}/chat/completions`;
+
+    // 2. Make a direct raw fetch request to OpenRouter
+    const response = await fetch(exactUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.AI_API_KEY}`,
+        "HTTP-Referer": "http://localhost:3000", 
+        "X-Title": "TruthShield" 
+      },
+      body: JSON.stringify({
+        model: opts?.model || process.env.AI_MODEL || "openrouter/free",
+        messages: messages,
+        temperature: opts?.temperature ?? 0.2
+      })
+    });
+
+    // 3. Parse the response
+    const rawText = await response.text();
+    
+    if (rawText.trim().startsWith("<")) {
+      console.error("HTML ERROR RETURNED:", rawText);
+      throw new Error("Received an HTML error page. Check your API key and URL.");
+    }
+
+    const res = JSON.parse(rawText);
+
+    if (!res || !res.choices || res.choices.length === 0) {
+      console.error("NO CHOICES. RAW JSON:", res);
+      throw new Error(`No choices returned from OpenRouter`);
+    }
+
+    const content = res.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error(`Empty response content from OpenRouter`);
+    }
+
+    return content;
+  } catch (error: any) {
+    console.error(`Error in OpenRouter chat provider:`, error?.message || error);
+    throw error;
   }
+}
 }

@@ -37,11 +37,22 @@ export function ImageForensicsTab() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = useCallback((file: File) => {
-    if (!file.type.startsWith('image/')) return
-    const url = URL.createObjectURL(file)
-    setPreviewUrl(url)
-    analyzeImage(file)
-  }, [analyzeImage])
+    // 1. Strict File Type Check
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      alert("Invalid file type! TruthShield only supports JPG, PNG, and WebP.");
+      return; 
+    }
+
+    // 2. Pass the RAW, uncompressed file directly to the backend
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    
+    // If you have a size limit variable like maxImageMB defined, you can add it to the dependency array. 
+    // Otherwise, this cleanly sends the raw file.
+    analyzeImage(file); 
+
+  }, [analyzeImage]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()

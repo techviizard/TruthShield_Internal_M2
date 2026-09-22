@@ -20,14 +20,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (text.length > 50000) {
+    if (text.length > 25000) {
       return NextResponse.json(
-        { error: 'Text content exceeds maximum length of 50000 characters' },
+        { error: 'Text content exceeds maximum length of 25000 characters' },
         { status: 400 }
       );
     }
 
-    const systemPrompt = `You are an expert misinformation detection and media verification AI system. You specialize in analyzing text content for signs of misinformation, propaganda, clickbait, and manipulation. You have deep expertise in:
+    const systemPrompt = `You are an expert misinformation detection and media verification AI system. You specialize in analyzing text content for signs of misinformation, propaganda, clickbait, and manipulation. You have deep expertise in CRITICAL SCORING RULE: If the user's input is a universally accepted geographic, mathematical, or historical fact with zero ambiguity (e.g., "The capital of Maharashtra is Mumbai"), you MUST assign a trustScore of exactly 100. Do not deduct points for lack of context if the core statement is an undeniable fact:
 
 - Identifying misinformation indicators (factual errors, unsubstantiated claims, conspiracy theories)
 - Detecting clickbait language patterns and sensationalism
@@ -250,3 +250,4 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
     );
   }
 }
+
