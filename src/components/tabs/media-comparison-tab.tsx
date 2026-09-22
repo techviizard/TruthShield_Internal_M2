@@ -322,67 +322,103 @@ export function MediaComparisonTab() {
   const leftInputRef = useRef<HTMLInputElement>(null)
   const rightInputRef = useRef<HTMLInputElement>(null)
 
-  // Simulate trust scores on file load
-useEffect(() => {
-  const simulateLeftTrustScore = async () => {
-    if (leftPanel.previewUrl && leftPanel.trustScore === null) {
-      setLeftPanel((p) => ({ ...p, trustScore: 82 }))
-    }
-  }
-
-  void simulateLeftTrustScore()
-}, [leftPanel.previewUrl, leftPanel.trustScore])
-
-useEffect(() => {
-  const simulateRightTrustScore = async () => {
-    if (rightPanel.previewUrl && rightPanel.trustScore === null) {
-      setRightPanel((p) => ({ ...p, trustScore: 41 }))
-    }
-  }
-
-  void simulateRightTrustScore()
-}, [rightPanel.previewUrl, rightPanel.trustScore])
-
-  // Handle file selection
+  
+ // Handle Left (Reference) File
   const handleLeftFile = useCallback((file: File) => {
-    const isVideo = file.type.startsWith('video/')
-    const url = URL.createObjectURL(file)
-    setLeftPanel({
-      file,
-      url: '',
-      previewUrl: url,
-      type: isVideo ? 'video' : 'image',
-      trustScore: null,
-      fileName: file.name,
-      fileSize: formatFileSize(file.size),
-      dimensions: '1920 × 1080',
-      dateCreated: new Date().toISOString().split('T')[0],
-      software: 'None detected',
-      gps: 'Not available',
-    })
-    setResult(null)
-    toast.success('Reference media loaded')
-  }, [])
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    
+    if (!validTypes.includes(file.type)) {
+      toast.error('Invalid file type! Please upload JPG, PNG, or WebP only.');
+      return; 
+    }
+
+    const img = new window.Image();
+    img.src = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const maxWidth = 800;
+      const scale = maxWidth / img.width;
+      canvas.width = maxWidth;
+      canvas.height = img.height * scale;
+      
+      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const tinyFile = new File([blob], file.name, { type: 'image/jpeg' });
+          const url = URL.createObjectURL(tinyFile);
+          
+          setLeftPanel({
+            file: tinyFile,
+            url: '',
+            previewUrl: url,
+            type: 'image',
+            trustScore: null,
+            fileName: tinyFile.name,
+            fileSize: formatFileSize(tinyFile.size),
+            dimensions: `${canvas.width} x ${Math.round(canvas.height)}`, // Dynamically sets real dimensions!
+            dateCreated: new Date().toISOString().split('T')[0],
+            software: 'TruthShield Compressed',
+            gps: 'Not available'
+          });
+          
+          setResult(null);
+          toast.success('Reference media loaded');
+        }
+      }, 'image/jpeg', 0.7); 
+    };
+  }, []);
 
   const handleRightFile = useCallback((file: File) => {
-    const isVideo = file.type.startsWith('video/')
-    const url = URL.createObjectURL(file)
-    setRightPanel({
-      file,
-      url: '',
-      previewUrl: url,
-      type: isVideo ? 'video' : 'image',
-      trustScore: null,
-      fileName: file.name,
-      fileSize: formatFileSize(file.size),
-      dimensions: '1920 × 1080',
-      dateCreated: new Date().toISOString().split('T')[0],
-      software: 'Adobe Photoshop 2024',
-      gps: 'Stripped',
-    })
-    setResult(null)
-    toast.success('Suspect media loaded')
-  }, [])
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    
+    if (!validTypes.includes(file.type)) {
+      toast.error('Invalid file type! Please upload JPG, PNG, or WebP only.');
+      return; 
+    }
+
+    const img = new window.Image();
+    img.src = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const maxWidth = 800;
+      const scale = maxWidth / img.width;
+      canvas.width = maxWidth;
+      canvas.height = img.height * scale;
+      
+      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const tinyFile = new File([blob], file.name, { type: 'image/jpeg' });
+          const url = URL.createObjectURL(tinyFile);
+          
+          setRightPanel({
+            file: tinyFile,
+            url: '',
+            previewUrl: url,
+            type: 'image',
+            trustScore: null,
+            fileName: tinyFile.name,
+            fileSize: formatFileSize(tinyFile.size),
+            dimensions: `${canvas.width} x ${Math.round(canvas.height)}`, // Dynamically sets real dimensions!
+            dateCreated: new Date().toISOString().split('T')[0],
+            software: 'TruthShield Compressed',
+            gps: 'Not available'
+          });
+          
+          setResult(null);
+          toast.success('Suspect media loaded');
+        }
+      }, 'image/jpeg', 0.7); 
+    };
+  }, []);
 
   // Drag handlers
   const makeDragHandlers = (setDragging: (v: boolean) => void, handler: (file: File) => void) => ({
@@ -454,6 +490,11 @@ useEffect(() => {
         differences: realDiffs,
         aiAnalysis: `In-house perceptual-hash similarity: dHash ${j.similarity.dHash}%, aHash ${j.similarity.aHash}%, pixel-level ${j.similarity.pixelDiff}%. Overall ${j.similarity.overall}%. ${j.verdict}`,
       })
+      // Set the original reference image as the 100% baseline
+setLeftPanel(prev => ({ ...prev, trustScore: 100 })); 
+
+// Set the suspect image to the real backend similarity score
+setRightPanel(prev => ({ ...prev, trustScore: overall }));
       toast.success('Real pHash + pixel diff complete!')
     } catch (e) {
       setResult(null)

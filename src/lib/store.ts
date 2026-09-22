@@ -791,9 +791,31 @@ export const useAppStore = create<AppState>((set, get) => ({
   analyzeImage: async (file: File) => {
     set({ imageLoading: true, imageResult: null })
     try {
-      const formData = new FormData()
-      formData.append('image', file)
-      const res = await fetch('/api/analyze/image', { method: 'POST', body: formData })
+     const formData = new FormData()
+        // 1. Send the RAW file for local pixel forensics
+        formData.append('image', file)
+        
+        // 2. Compress a copy specifically for OpenRouter using a Promise
+        const compressedBase64 = await new Promise<string>((resolve, reject) => {
+          const img = new window.Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const scale = 800 / img.width;
+            canvas.width = 800;
+            canvas.height = img.height * scale;
+            ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+          };
+          img.onerror = () => reject(new Error("Failed to compress image"));
+          img.src = URL.createObjectURL(file);
+        });
+
+        // Attach the compressed tiny payload for the AI
+        formData.append('aiPayload', compressedBase64);
+
+        // 3. Dispatch the dual-payload request to your backend
+        const res = await fetch('/api/analyze/image', { method: 'POST', body: formData })
       if (res.ok) {
         const data = await res.json()
         // API returns { success, reportId, analysis: {...}, processingTime }
