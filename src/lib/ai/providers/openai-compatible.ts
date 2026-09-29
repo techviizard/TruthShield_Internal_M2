@@ -53,11 +53,25 @@ async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<string> {
         "HTTP-Referer": "http://localhost:3000", 
         "X-Title": "TruthShield" 
       },
-      body: JSON.stringify({
-        model: opts?.model || process.env.AI_MODEL || "openrouter/free",
-        messages: messages,
-        temperature: opts?.temperature ?? 0.2
-      })
+    body: JSON.stringify({
+  model: opts?.model || process.env.AI_MODEL || "openrouter/free",
+  messages: messages.map((message) => ({
+    ...message,
+    content: Array.isArray(message.content)
+      ? message.content.map((part) =>
+          part.type === 'image'
+            ? {
+                type: 'image_url',
+                image_url: {
+                  url: part.url,
+                },
+              }
+            : part
+        )
+      : message.content,
+  })),
+  temperature: opts?.temperature ?? 0.2
+})
     });
 
     // 3. Parse the response
