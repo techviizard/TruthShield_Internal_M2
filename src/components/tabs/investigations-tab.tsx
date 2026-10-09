@@ -1,6 +1,8 @@
+
 'use client'
 
-import { useState, useMemo, useEffect} from 'react'
+import { jsPDF } from 'jspdf'
+import { useState, useMemo, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,7 +19,7 @@ import {
   Briefcase, Plus, User, Calendar, Tag, FileText,
   ChevronRight, Clock, AlertTriangle, CheckCircle2, Archive, FolderOpen,
   Video, ImageIcon, Shield, TrendingUp, Activity, PlusCircle, AlertOctagon,
-  XCircle, Eye, Search, Zap, Scale, BadgeCheck, MapPin,
+  XCircle, Eye, Search, Zap, Scale, BadgeCheck, MapPin, FileDown, FileJson,
 } from 'lucide-react'
 
 /**
@@ -189,14 +191,12 @@ function RiskGauge({ priority }: { priority: InvestigationPriority }) {
         </Badge>
       </div>
       <div className="relative h-4 rounded-full overflow-hidden bg-muted">
-        {/* Gradient bar */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
             background: 'linear-gradient(to right, #22c55e, #eab308, #f97316, #ef4444)',
           }}
         />
-        {/* Marker */}
         <motion.div
           className="absolute top-0 bottom-0 w-1.5 bg-white dark:bg-gray-900 shadow-lg rounded-full"
           style={{ left: `${markerPosition}%`, transform: 'translateX(-50%)' }}
@@ -327,7 +327,6 @@ function EnhancedTimeline({ inv }: { inv: Investigation }) {
             transition={{ delay: idx * 0.08, duration: 0.3 }}
             className="flex gap-3"
           >
-            {/* Timeline line and dot */}
             <div className="flex flex-col items-center">
               <motion.div
                 className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${config.dotClass}/15 border-2 ${config.dotClass}`}
@@ -342,8 +341,7 @@ function EnhancedTimeline({ inv }: { inv: Investigation }) {
               )}
             </div>
 
-            {/* Event content */}
-            <div className={`pb-4 ${isLast ? '' : ''}`}>
+            <div className="pb-4">
               <p className={`text-sm font-medium ${config.color}`}>
                 {item.event}
               </p>
@@ -369,6 +367,7 @@ export function InvestigationsTab() {
   useEffect(() => {
     void fetchInvestigations()
   }, [fetchInvestigations])
+
   const [selectedInv, setSelectedInv] = useState<Investigation | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [newTitle, setNewTitle] = useState('')
@@ -380,14 +379,162 @@ export function InvestigationsTab() {
   const [newFirNumber, setNewFirNumber] = useState('')
   const [newOfficerBadge, setNewOfficerBadge] = useState('')
   const [newJurisdiction, setNewJurisdiction] = useState('')
+  const [isExporting, setIsExporting] = useState(false)
+
+  /**
+   * Exports the selected investigation and its attached analyses/evidence.
+   * The data is refreshed from the existing investigation API before export.
+   */
+  const handleExportInvestigation = async (format: 'pdf' | 'json') => {
+    if (!selectedInv || isExporting) return
+
+    setIsExporting(true)
+
+    try {
+      const response = await fetch(
+        `/api/investigations/${encodeURIComponent(selectedInv.id)}`
+      )
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success || !result.data) {
+        throw new Error('Could not retrieve investigation details')
+      }
+
+      const investigation = result.data
+      const safeName = String(
+        investigation.title || `investigation-${selectedInv.id}`
+      ).replace(/[^a-z0-9_-]/gi, '_')
+
+      if (format === 'json') {
+        const blob = new Blob(
+          [JSON.stringify(investigation, null, 2)],
+          { type: 'application/json;charset=utf-8' }
+        )
+
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${safeName}-report.json`
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        URL.revokeObjectURL(url)
+
+        toast.success('Investigation JSON report downloaded')
+        return
+      }
+
+      const pdf = new jsPDF()
+      const margin = 15
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const maxWidth = pageWidth - margin * 2
+      let y = 20
+
+      const addText = (value: string, fontSize = 10, gap = 6) => {
+        pdf.setFontSize(fontSize)
+        const lines = pdf.splitTextToSize(value, maxWidth)
+
+        for (const line of lines) {
+          if (y > pageHeight - margin) {
+            pdf.addPage()
+            y = margin
+          }
+          pdf.text(line, margin, y)
+          y += gap
+        }
+      }
+
+      pdf.setProperties({
+        title: `Investigation Report - ${investigation.title || selectedInv.id}`,
+        subject: 'Investigation and attached evidence report',
+        creator: 'TruthShield',
+      })
+
+      addText('INVESTIGATION REPORT', 18, 9)
+      addText(`Title: ${investigation.title || 'Untitled investigation'}`)
+      addText(`Investigation ID: ${investigation.id || selectedInv.id}`)
+      addText(`Status: ${investigation.status || 'Unknown'}`)
+      addText(`Priority: ${investigation.priority || 'Unknown'}`)
+      addText(`Assigned analyst: ${investigation.assignedAnalyst || investigation.assignedTo || 'Unassigned'}`)
+      addText(`Case number: ${investigation.caseNumber || 'Not provided'}`)
+      addText(`FIR number: ${investigation.firNumber || 'Not provided'}`)
+      addText(`Officer: ${investigation.officerName || 'Not provided'}`)
+      addText(`Officer badge: ${investigation.officerBadge || 'Not provided'}`)
+      addText(`Jurisdiction: ${investigation.jurisdiction || 'Not provided'}`)
+      addText(`Created: ${investigation.createdAt || 'Unknown'}`)
+      addText(`Updated: ${investigation.updatedAt || 'Unknown'}`)
+      addText(`Generated: ${new Date().toLocaleString()}`)
+      addText('DESCRIPTION', 13, 8)
+      addText(String(investigation.description || 'No description provided.'))
+      addText('TAGS', 13, 8)
+      addText(
+        Array.isArray(investigation.tags) && investigation.tags.length
+          ? investigation.tags.join(', ')
+          : 'No tags'
+      )
+
+      const analyses = Array.isArray(investigation.analyses)
+        ? investigation.analyses
+        : []
+
+      addText(`ATTACHED ANALYSES / EVIDENCE (${analyses.length})`, 13, 8)
+
+      if (analyses.length === 0) {
+        addText('No analyses or evidence are attached to this investigation.')
+      }
+
+      analyses.forEach((analysis: Record<string, unknown>, index: number) => {
+        addText(`Evidence ${index + 1}`, 11, 7)
+        addText(`Analysis ID: ${String(analysis.id || 'Unknown')}`)
+        addText(`Analysis type: ${String(analysis.analysisType || 'Unknown')}`)
+        addText(`Risk level: ${String(analysis.riskLevel || 'Not provided')}`)
+        addText(`Trust score: ${String(analysis.trustScore ?? 'Not provided')}`)
+        addText(`Created: ${String(analysis.createdAt || 'Unknown')}`)
+
+        const media = analysis.mediaUpload
+        if (media && typeof media === 'object') {
+          const upload = media as Record<string, unknown>
+          addText(`File name: ${String(upload.fileName || 'Not provided')}`)
+          addText(`File type: ${String(upload.fileType || 'Not provided')}`)
+          addText(`MIME type: ${String(upload.mimeType || 'Not provided')}`)
+        }
+
+        const factChecks = Array.isArray(analysis.factChecks)
+          ? analysis.factChecks as Record<string, unknown>[]
+          : []
+
+        if (factChecks.length) {
+          addText(`Fact-check matches: ${factChecks.length}`)
+          factChecks.forEach((factCheck, factIndex) => {
+            addText(`Fact check ${factIndex + 1}`, 10, 5)
+            addText(`Claim: ${String(factCheck.claim || 'Not provided')}`)
+            addText(`Verdict: ${String(factCheck.verdict || 'Not provided')}`)
+            addText(`Source: ${String(factCheck.source || 'Not provided')}`)
+            addText(`URL: ${String(factCheck.url || 'Not provided')}`)
+            addText(`Snippet: ${String(factCheck.snippet || 'Not provided')}`)
+          })
+        }
+      })
+
+      pdf.save(`${safeName}-report.pdf`)
+      toast.success('Investigation PDF report downloaded')
+    } catch (error) {
+      console.error('Investigation report export failed:', error)
+      toast.error('Failed to generate investigation report. Please try again.')
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   const handleCreate = () => {
     if (!newTitle.trim()) return
+
     createInvestigation({
       title: newTitle,
       description: newDescription,
       priority: newPriority,
-      // The API column is `assignedTo`; it also doubles as the officer of record.
       assignedTo: newAnalyst || 'Unassigned',
       officerName: newAnalyst || null,
       officerBadge: newOfficerBadge || null,
@@ -396,6 +543,7 @@ export function InvestigationsTab() {
       jurisdiction: newJurisdiction || null,
       tags: newTags.split(',').map((t) => t.trim()).filter(Boolean),
     })
+
     setDialogOpen(false)
     setNewTitle('')
     setNewDescription('')
@@ -425,6 +573,7 @@ export function InvestigationsTab() {
             </h2>
             <p className="text-sm text-muted-foreground">Manage and track investigation cases</p>
           </div>
+
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-zinc-600 hover:bg-zinc-700 text-white">
@@ -432,20 +581,24 @@ export function InvestigationsTab() {
                 New Investigation
               </Button>
             </DialogTrigger>
+
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Create New Investigation</DialogTitle>
                 <DialogDescription>Start a new investigation case</DialogDescription>
               </DialogHeader>
+
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium">Title</label>
                   <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Investigation title" />
                 </div>
+
                 <div>
                   <label className="text-sm font-medium">Description</label>
                   <Textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} placeholder="Brief description" className="min-h-[80px]" />
                 </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-sm font-medium">Priority</label>
@@ -461,34 +614,40 @@ export function InvestigationsTab() {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div>
                     <label className="text-sm font-medium">Analyst</label>
                     <Input value={newAnalyst} onChange={(e) => setNewAnalyst(e.target.value)} placeholder="Assigned to" />
                   </div>
                 </div>
+
                 <div>
                   <label className="text-sm font-medium">Tags (comma-separated)</label>
                   <Input value={newTags} onChange={(e) => setNewTags(e.target.value)} placeholder="e.g. deepfake, politics, media" />
                 </div>
 
-                {/* Case metadata - optional, but what makes an export citable in a case file */}
+                {/* Case metadata */}
                 <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
                   <p className="text-xs font-semibold text-muted-foreground">
                     Case record <span className="font-normal">(optional - appears on exported reports)</span>
                   </p>
+
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium">Case / DD number</label>
                       <Input value={newCaseNumber} onChange={(e) => setNewCaseNumber(e.target.value)} placeholder="DS/2026/0142" />
                     </div>
+
                     <div>
                       <label className="text-xs font-medium">FIR number</label>
                       <Input value={newFirNumber} onChange={(e) => setNewFirNumber(e.target.value)} placeholder="0091/2026" />
                     </div>
+
                     <div>
                       <label className="text-xs font-medium">Officer badge</label>
                       <Input value={newOfficerBadge} onChange={(e) => setNewOfficerBadge(e.target.value)} placeholder="CCB-2214" />
                     </div>
+
                     <div>
                       <label className="text-xs font-medium">Jurisdiction</label>
                       <Input value={newJurisdiction} onChange={(e) => setNewJurisdiction(e.target.value)} placeholder="Cyber Crime Branch" />
@@ -496,6 +655,7 @@ export function InvestigationsTab() {
                   </div>
                 </div>
               </div>
+
               <DialogFooter>
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleCreate} disabled={!newTitle.trim()} className="bg-zinc-600 hover:bg-zinc-700 text-white">Create</Button>
@@ -531,6 +691,7 @@ export function InvestigationsTab() {
                         </div>
                         <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
                       </div>
+
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
                         <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${statusConfig[inv.status].color}`}>
                           {statusConfig[inv.status].label}
@@ -576,21 +737,17 @@ export function InvestigationsTab() {
                           </Badge>
                         </div>
                       </CardHeader>
+
                       <CardContent className="space-y-4">
                         <p className="text-sm">{selectedInv.description}</p>
 
                         <CaseRecord inv={selectedInv} />
-
                         <Separator />
 
-                        {/* Risk Assessment Gauge */}
                         <RiskGauge priority={selectedInv.priority} />
-
                         <Separator />
 
-                        {/* Quick Stats */}
                         <QuickStats inv={selectedInv} />
-
                         <Separator />
 
                         <div className="grid grid-cols-2 gap-4">
@@ -601,6 +758,7 @@ export function InvestigationsTab() {
                               <p className="text-sm font-medium">{selectedInv.assignedAnalyst}</p>
                             </div>
                           </div>
+
                           <div className="flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                             <div>
@@ -610,6 +768,7 @@ export function InvestigationsTab() {
                               </Badge>
                             </div>
                           </div>
+
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <div>
@@ -617,6 +776,7 @@ export function InvestigationsTab() {
                               <p className="text-sm font-medium">{selectedInv.createdAt}</p>
                             </div>
                           </div>
+
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <div>
@@ -678,33 +838,66 @@ export function InvestigationsTab() {
                       </CardContent>
                     </Card>
 
-                    {/* Action Buttons */}
+                    {/* Action Buttons and Report Downloads */}
                     <Card>
                       <CardContent className="p-4">
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <Button
-                            className="bg-zinc-600 hover:bg-zinc-700 text-white flex-1"
-                            onClick={() => toast.success('Evidence form opened - feature coming soon!')}
-                          >
-                            <PlusCircle className="h-4 w-4 mr-2" />
-                            Add Evidence
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="border-red-500/50 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300 flex-1"
-                            onClick={() => toast.success(`Investigation ${selectedInv.id} escalated!`, { description: 'Priority has been raised and stakeholders notified.' })}
-                          >
-                            <AlertOctagon className="h-4 w-4 mr-2" />
-                            Escalate
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => toast.info(`Investigation ${selectedInv.id} close requested.`, { description: 'This action requires supervisor approval.' })}
-                          >
-                            <XCircle className="h-4 w-4 mr-2" />
-                            Close Investigation
-                          </Button>
+                        <div className="flex flex-col gap-3">
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <Button
+                              className="bg-zinc-600 hover:bg-zinc-700 text-white flex-1"
+                              onClick={() => toast.success('Evidence form opened - feature coming soon!')}
+                            >
+                              <PlusCircle className="h-4 w-4 mr-2" />
+                              Add Evidence
+                            </Button>
+
+                            <Button
+                              variant="outline"
+                              className="border-red-500/50 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300 flex-1"
+                              onClick={() => toast.success(`Investigation ${selectedInv.id} escalated!`, { description: 'Priority has been raised and stakeholders notified.' })}
+                            >
+                              <AlertOctagon className="h-4 w-4 mr-2" />
+                              Escalate
+                            </Button>
+
+                            <Button
+                              variant="outline"
+                              className="flex-1"
+                              onClick={() => toast.info(`Investigation ${selectedInv.id} close requested.`, { description: 'This action requires supervisor approval.' })}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Close Investigation
+                            </Button>
+                          </div>
+
+                          <Separator />
+
+                          <p className="text-sm font-semibold">Generate Investigation Report</p>
+                          <p className="text-xs text-muted-foreground">
+                            Export this investigation and its linked analyses and evidence.
+                          </p>
+
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <Button
+                              variant="outline"
+                              className="flex-1"
+                              onClick={() => void handleExportInvestigation('pdf')}
+                              disabled={isExporting}
+                            >
+                              <FileDown className="h-4 w-4 mr-2" />
+                              {isExporting ? 'Generating...' : 'Download PDF'}
+                            </Button>
+
+                            <Button
+                              variant="outline"
+                              className="flex-1"
+                              onClick={() => void handleExportInvestigation('json')}
+                              disabled={isExporting}
+                            >
+                              <FileJson className="h-4 w-4 mr-2" />
+                              {isExporting ? 'Generating...' : 'Download JSON'}
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -720,7 +913,9 @@ export function InvestigationsTab() {
                     </div>
                     <div>
                       <p className="text-lg font-medium">Select an Investigation</p>
-                      <p className="text-sm text-muted-foreground mt-1">Click on a case from the list to view details, evidence, and timeline</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Click on a case from the list to view details, evidence, and timeline
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
