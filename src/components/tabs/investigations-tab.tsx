@@ -391,24 +391,31 @@ export function InvestigationsTab() {
     setIsExporting(true)
 
     try {
-      const response = await fetch(
-        `/api/investigations/${encodeURIComponent(selectedInv.id)}`
-      )
+      const investigationUrl =
+  `/api/investigations/${encodeURIComponent(selectedInv.id)}`
 
-      const result = await response.json()
+const response =
+  format === 'json'
+    ? await fetch(`${investigationUrl}/report`, { method: 'POST' })
+    : await fetch(investigationUrl)
 
-      if (!response.ok || !result.success || !result.data) {
-        throw new Error('Could not retrieve investigation details')
-      }
+const result = await response.json()
 
-      const investigation = result.data
-      const safeName = String(
+if (!response.ok || !result.success || !result.data) {
+  throw new Error(result.error || 'Could not retrieve investigation details')
+}
+
+const investigation =
+  format === 'json' ? result.data.investigation : result.data      
+
+
+const safeName = String(
         investigation.title || `investigation-${selectedInv.id}`
       ).replace(/[^a-z0-9_-]/gi, '_')
 
       if (format === 'json') {
         const blob = new Blob(
-          [JSON.stringify(investigation, null, 2)],
+          [JSON.stringify(result.data, null, 2)],
           { type: 'application/json;charset=utf-8' }
         )
 
