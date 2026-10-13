@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type');
     const riskLevel = searchParams.get('riskLevel');
     const search = searchParams.get('search');
+    const unattachedOnly = searchParams.get('unattachedOnly') === 'true';
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(
       searchParams.get('limit') || String(appConfig.limits.historyPageSize),
@@ -25,6 +26,10 @@ export async function GET(request: NextRequest) {
 
     if (riskLevel) {
       where.riskLevel = riskLevel;
+    }
+
+    if (unattachedOnly) {
+      where.investigationId = null;
     }
 
     if (search) {
@@ -67,6 +72,7 @@ export async function GET(request: NextRequest) {
 
     const items = reports.map((report) => ({
       id: report.id,
+      investigationId: report.investigationId,
       createdAt: report.createdAt.toISOString(),
       analysisType: report.analysisType,
       trustScore: report.trustScore,
