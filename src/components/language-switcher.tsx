@@ -39,8 +39,7 @@ export function LanguageSwitcher() {
         ))}
         <DropdownMenuSeparator />
         <p className="px-2 py-1.5 text-[10px] leading-snug text-muted-foreground">
-          Changes the console interface. Analysis covers every configured language regardless of this
-          setting.
+          {t('languageHint')}
         </p>
       </DropdownMenuContent>
     </DropdownMenu>

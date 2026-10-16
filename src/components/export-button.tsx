@@ -10,6 +10,7 @@ import {
 import { Download, FileJson, FileText, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 interface ExportButtonProps {
   data: Record<string, unknown>
@@ -25,6 +26,7 @@ export function ExportButton({
   size = 'sm',
 }: ExportButtonProps) {
   const [exporting, setExporting] = useState(false)
+  const t = useTranslations('export')
 
   const handleExport = async (format: 'json' | 'pdf') => {
     setExporting(true)
@@ -46,9 +48,9 @@ export function ExportButton({
       document.body.removeChild(a)
       window.URL.revokeObjectURL(url)
 
-      toast.success(`Report exported as ${format.toUpperCase()}`)
+      toast.success(t('success', { format: format.toUpperCase() }))
     } catch {
-      toast.error('Export failed. Please try again.')
+      toast.error(t('failed'))
     } finally {
       setExporting(false)
     }
@@ -63,17 +65,17 @@ export function ExportButton({
           ) : (
             <Download className="h-4 w-4" />
           )}
-          {size !== 'icon' && <span className="ml-2">Export</span>}
+          {size !== 'icon' && <span className="ml-2">{t('button')}</span>}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => handleExport('json')}>
           <FileJson className="h-4 w-4 mr-2" />
-          Export as JSON
+          {t('exportJson')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleExport('pdf')}>
           <FileText className="h-4 w-4 mr-2" />
-          Export as PDF
+          {t('exportPdf')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
