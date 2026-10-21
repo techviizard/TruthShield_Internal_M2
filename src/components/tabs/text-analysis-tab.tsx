@@ -62,6 +62,8 @@ const SCRIPT_TO_LANGUAGE: Record<string, string> = {
   telugu: 'te',
 }
 
+const MAX_CHARS = 10000
+
 export function TextAnalysisTab() {
   const {
     textInput, setTextInput, selectedLanguage, setSelectedLanguage,
@@ -69,6 +71,7 @@ export function TextAnalysisTab() {
   } = useAppStore()
   const t = useTranslations('textAnalysis')
   const [autoDetected, setAutoDetected] = useState<{ script: string; language: string } | null>(null)
+  const isOverLimit = textInput.length > MAX_CHARS
 
   /**
    * Detect the script as the analyst types and switch the analysis language to
@@ -108,12 +111,30 @@ export function TextAnalysisTab() {
             <CardDescription>{t('subtitle')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Textarea
-              placeholder="Paste the text content you want to analyze for misinformation, propaganda, or fake news..."
-              className="min-h-[180px] resize-y text-sm"
-              value={textInput}
+            <textarea
+             value={textInput}
               onChange={(e) => handleInput(e.target.value)}
+              placeholder="Paste news article, social media post, or message here to verify its authenticity..."
+              className={`w-full h-48 p-4 rounded-md border ${
+                isOverLimit ? 'border-red-500 bg-red-50/10' : 'border-gray-600 bg-gray-800'
+              } text-white focus:outline-none`}
             />
+            <div className="flex justify-between items-center mt-2 text-sm">
+               {/* The Character Counter */}
+               <span className={isOverLimit ? "text-red-500 font-bold" : "text-gray-400"}>
+              {textInput.length.toLocaleString()} / {MAX_CHARS.toLocaleString()} characters
+              </span>
+  
+               {/* The Warning Message (Only shows if over limit) */}
+               {isOverLimit && (
+               <span className="text-red-500 font-medium flex items-center">
+               <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+               Text exceeds the maximum allowed length.
+               </span>
+               )}
+              </div>
             {autoDetected && (
               <p className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
                 <Languages className="h-3.5 w-3.5" />
@@ -136,9 +157,8 @@ export function TextAnalysisTab() {
               </Select>
               <div className="flex gap-2">
                 <Button
-                  onClick={analyzeText}
-                  disabled={textLoading || !textInput.trim()}
-                  className="bg-zinc-600 hover:bg-zinc-700 text-white"
+                  onClick={() => analyzeText()}
+                  disabled={textLoading || textInput.trim().length === 0 || isOverLimit}
                 >
                   {textLoading ? (
                     <>

@@ -98,7 +98,9 @@ You MUST respond in strict JSON format with the following structure:
   "sourceStances": [<for each numbered search result provided, an object {"index": <1-based result number>, "stance": "<supports|refutes|mixed|unrelated>"} describing whether that source supports or refutes the claim>]
 }
 
-IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outside the JSON.`;
+CRITICAL SCORING RULE: If the user's input is a universally accepted geographic, mathematical, or historical fact with zero ambiguity, you MUST assign a "verdict" of "true" and a "confidence" of exactly 1. Do not reduce confidence for lack of context.
+
+  WARNING: You MUST respond ONLY with raw, valid JSON. Do not include any conversational text, greetings, explanations, or markdown formatting. Your entire output must start with { and end with }.`;
 
     const searchContext = searchResults.length > 0
       ? `\n\nSearch results from fact-checking sources:\n${searchResults.map((r, i) => `${i + 1}. ${r.title || 'Untitled'} - ${r.snippet || 'No snippet'} (${r.url || 'No URL'})`).join('\n')}`
