@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { scoreText } from '@/lib/engines/text-heuristics'
 // Static import is safe: the module touches IndexedDB only inside its functions.
 import { enqueue } from '@/lib/offline-queue'
+import { decodeToWav } from '@/lib/audio-decode'
 
 export type TabId = 'dashboard' | 'text' | 'image' | 'video' | 'factcheck' | 'investigations' | 'alerts' | 'watchlist' | 'community' | 'settings' | 'history' | 'reverseSearch' | 'chat' | 'batch' | 'auditLog' | 'comparison' | 'browserExtension' | 'modelMetrics' | 'apiDocs' | 'networkAnalysis' | 'campaignDetection' | 'ocrScanner' | 'audioDeepfake' | 'sourceCredibility' | 'liveThreatFeed' | 'educationResources' | 'workflowAutomation' | 'systemHealth' | 'dataVisualization' | 'reportGenerator'
 
@@ -102,14 +103,28 @@ export interface ImageAnalysisResult {
   }
 }
 
+
 export interface VideoAnalysisResult {
   deepfakeProbability: number
-  frameAnalysis: { totalFrames: number; flaggedFrames: number; consistency: number }
-  faceAnalysis: { facesDetected: number; anomalies: string[]; confidence: number }
+  frameAnalysis: {
+    totalFrames: number
+    flaggedFrames: number
+    consistency: number
+  }
+  faceAnalysis: {
+    facesDetected: number
+    anomalies: string[]
+    confidence: number
+  }
   temporalConsistency: number
   audioVisualSync: number
+  audioAnalysis?: {
+    available: boolean
+    note: string
+  }
   riskAssessment: RiskLevel
 }
+
 
 export interface FactCheckResult {
   verdict: Verdict
@@ -906,6 +921,37 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   analyzeVideo: async (file: File) => {
     set({ videoLoading: true, videoResult: null })
+    let audioAuthenticity = 0.5
+let audioAnalysis: { available: boolean; note: string } = {
+  available: false,
+  note: 'No audio track could be extracted or analysed for this video.',
+}
+
+try {
+  const wav = await decodeToWav(file)
+  const audioFormData = new FormData()
+  audioFormData.append('audio', wav, 'extracted-audio.wav')
+
+  const audioRes = await fetch('/api/forensics/audio', {
+    method: 'POST',
+    body: audioFormData,
+  })
+
+  if (audioRes.ok) {
+    const audioData = await audioRes.json()
+    const trustScore = audioData?.analysis?.trustScore
+
+    if (typeof trustScore === 'number') {
+      audioAuthenticity = Math.max(0, Math.min(1, trustScore / 100))
+      audioAnalysis = {
+        available: true,
+        note: "Based on independent signal analysis of the video's extracted audio track.",
+      }
+    }
+  }
+} catch {
+  // Audio extraction may fail if no decodable audio track exists.
+}
     try {
       const formData = new FormData()
       formData.append('video', file)
@@ -945,9 +991,10 @@ export const useAppStore = create<AppState>((set, get) => ({
             temporalConsistency: typeof analysis.confidence === 'number'
               ? (analysis.confidence <= 1 ? Math.min(1, analysis.confidence + 0.1) : Math.min(1, analysis.confidence / 100 + 0.1))
               : 0.6,
-            audioVisualSync: typeof (avDetails as Record<string, unknown> | undefined)?.lipSyncScore === 'number'
-              ? ((avDetails as Record<string, unknown>).lipSyncScore as number) / 100
-              : 0.7,
+            audioVisualSync: typeof avDetails?.lipSyncScore === 'number'
+              ? Math.max(0, Math.min(1, avDetails.lipSyncScore / 100))
+              : 0.5,
+            audioAnalysis,
             riskAssessment: analysis.riskLevel || 'medium',
           },
         })
