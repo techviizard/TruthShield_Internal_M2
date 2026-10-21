@@ -121,7 +121,7 @@ const searchItems = [
   { label: 'Workflow Automation & Pipelines', tab: 'workflowAutomation' as TabId, icon: Workflow, keywords: 'workflow automation pipeline builder trigger verify notify export schedule' },
 ]
 
-const emptySubscribe = () => () => {}
+const emptySubscribe = () => () => { }
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
@@ -163,9 +163,9 @@ function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
 
   const filtered = query.trim()
     ? searchItems.filter((item) =>
-        item.label.toLowerCase().includes(query.toLowerCase()) ||
-        item.keywords.toLowerCase().includes(query.toLowerCase())
-      )
+      item.label.toLowerCase().includes(query.toLowerCase()) ||
+      item.keywords.toLowerCase().includes(query.toLowerCase())
+    )
     : searchItems
 
   const handleSelect = (tab: TabId) => {
@@ -265,11 +265,10 @@ function SidebarNav({ activeTab, setActiveTab, onClose }: { activeTab: TabId; se
                   setActiveTab(item.id)
                   onClose?.()
                 }}
-                className={`group relative w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'nav-active'
-                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                }`}
+                className={`group relative w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive
+                  ? 'nav-active'
+                  : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                  }`}
               >
                 {isActive && (
                   <span className="absolute left-0 top-1/2 h-5 -translate-y-1/2 rounded-r-full bg-[var(--brand-teal)]" style={{ width: 3 }} />
@@ -420,8 +419,12 @@ export default function Home() {
 
           {/* Brand */}
           <div className="flex items-center gap-2.5">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-orange)]/10 ring-1 ring-[var(--brand-orange)]/20">
-              <Shield className="h-5 w-5 text-brand-orange" />
+            <div className="flex h-9 w-9 items-center justify-center">
+              <img
+                src="/TruthS.png"
+                alt="TruthShield Logo"
+                className="h-9 w-9 object-contain"
+              />
             </div>
             <div className="hidden sm:flex flex-col leading-tight">
               <span className="font-bold text-[15px] tracking-tight">TruthShield</span>
