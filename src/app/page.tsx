@@ -127,7 +127,7 @@ function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false)
 
-  if (!mounted) return <HButton variant="ghost" isIconOnly size="sm" className="h-9 w-9"><Sun className="h-4 w-4" /></HButton>
+  if (!mounted) return <HButton variant="ghost" isIconOnly size="sm" className="h-9 w-9" aria-label="Toggle theme"><Sun className="h-4 w-4" /></HButton>
 
   return (
     <HButton
@@ -136,7 +136,7 @@ function ThemeToggle() {
       size="sm"
       className="h-9 w-9"
       onPress={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-      aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label="Toggle theme"
     >
       {resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </HButton>
@@ -147,6 +147,7 @@ function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
   const [query, setQuery] = useState('')
   const { setActiveTab } = useAppStore()
   const inputRef = useRef<HTMLInputElement>(null)
+  const tApp = useTranslations('app')
 
   // Reset query when dialog opens
   const handleOpenChange = (v: boolean) => {
@@ -178,14 +179,14 @@ function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden">
         <DialogHeader className="sr-only">
-          <DialogTitle>Search TruthShield</DialogTitle>
-          <DialogDescription>Search for features, tools, and actions</DialogDescription>
+          <DialogTitle>{tApp('searchTitle')}</DialogTitle>
+          <DialogDescription>{tApp('searchDesc')}</DialogDescription>
         </DialogHeader>
         <div className="flex items-center border-b px-3">
           <Search className="h-4 w-4 text-muted-foreground shrink-0 mr-2" />
           <input
             ref={inputRef}
-            placeholder="Search features, tools, actions..."
+            placeholder={tApp('searchPlaceholder')}
             className="flex-1 h-12 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -203,7 +204,7 @@ function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
           <div className="p-2">
             {filtered.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
-                No results found for &quot;{query}&quot;
+                {tApp('noResults', { query })}
               </div>
             ) : (
               <div className="space-y-0.5">
@@ -376,6 +377,7 @@ export default function Home() {
   }
 
   const tNav = useTranslations('nav')
+  const tApp = useTranslations('app')
   const activeLabel = tNav(activeTab)
 
   return (
@@ -394,13 +396,13 @@ export default function Home() {
           {/* Mobile menu */}
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
-              <HButton variant="ghost" isIconOnly size="sm" className="lg:hidden h-9 w-9">
+              <HButton variant="ghost" isIconOnly size="sm" className="lg:hidden h-9 w-9 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" aria-label={tApp('openMenu')}>
                 <Menu className="h-5 w-5" />
               </HButton>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-72 bg-sidebar">
-              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-              <SheetDescription className="sr-only">Navigate between TruthShield sections</SheetDescription>
+              <SheetTitle className="sr-only">{tApp('navMenu')}</SheetTitle>
+              <SheetDescription className="sr-only">{tApp('navDesc')}</SheetDescription>
               <div className="flex flex-col h-full">
                 <div className="flex items-center gap-2.5 px-4 h-14 border-b border-border/60">
                   <Shield className="h-6 w-6 text-brand-orange" />
@@ -428,7 +430,7 @@ export default function Home() {
             </div>
             <div className="hidden sm:flex flex-col leading-tight">
               <span className="font-bold text-[15px] tracking-tight">TruthShield</span>
-              <span className="text-[11px] font-medium text-muted-foreground/70 -mt-0.5">Information Integrity Console</span>
+              <span className="text-[11px] font-medium text-muted-foreground/70 -mt-0.5">{tApp('tagline')}</span>
             </div>
           </div>
 
@@ -445,7 +447,7 @@ export default function Home() {
             className="hidden md:flex items-center gap-2 h-9 px-3 rounded-lg border border-border/60 bg-muted/20 text-sm text-muted-foreground hover:bg-muted/40 hover:border-border transition-colors min-w-[220px]"
           >
             <Search className="h-4 w-4 shrink-0" />
-            <span className="flex-1 text-left">Search…</span>
+            <span className="flex-1 text-left">{tApp('search')}</span>
             <Kbd>⌘K</Kbd>
           </button>
 
@@ -456,7 +458,7 @@ export default function Home() {
             size="sm"
             className="hidden md:flex h-9 w-9"
             onPress={() => setShortcutsOpen(true)}
-            aria-label="Show keyboard shortcuts"
+            aria-label={tApp('shortcuts')}
           >
             <Keyboard className="h-4 w-4" />
           </HButton>
@@ -467,7 +469,7 @@ export default function Home() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--brand-teal)] opacity-60" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--brand-teal)]" />
             </span>
-            <span className="font-medium text-brand-teal">Operational</span>
+            <span className="font-medium text-brand-teal">{tApp('operational')}</span>
             <span className="h-3 w-px bg-border" />
             <IstClock />
           </div>
@@ -480,7 +482,7 @@ export default function Home() {
 
           {/* Notification bell */}
           <NotificationCenter>
-            <HButton variant="ghost" isIconOnly size="sm" className="relative h-9 w-9" aria-label="Notifications">
+            <HButton variant="ghost" isIconOnly size="sm" className="relative h-9 w-9" aria-label={tApp('notifications')}>
               <Bell className="h-4 w-4" />
               {unreadAlerts > 0 && (
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-background" />
@@ -506,8 +508,8 @@ export default function Home() {
             <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/40 cursor-pointer transition-colors">
               <Avatar className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-teal)]/15 text-brand-teal text-xs font-bold ring-1 ring-[var(--brand-teal)]/25">DS</Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">Sr. Analyst</p>
-                <p className="text-[11px] text-muted-foreground truncate">Ops Desk 07 · Clearance L3</p>
+                <p className="text-sm font-medium truncate">{tApp('role')}</p>
+                <p className="text-[11px] text-muted-foreground truncate">{tApp('clearance')}</p>
               </div>
               <LogOut className="h-4 w-4 text-muted-foreground shrink-0" />
             </div>
@@ -515,7 +517,7 @@ export default function Home() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0 bg-background">
+        <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 bg-background outline-none">
           <ScrollArea className="h-[calc(100vh-3.5rem-3rem-2px)]">
             <div className="p-4 md:p-6 lg:p-8">
               <AnimatePresence mode="wait">

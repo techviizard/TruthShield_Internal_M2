@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppStore, type RiskLevel, type TabId } from '@/lib/store'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import {
   BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell,
@@ -168,6 +169,8 @@ function formatUptime(sec: number): string {
 
 export function DashboardTab() {
   const { dashboardStats, dashboardLoading, fetchDashboardStats, setActiveTab } = useAppStore()
+  const t = useTranslations('dashboard')
+  const tRisk = useTranslations('risk')
   const [liveSparks, setLiveSparks] = useState<LiveSparks | null>(null)
   const [livePerf, setLivePerf] = useState<LiveModelPerf | null>(null)
   const [liveTicker, setLiveTicker] = useState<LiveTickerItem[] | null>(null)
@@ -235,12 +238,21 @@ export function DashboardTab() {
   const sparkFor = (key: keyof LiveSparks): number[] | null =>
     liveSparks && liveSparks[key]?.some((v) => v > 0) ? liveSparks[key] : null
 
+  const statCardLabels: Record<string, string> = {
+    totalAnalyses: t('stats.totalAnalyses'),
+    fakeNewsDetected: t('stats.fakeNewsDetected'),
+    deepfakesDetected: t('stats.deepfakesDetected'),
+    imagesAnalyzed: t('stats.imagesAnalyzed'),
+    avgTrustScore: t('stats.avgTrustScore'),
+    activeAlerts: t('stats.activeAlerts'),
+  }
+
   const effectivePerfData = livePerf
     ? [
-        { label: 'Detection Accuracy', value: livePerf.detectionAccuracy, unit: '%', color: '#e4e4e7', bgColor: 'bg-zinc-500/10', textColor: 'text-zinc-500', icon: Target, trend: 'up' as const },
-        { label: 'False Positive Rate', value: livePerf.falsePositiveRate, unit: '%', color: '#f59e0b', bgColor: 'bg-amber-500/10', textColor: 'text-amber-500', icon: AlertCircle, trend: 'down' as const },
-        { label: 'Processing Speed', value: Math.round((livePerf.avgProcessingMs / 1000) * 100) / 100, unit: 's avg', color: '#a1a1aa', bgColor: 'bg-zinc-500/10', textColor: 'text-zinc-500', icon: Timer, trend: 'down' as const },
-        { label: 'Model Confidence', value: livePerf.avgConfidence, unit: '%', color: '#06b6d4', bgColor: 'bg-cyan-500/10', textColor: 'text-cyan-500', icon: Gauge, trend: 'up' as const },
+        { label: t('detectionAccuracy'), value: livePerf.detectionAccuracy, unit: '%', color: '#e4e4e7', bgColor: 'bg-zinc-500/10', textColor: 'text-zinc-500', icon: Target, trend: 'up' as const },
+        { label: t('falsePositiveRate'), value: livePerf.falsePositiveRate, unit: '%', color: '#f59e0b', bgColor: 'bg-amber-500/10', textColor: 'text-amber-500', icon: AlertCircle, trend: 'down' as const },
+        { label: t('processingSpeed'), value: Math.round((livePerf.avgProcessingMs / 1000) * 100) / 100, unit: 's avg', color: '#a1a1aa', bgColor: 'bg-zinc-500/10', textColor: 'text-zinc-500', icon: Timer, trend: 'down' as const },
+        { label: t('modelConfidence'), value: livePerf.avgConfidence, unit: '%', color: '#06b6d4', bgColor: 'bg-cyan-500/10', textColor: 'text-cyan-500', icon: Gauge, trend: 'up' as const },
       ]
     : []
 
@@ -269,11 +281,11 @@ export function DashboardTab() {
                   {/* Glow effect */}
                   <div className="absolute inset-0 h-8 w-8 rounded-full bg-zinc-400/30 blur-md animate-pulse" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white">TruthShield</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">{t('heroTitle')}</h1>
                 <Badge className="bg-zinc-500/20 text-zinc-300 border-zinc-500/30 text-[10px] px-1.5 py-0 ml-1">v{liveConfig?.app.version ?? ''}</Badge>
               </div>
               <p className="text-sm sm:text-base text-zinc-100/80 max-w-lg">
-                AI-Powered Digital Media Verification Platform - Detect deepfakes, combat misinformation, verify facts in real-time
+                {t('heroSubtitle')}
               </p>
             </div>
           </div>
@@ -301,7 +313,7 @@ export function DashboardTab() {
                         <card.icon className={`h-5 w-5 ${card.color}`} />
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">{card.label}</p>
+                        <p className="text-sm text-muted-foreground">{statCardLabels[card.key] ?? card.label}</p>
                         <p className="text-2xl font-bold">{typeof val === 'number' ? val.toLocaleString() : val}</p>
                       </div>
                     </div>
@@ -338,13 +350,13 @@ export function DashboardTab() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
                 </span>
-                <span className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider">Live</span>
+                <span className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider">{t('live')}</span>
               </div>
               {/* min-w-0 keeps the nowrap marquee from widening the whole page */}
               <div className="flex-1 min-w-0 overflow-hidden">
                 <div className="flex animate-marquee whitespace-nowrap gap-8">
                   {(liveTicker && liveTicker.length > 0 ? liveTicker : [
-                    { text: 'Awaiting first analysis - start with Text or Image tab', type: 'info', icon: '🔵' },
+                    { text: t('awaitingFirstAnalysis'), type: 'info', icon: '🔵' },
                   ]).map((item, i) => (
                     <span key={i} className="text-xs text-muted-foreground flex items-center gap-2">
                       <span>{item.icon}</span>
@@ -367,25 +379,25 @@ export function DashboardTab() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Server className="h-4 w-4 text-zinc-500" />
-                Platform Health
+                {t('platformHealth')}
               </CardTitle>
-              <CardDescription>System status and performance metrics</CardDescription>
+              <CardDescription>{t('platformHealthDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                   <div className={`h-2.5 w-2.5 rounded-full animate-pulse ${liveHealth ? 'bg-green-500' : 'bg-amber-500'}`} />
                   <div>
-                    <p className="text-xs text-muted-foreground">API Status</p>
+                    <p className="text-xs text-muted-foreground">{t('apiStatus')}</p>
                     <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                      {liveHealth ? 'Operational' : 'Checking…'}
+                      {liveHealth ? t('operational') : t('checking')}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                   <div className={`h-2.5 w-2.5 rounded-full animate-pulse ${liveConfig?.ai.configured ? 'bg-green-500' : 'bg-red-500'}`} />
                   <div>
-                    <p className="text-xs text-muted-foreground">AI Model</p>
+                    <p className="text-xs text-muted-foreground">{t('aiModel')}</p>
                     <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 truncate">
                       {liveConfig ? `${liveConfig.ai.provider} · ${liveConfig.ai.model}` : ' - '}
                     </p>
@@ -394,7 +406,7 @@ export function DashboardTab() {
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                   <Cpu className="h-4 w-4 text-amber-500 shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Queue / CPU</p>
+                    <p className="text-xs text-muted-foreground">{t('queueCpu')}</p>
                     <p className="text-sm font-medium">
                       {liveHealth ? `${liveHealth.db.queuedAnalyses} queued · ${liveHealth.cpu.usagePct}%` : ' - '}
                     </p>
@@ -403,7 +415,7 @@ export function DashboardTab() {
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
                   <Clock className="h-4 w-4 text-zinc-500 shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Process Uptime</p>
+                    <p className="text-xs text-muted-foreground">{t('processUptime')}</p>
                     <p className="text-sm font-medium">
                       {liveHealth ? formatUptime(liveHealth.uptime.processSec) : ' - '}
                     </p>
@@ -420,9 +432,9 @@ export function DashboardTab() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Zap className="h-4 w-4 text-zinc-500" />
-                Quick Actions
+                {t('quickActions')}
               </CardTitle>
-              <CardDescription>Jump to common analysis tasks</CardDescription>
+              <CardDescription>{t('quickActionsDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-3">
@@ -432,7 +444,7 @@ export function DashboardTab() {
                   onClick={() => setActiveTab('text')}
                 >
                   <FileText className="h-6 w-6" />
-                  <span className="text-xs font-medium">New Text Analysis</span>
+                  <span className="text-xs font-medium">{t('newTextAnalysis')}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -440,7 +452,7 @@ export function DashboardTab() {
                   onClick={() => setActiveTab('image')}
                 >
                   <Upload className="h-6 w-6" />
-                  <span className="text-xs font-medium">Upload Image</span>
+                  <span className="text-xs font-medium">{t('uploadImage')}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -448,7 +460,7 @@ export function DashboardTab() {
                   onClick={() => setActiveTab('factcheck')}
                 >
                   <Search className="h-6 w-6" />
-                  <span className="text-xs font-medium">Verify Claim</span>
+                  <span className="text-xs font-medium">{t('verifyClaim')}</span>
                 </Button>
               </div>
             </CardContent>
@@ -462,9 +474,9 @@ export function DashboardTab() {
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Cpu className="h-4 w-4 text-zinc-500" />
-              Model Performance
+              {t('modelPerformance')}
             </CardTitle>
-            <CardDescription>Measured over {livePerf?.totalSamples ?? 0} completed analyses</CardDescription>
+            <CardDescription>{t('measuredOver', { count: livePerf?.totalSamples ?? 0 })}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
@@ -498,7 +510,7 @@ export function DashboardTab() {
                         <ArrowDownRight className="h-3 w-3 text-zinc-500" />
                       )}
                       <span className="text-[10px] text-muted-foreground">
-                        {metric.trend === 'up' ? 'Improving' : 'Decreasing'}
+                        {metric.trend === 'up' ? t('improving') : t('decreasing')}
                       </span>
                     </div>
                   </div>
@@ -515,8 +527,8 @@ export function DashboardTab() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Card className="border rounded-xl hover:shadow-lg transition-all duration-300 overflow-hidden shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Analysis Trends</CardTitle>
-              <CardDescription>Daily analyses vs threats detected - last {s.trendData.length} days</CardDescription>
+              <CardTitle className="text-base">{t('analysisTrends')}</CardTitle>
+              <CardDescription>{t('analysisTrendsDesc', { days: s.trendData.length })}</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
@@ -536,8 +548,8 @@ export function DashboardTab() {
                   <YAxis tick={{ fontSize: 12 }} className="text-muted-foreground" />
                   <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))' }} />
                   <Legend />
-                  <Area type="monotone" dataKey="analyses" stroke="#e4e4e7" fill="url(#colorAnalyses)" strokeWidth={2} name="Analyses" />
-                  <Area type="monotone" dataKey="threats" stroke="#ef4444" fill="url(#colorThreats)" strokeWidth={2} name="Threats" />
+                  <Area type="monotone" dataKey="analyses" stroke="#e4e4e7" fill="url(#colorAnalyses)" strokeWidth={2} name={t('analyses')} />
+                  <Area type="monotone" dataKey="threats" stroke="#ef4444" fill="url(#colorThreats)" strokeWidth={2} name={t('threats')} />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -548,8 +560,8 @@ export function DashboardTab() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
           <Card className="border rounded-xl hover:shadow-lg transition-all duration-300 overflow-hidden shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Risk Distribution</CardTitle>
-              <CardDescription>Breakdown by risk level</CardDescription>
+              <CardTitle className="text-base">{t('riskDistribution')}</CardTitle>
+              <CardDescription>{t('riskDistributionDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
@@ -579,8 +591,8 @@ export function DashboardTab() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <Card className="border rounded-xl hover:shadow-lg transition-all duration-300 overflow-hidden shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Analysis by Type</CardTitle>
-              <CardDescription>Breakdown by content type</CardDescription>
+              <CardTitle className="text-base">{t('analysisByType')}</CardTitle>
+              <CardDescription>{t('analysisByTypeDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
@@ -600,8 +612,8 @@ export function DashboardTab() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}>
           <Card className="border rounded-xl hover:shadow-lg transition-all duration-300 overflow-hidden">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Recent Activity</CardTitle>
-              <CardDescription>Latest platform events</CardDescription>
+              <CardTitle className="text-base">{t('recentActivity')}</CardTitle>
+              <CardDescription>{t('recentActivityDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="p-2">
               <ScrollArea className="h-[250px]">
@@ -620,7 +632,7 @@ export function DashboardTab() {
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs text-muted-foreground">{item.timestamp}</span>
                           <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${riskBadgeClass[item.risk]}`}>
-                            {item.risk}
+                            {tRisk(item.risk)}
                           </Badge>
                         </div>
                       </div>
@@ -638,9 +650,9 @@ export function DashboardTab() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Eye className="h-4 w-4 text-zinc-500" />
-                Detection Timeline
+                {t('detectionTimeline')}
               </CardTitle>
-              <CardDescription>Recent detection events</CardDescription>
+              <CardDescription>{t('detectionTimelineDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="p-2">
               <ScrollArea className="h-[250px]">
@@ -650,7 +662,7 @@ export function DashboardTab() {
                   <div className="space-y-0">
                     {timeline.length === 0 && (
                       <p className="text-xs text-muted-foreground py-6 text-center">
-                        No detections yet - run an analysis to populate this timeline.
+                        {t('noDetections')}
                       </p>
                     )}
                     {timeline.map((event, idx) => {
@@ -697,9 +709,9 @@ export function DashboardTab() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-red-500" />
-                Top Threats
+                {t('topThreats')}
               </CardTitle>
-              <CardDescription>Most critical active threats</CardDescription>
+              <CardDescription>{t('topThreatsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="p-2">
               <ScrollArea className="h-[250px]">
@@ -715,7 +727,7 @@ export function DashboardTab() {
                         <p className="text-sm truncate">{threat.title}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${riskBadgeClass[threat.risk]}`}>
-                            {threat.risk}
+                            {tRisk(threat.risk)}
                           </Badge>
                           <span className="text-xs text-muted-foreground">{threat.timestamp}</span>
                         </div>
@@ -735,9 +747,9 @@ export function DashboardTab() {
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Languages className="h-4 w-4 text-zinc-500" />
-              Multilingual Insights
+              {t('multilingualInsights')}
             </CardTitle>
-            <CardDescription>Content analyzed by language</CardDescription>
+            <CardDescription>{t('multilingualInsightsDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
@@ -747,7 +759,7 @@ export function DashboardTab() {
                 <YAxis dataKey="language" type="category" tick={{ fontSize: 12 }} width={70} />
                 <Tooltip
                   contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))' }}
-                  formatter={(value: number, name: string) => [value.toLocaleString(), 'Analyses']}
+                  formatter={(value: number, name: string) => [value.toLocaleString(), t('analyses')]}
                   labelFormatter={(label: string) => label}
                 />
                 <Bar dataKey="count" radius={[0, 6, 6, 0]} minPointSize={20}>
@@ -768,9 +780,9 @@ export function DashboardTab() {
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-zinc-500" />
-              Trust Score Distribution
+              {t('trustScoreDistribution')}
             </CardTitle>
-            <CardDescription>Histogram of trust scores across all analyses</CardDescription>
+            <CardDescription>{t('trustScoreDistributionDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>

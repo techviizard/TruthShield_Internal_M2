@@ -63,6 +63,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LocaleProvider>
+            {/* Skip to main content link */}
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:border-border focus:shadow-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none text-sm font-medium rounded-md"
+            >
+              Skip to main content
+            </a>
             {children}
             <Toaster />
           </LocaleProvider>
