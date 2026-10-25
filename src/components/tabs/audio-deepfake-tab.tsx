@@ -158,7 +158,6 @@ function formatSeconds(sec: number): string {
 // --- Main Component ---
 export function AudioDeepfakeTab() {
   const [audioFile, setAudioFile] = useState<File | null>(null)
-  const [audioUrl, setAudioUrl] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [result, setResult] = useState<AudioAnalysisResult | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -166,7 +165,8 @@ export function AudioDeepfakeTab() {
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const playbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
+  const audioElRef = useRef<HTMLAudioElement>(null)
+  const [localPlaybackUrl, setLocalPlaybackUrl] = useState<string | null>(null)
   const [analysisError, setAnalysisError] = useState<string | null>(null)
   const [history, setHistory] = useState<AudioHistoryEntry[]>([])
   const [clipSeconds, setClipSeconds] = useState(0)
@@ -205,15 +205,25 @@ export function AudioDeepfakeTab() {
     }
   }, [result])
 
-  const handleFile = useCallback((file: File) => {
+
+   const handleFile = useCallback((file: File) => {
+    if (file.size > 50 * 1024 * 1024) {
+  toast.error('File size exceeds 50MB')
+  return
+}
     const validTypes = ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/mp4', 'audio/x-m4a', 'audio/ogg', 'audio/mp3']
     const ext = file.name.split('.').pop()?.toLowerCase()
-    const validExts = ['mp3', 'wav', 'm4a', 'ogg']
-    if (!validTypes.includes(file.type) && !validExts.includes(ext || '')) {
-      return
-    }
+    const validExts = ['mp3', 'wav', 'm4a', 'ogg', 'mp4']
+   if (!validTypes.includes(file.type) && !validExts.includes(ext || '')) {
+  toast.error('Unsupported audio format Please upload MP3, WAV, M4A, MP4 or OGG')
+  return
+}
     setAudioFile(file)
-    // Decode once for real duration + waveform peaks.
+     // Decode once for real duration + waveform peaks.
+    setLocalPlaybackUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(file)
+    })
     void (async () => {
       try {
         const Ctx =
@@ -287,19 +297,20 @@ export function AudioDeepfakeTab() {
   }, [])
 
   const handleAnalyze = useCallback(async () => {
-    if (!audioFile && !audioUrl.trim()) return
+    if (!audioFile) return
     setIsAnalyzing(true)
     setResult(null)
     setAnalysisError(null)
     try {
-      if (!audioFile) throw new Error('URL input not supported server-side; upload file')
       const wav = await toWav(audioFile)
       const fd = new FormData()
       fd.append('audio', wav, audioFile.name.replace(/\.[^.]+$/, '.wav'))
       const res = await fetch('/api/forensics/audio', { method: 'POST', body: fd })
       const j = await res.json()
+      console.log('STEP 1 - raw response:', j)
       if (!res.ok || !j.success) throw new Error(j.error || 'Analysis failed')
       const a = j.analysis
+      console.log('STEP 2 - analysis object:', a)
       // Map server features → UI shape; preserve unfilled cards with sane defaults
       const indicators: DeepfakeIndicator[] = [
         { name: 'Spectral Cutoff', value: a.spectralCutoffHz < 16500 ? 85 : a.spectralCutoffHz < 20000 ? 55 : 15, status: a.spectralCutoffHz < 16500 ? 'warning' : a.spectralCutoffHz < 20000 ? 'suspicious' : 'clean', description: `Highest energetic frequency: ${a.spectralCutoffHz}Hz (Nyquist ${a.sampleRate/2}Hz)` },
@@ -311,8 +322,9 @@ export function AudioDeepfakeTab() {
       setResult({
         trustScore: a.trustScore,
         riskLevel: a.riskLevel,
-        voiceCloningProbability: a.estimatedDeepfakeProbability,
-        aiGenerationConfidence: Math.round(a.estimatedDeepfakeProbability),
+        voiceCloningProbability: Math.round((indicators[0].value + indicators[3].value) / 2), // Spectral Cutoff + Zero-Crossing Rate
+        aiGenerationConfidence:  Math.round((indicators[1].value + indicators[4].value) / 2), // Energy Variance + Silence Ratio,
+
         // Speaker diarization + emotion scoring are not part of the in-house DSP
         // engine; the UI renders an explicit "not available" state for these.
         detectedSpeakers: [],
@@ -332,7 +344,8 @@ export function AudioDeepfakeTab() {
           'Examine social platform metadata',
         ],
         findings: a.artifacts,
-      })
+      }); console.log('STEP 3 - setResult finished, no crash')
+
     } catch (e) {
       console.error(e)
       setResult(null)
@@ -341,36 +354,29 @@ export function AudioDeepfakeTab() {
     } finally {
       setIsAnalyzing(false)
     }
-  }, [audioFile, audioUrl, toWav])
+  }, [audioFile, toWav])
 
   const handleReset = () => {
     setAudioFile(null)
-    setAudioUrl('')
     setResult(null)
     setIsPlaying(false)
     setPlaybackPosition(0)
     if (fileInputRef.current) fileInputRef.current.value = ''
-    if (playbackIntervalRef.current) clearInterval(playbackIntervalRef.current)
+    setLocalPlaybackUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return null
+    })
   }
 
   const togglePlayback = () => {
-    if (isPlaying) {
-      setIsPlaying(false)
-      if (playbackIntervalRef.current) clearInterval(playbackIntervalRef.current)
-    } else {
-      setIsPlaying(true)
-      playbackIntervalRef.current = setInterval(() => {
-        setPlaybackPosition((prev) => {
-          if (prev >= 100) {
-            setIsPlaying(false)
-            if (playbackIntervalRef.current) clearInterval(playbackIntervalRef.current)
-            return 0
-          }
-          return prev + 0.5
-        })
-      }, 50)
-    }
+  const el = audioElRef.current
+  if (!el) return
+  if (isPlaying) {
+    el.pause()
+  } else {
+    void el.play()
   }
+}
 
   const formatDuration = (pos: number) => {
     const totalSeconds = Math.floor((pos / 100) * (clipSeconds || 0))
@@ -427,7 +433,7 @@ export function AudioDeepfakeTab() {
                     v3.1
                   </Badge>
                 </div>
-                <p className="text-muted-foreground mt-1">Detect AI voice cloning, synthetic speech, and audio manipulation using advanced spectral analysis and voice fingerprinting</p>
+                <p className="text-muted-foreground mt-1">Detect Sign of AI-Generated or Manipulated audio using spectral signal analysis</p>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Ear className="h-4 w-4 text-zinc-500" />
@@ -460,7 +466,7 @@ export function AudioDeepfakeTab() {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
               >
-                <input ref={fileInputRef} type="file" accept=".mp3,.wav,.m4a,.ogg,audio/*" onChange={handleFileInput} className="hidden" />
+                <input ref={fileInputRef} type="file" accept=".mp3,.wav,.m4a,.ogg,.mp4,audio/*" onChange={handleFileInput} className="hidden" />
                 <motion.div animate={isDragOver ? { scale: 1.05 } : { scale: 1 }} className="space-y-3">
                   <div className="mx-auto p-3 rounded-full bg-zinc-500/10 w-fit">
                     <FileAudio className="h-8 w-8 text-zinc-500" />
@@ -472,6 +478,7 @@ export function AudioDeepfakeTab() {
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0">WAV</Badge>
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0">M4A</Badge>
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0">OGG</Badge>
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">MP4</Badge>
                   </div>
                   <p className="text-[10px] text-muted-foreground">Max file size: 50MB</p>
                 </motion.div>
@@ -481,28 +488,14 @@ export function AudioDeepfakeTab() {
 
               {/* URL Input + File Info */}
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium flex items-center gap-2">
-                    <Link className="h-3.5 w-3.5 text-muted-foreground" />
-                    Or enter audio URL
-                  </p>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="https://example.com/audio.mp3"
-                      value={audioUrl}
-                      onChange={(e) => setAudioUrl(e.target.value)}
-                      className="flex-1"
-                    />
                     <Button
                       onClick={handleAnalyze}
-                      disabled={isAnalyzing || (!audioFile && !audioUrl.trim())}
+                      disabled={isAnalyzing || !audioFile}
                       className="bg-zinc-600 hover:bg-zinc-700 text-white shrink-0"
                     >
                       {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 mr-1" />}
                       Analyze
                     </Button>
-                  </div>
-                </div>
 
                 {audioFile && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-lg bg-zinc-500/5 border border-zinc-500/20">
@@ -561,7 +554,7 @@ export function AudioDeepfakeTab() {
                   </div>
                   <div className="w-full max-w-md space-y-2">
                     <Progress value={45} className="h-2" />
-                    <p className="text-xs text-center text-muted-foreground">Processing voice fingerprint analysis...</p>
+                    <p className="text-xs text-center text-muted-foreground">Running spectral audio analysis...</p>
                   </div>
                 </div>
               </CardContent>
@@ -626,6 +619,20 @@ export function AudioDeepfakeTab() {
                 )}
               </div>
 
+              <audio ref={audioElRef} src={localPlaybackUrl || undefined}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onTimeUpdate={(e) => {
+                  const el = e.currentTarget
+                  if (el.duration) setPlaybackPosition((el.currentTime / el.duration) * 100)
+                }}
+                onEnded={() => {
+                  setIsPlaying(false);
+                  setPlaybackPosition(0)
+                }}
+                className="hidden"
+              />
+
               {/* Playback Controls */}
               <div className="flex items-center gap-4">
                 <Button
@@ -642,7 +649,13 @@ export function AudioDeepfakeTab() {
                     min="0"
                     max="100"
                     value={playbackPosition}
-                    onChange={(e) => setPlaybackPosition(Number(e.target.value))}
+                    onChange={(e) =>
+                      { const pct = Number(e.target.value)
+                      setPlaybackPosition(pct)
+
+                      const el = audioElRef.current
+                      if (el && el.duration)
+                        el.currentTime = (pct / 100) * el.duration }}
                     className="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-zinc-500"
                   />
                 </div>
@@ -661,7 +674,7 @@ export function AudioDeepfakeTab() {
       {/* Results */}
       <AnimatePresence>
         {result && !isAnalyzing && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
+          <motion.div initial={false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
 
             {/* Top Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1025,8 +1038,8 @@ export function AudioDeepfakeTab() {
                       <span className="text-sm font-medium">Spectral Difference Summary</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      3 anomalous regions detected with significant spectral deviations from the baseline. 
-                      The most prominent anomaly at 0:12-0:15 shows a 76% deviation in the 2-4kHz frequency range, 
+                      3 anomalous regions detected with significant spectral deviations from the baseline.
+                      The most prominent anomaly at 0:12-0:15 shows a 76% deviation in the 2-4kHz frequency range,
                       consistent with AI voice synthesis artifacts.
                     </p>
                   </div>
@@ -1215,7 +1228,7 @@ export function AudioDeepfakeTab() {
               </div>
               <div>
                 <p className="text-lg font-medium">Upload Audio to Begin Analysis</p>
-                <p className="text-sm text-muted-foreground mt-1">Upload an audio file or provide a URL to detect AI voice cloning, synthetic speech, and audio manipulation</p>
+                <p className="text-sm text-muted-foreground mt-1">Upload an audio file to detect AI voice cloning, synthetic speech, and audio manipulation</p>
               </div>
             </CardContent>
           </Card>

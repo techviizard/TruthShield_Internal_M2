@@ -426,7 +426,9 @@ export function InvestigationsTab() {
   useEffect(() => {
     if (!selectedInv) return
     const refreshed = investigations.find((inv) => inv.id === selectedInv.id)
-    if (refreshed) setSelectedInv(refreshed)
+    if (refreshed) {
+  queueMicrotask(() => setSelectedInv(refreshed))
+}
   }, [investigations, selectedInv?.id])
 
   const openEditDialog = () => {
