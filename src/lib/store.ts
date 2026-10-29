@@ -751,63 +751,23 @@ export const useAppStore = create<AppState>((set, get) => ({
           },
         })
         toast.success('Text analysis complete!')
-      } else {
-        toast.error('API unavailable. Using fallback data.')
+    } else {
+        const errorData = await res.json().catch(() => ({}))
+        const message = errorData.error || 'Analysis failed. Please try again.'
+        toast.error(message)
         set({
           textLoading: false,
-          textResult: {
-            trustScore: 28,
-            riskLevel: 'high',
-            flags: [
-              { type: 'factual_error', description: 'Contains verifiably false claims', icon: 'AlertTriangle' },
-              { type: 'propaganda', description: 'Uses propagandistic language patterns', icon: 'Brain' },
-              { type: 'emotional_manipulation', description: 'Employs emotional manipulation techniques', icon: 'Heart' },
-              { type: 'source_missing', description: 'Lacks credible source citations', icon: 'Link' },
-            ],
-            explanation: 'This text exhibits multiple indicators of misinformation. Key claims contradict established facts from verified sources, and the language employs known propaganda techniques including appeal to fear and false authority.',
-            confidence: 87,
-            recommendations: [
-              'Cross-reference claims with established fact-checking organizations',
-              'Verify the original source of the information',
-              'Check for corroborating evidence from independent sources',
-              'Be cautious of emotionally charged language designed to bypass critical thinking',
-            ],
-            detectedClaims: [
-              'Claim about government policy changes',
-              'Statistical assertion about public health',
-              'Attribution of quoted statement',
-            ],
-            sentiment: { label: 'Fear/Anger', score: 0.82 },
-            propagandaIndicators: ['Appeal to fear', 'False authority', 'Cherry-picking data', 'Emotional language'],
-          },
+          textResult: null,
         })
       }
     } catch {
-      toast.error('Analysis failed. Using fallback data.')
+      toast.error('Network error. Could not reach the analysis server.')
       set({
         textLoading: false,
-        textResult: {
-          trustScore: 28,
-          riskLevel: 'high',
-          flags: [
-            { type: 'factual_error', description: 'Contains verifiably false claims', icon: 'AlertTriangle' },
-            { type: 'propaganda', description: 'Uses propagandistic language patterns', icon: 'Brain' },
-            { type: 'emotional_manipulation', description: 'Employs emotional manipulation techniques', icon: 'Heart' },
-            { type: 'source_missing', description: 'Lacks credible source citations', icon: 'Link' },
-          ],
-          explanation: 'This text exhibits multiple indicators of misinformation. Key claims contradict established facts from verified sources.',
-          confidence: 87,
-          recommendations: [
-            'Cross-reference claims with established fact-checking organizations',
-            'Verify the original source of the information',
-          ],
-          detectedClaims: ['Claim about government policy changes', 'Statistical assertion about public health'],
-          sentiment: { label: 'Fear/Anger', score: 0.82 },
-          propagandaIndicators: ['Appeal to fear', 'False authority', 'Cherry-picking data'],
-        },
+        textResult: null,
       })
     }
-  },
+  },  
 
   analyzeImage: async (file: File) => {
     set({ imageLoading: true, imageResult: null })
