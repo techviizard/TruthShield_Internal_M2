@@ -230,9 +230,9 @@ export function OcrScannerTab() {
     fetch('/api/analysis/history?type=ocr_scan&limit=10')
       .then((r) => r.json())
       .then((j) => {
-        if (aborted || !Array.isArray(j?.data)) return
+       if (aborted || !Array.isArray(j?.items)) return
         setHistory(
-          j.data.map((row: Record<string, unknown>) => {
+          j.items.map((row: Record<string, unknown>) => {
             let parsed: Record<string, unknown> = {}
             try {
               parsed = typeof row.results === 'string' ? JSON.parse(row.results) : {}
@@ -256,53 +256,164 @@ export function OcrScannerTab() {
     }
   }, [ocrResult])
 
-  const runRealOcr = useCallback(async () => {
-    if (!uploadedFile) return
-    setIsProcessing(true)
-    setOcrResult(null)
-    setProcessingStep('preprocessing')
-    try {
-      const fd = new FormData()
-      fd.append('image', uploadedFile)
-      setProcessingStep('textExtraction')
-      const res = await fetch('/api/forensics/ocr', { method: 'POST', body: fd })
-      const j = await res.json()
-      if (!res.ok || !j.success) throw new Error(j.error || 'OCR failed')
-      setProcessingStep('analysis')
-      const scripts = (j.detectedScripts ?? []) as { code: string; label: string }[]
-      const langLabel = scripts[0]?.label ?? j.language ?? 'Unknown'
-      setOcrResult({
-        extractedText: j.text || '',
-        detectedLanguage: langLabel,
-        languageCode: j.language ?? 'auto',
-        confidence: j.confidence ?? 0,
-        scriptType: scripts[0]?.label ?? 'Mixed',
-        scriptConfidence: j.confidence ?? 0,
-        multipleScripts: scripts.map((s) => ({ script: s.label, confidence: 80 })),
-        writingDirection: ['ur', 'ar'].includes(j.language) ? 'Right-to-Left' : 'Left-to-Right',
-        translation: '(Translation requires separate LLM call)',
-        translationConfidence: 0,
-        threatAnalysis: {
-          fakeNewsIndicators: [],
-          propagandaTechniques: [],
-          sentiment: 'Neutral',
-          trustScore: 50,
-          flaggedKeywords: [],
-        },
-        characterCount: j.text?.length ?? 0,
-        wordCount: j.text ? j.text.split(/\s+/).filter(Boolean).length : 0,
-        processingTime: `${j.processingTime ?? 0}ms`,
-        preprocessing: j.preprocessing,
-      } as OcrResult)
-      setProcessingStep('complete')
-      toast.success('OCR extraction complete!')
-    } catch (e) {
-      toast.error('OCR failed: ' + (e instanceof Error ? e.message : 'unknown'))
-      setProcessingStep('idle')
-    } finally {
-      setIsProcessing(false)
+ const runRealOcr = useCallback(async () => {
+  if (!uploadedFile) return
+
+  setIsProcessing(true)
+  setOcrResult(null)
+  setProcessingStep('preprocessing')
+
+  try {
+    const fd = new FormData()
+    fd.append('image', uploadedFile)
+
+    setProcessingStep('textExtraction')
+
+    const res = await fetch('/api/forensics/ocr', {
+      method: 'POST',
+      body: fd,
+    })
+
+    const j = await res.json()
+
+    if (!res.ok || !j.success) {
+      throw new Error(j.error || 'OCR failed')
     }
-  }, [uploadedFile])
+
+    setProcessingStep('analysis')
+
+    const scripts = (j.detectedScripts ?? []) as {
+      code: string
+      label: string
+    }[]
+
+    const langLabel =
+      scripts[0]?.label ?? j.language ?? 'Unknown'
+
+    const extractedText = j.text || ''
+
+    let threatAnalysis = {
+      fakeNewsIndicators: [] as string[],
+      propagandaTechniques: [] as string[],
+      sentiment: 'Neutral',
+      trustScore: 50,
+      flaggedKeywords: [] as string[],
+    }
+
+    // Analyze the OCR text
+    if (extractedText.trim()) {
+      try {
+        const analysisRes = await fetch('/api/analyze/text', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: extractedText,
+            language: j.language ?? 'auto',
+          }),
+        })
+
+        const analysis = await analysisRes.json()
+        console.log('OCR THREAT ANALYSIS RESPONSE:', analysis)
+        const result = analysis.analysis
+        console.log('OCR THREAT ANALYSIS RESULT:', result)
+        if (analysisRes.ok) {
+          const details =
+  result.details &&
+            typeof analysis.details === 'object'
+              ? analysis.details
+              : {}
+
+          const sentimentDetails =
+            details.sentiment &&
+            typeof details.sentiment === 'object'
+              ? details.sentiment
+              : {}
+
+          threatAnalysis = {
+            fakeNewsIndicators:
+              Array.isArray(details.misinformationIndicators)
+                ? details.misinformationIndicators.map(String)
+                : [],
+
+            propagandaTechniques:
+              Array.isArray(details.propagandaTechniques)
+                ? details.propagandaTechniques.map(String)
+                : [],
+
+            sentiment:
+  typeof sentimentDetails.overall === 'string'
+    ? sentimentDetails.overall
+    : 'Not available',
+            trustScore:
+  typeof result.trustScore === 'number'
+    ? result.trustScore
+    : 50,
+
+            flaggedKeywords:
+  Array.isArray(result.flags)
+    ? result.flags.map(String)
+    : [],
+          }
+        }
+      } catch (analysisError) {
+        console.warn(
+          'Threat analysis failed:',
+          analysisError
+        )
+      }
+    }
+
+    setOcrResult({
+      extractedText,
+      detectedLanguage: langLabel,
+      languageCode: j.language ?? 'auto',
+      confidence:
+        typeof j.confidence === 'number'
+          ? j.confidence
+          : 0,
+      scriptType:
+        scripts[0]?.label ?? 'Mixed',
+      scriptConfidence:
+        typeof j.confidence === 'number'
+          ? j.confidence
+          : 0,
+      multipleScripts: scripts.map((s) => ({
+        script: s.label,
+        confidence: 80,
+      })),
+      writingDirection:
+        ['ur', 'ar'].includes(j.language)
+          ? 'Right-to-Left'
+          : 'Left-to-Right',
+      translation:
+        '(Translation requires separate LLM call)',
+      translationConfidence: 0,
+      threatAnalysis,
+      characterCount: extractedText.length,
+      wordCount: extractedText
+        ? extractedText.split(/\s+/).filter(Boolean).length
+        : 0,
+      processingTime: `${j.processingTime ?? 0}ms`,
+      preprocessing: j.preprocessing,
+    } as OcrResult)
+
+    setProcessingStep('complete')
+
+    toast.success(
+      'OCR extraction and threat analysis complete!'
+    )
+  } catch (e) {
+    toast.error(
+      'OCR failed: ' +
+        (e instanceof Error ? e.message : 'unknown')
+    )
+    setProcessingStep('idle')
+  } finally {
+    setIsProcessing(false)
+  }
+}, [uploadedFile])
 
   // OCR always runs through the real engine; a file is required.
   const runDemo = useCallback(() => {

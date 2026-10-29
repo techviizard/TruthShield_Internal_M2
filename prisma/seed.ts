@@ -15,6 +15,7 @@
  * analyses you produced through the app.
  */
 
+import process from 'node:process'
 import { PrismaClient } from '@prisma/client'
 import { getConfig } from '../src/config/app.config.ts'
 import { linkHash, sha256Text, GENESIS_HASH } from '../src/lib/engines/integrity.ts'

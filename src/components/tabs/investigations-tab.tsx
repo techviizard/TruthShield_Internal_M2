@@ -18,6 +18,7 @@ import {
   ChevronRight, Clock, AlertTriangle, CheckCircle2, Archive, FolderOpen,
   Video, ImageIcon, Shield, TrendingUp, Activity, PlusCircle, AlertOctagon,
   XCircle, Eye, Search, Zap, Scale, BadgeCheck, MapPin,
+  Pencil, Trash2,
 } from 'lucide-react'
 
 /**
@@ -72,6 +73,7 @@ const priorityConfig: Record<InvestigationPriority, { color: string; label: stri
 
 /** Evidence = the analyses attached to the case, straight from the database. */
 interface EvidenceItem {
+  reportId: string
   id: string
   type: string
   title: string
@@ -97,6 +99,7 @@ const ANALYSIS_MEDIA: Record<string, string> = {
 
 function evidenceFor(inv: Investigation): EvidenceItem[] {
   return inv.analyses.map((a) => ({
+    reportId: a.id,
     id: a.id.slice(-6).toUpperCase(),
     type: ANALYSIS_MEDIA[a.analysisType] ?? 'document',
     title: `${ANALYSIS_LABEL[a.analysisType] ?? a.analysisType} · ${a.riskLevel ?? 'unrated'} risk`,
@@ -254,7 +257,7 @@ function QuickStats({ inv }: { inv: Investigation }) {
   )
 }
 
-function EvidenceSection({ inv }: { inv: Investigation }) {
+function EvidenceSection({ inv, onDetach }: { inv: Investigation; onDetach: (reportId: string) => void }) {
   const evidence = evidenceFor(inv)
 
   if (evidence.length === 0) {
@@ -269,7 +272,7 @@ function EvidenceSection({ inv }: { inv: Investigation }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {evidence.map((item, idx) => (
         <motion.div
-          key={item.id}
+          key={item.reportId}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.08 }}
@@ -294,6 +297,16 @@ function EvidenceSection({ inv }: { inv: Investigation }) {
               <Badge variant="outline" className="text-[10px] shrink-0">
                 {item.id}
               </Badge>
+              <Button
+                variant="outline"
+                className="h-7 shrink-0 px-2 text-xs"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onDetach(item.reportId)
+                }}
+              >
+                Remove
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -364,13 +377,42 @@ function EnhancedTimeline({ inv }: { inv: Investigation }) {
 }
 
 export function InvestigationsTab() {
-  const { investigations, fetchInvestigations, createInvestigation } = useAppStore()
+  const {
+    investigations,
+    fetchInvestigations,
+    createInvestigation,
+    updateInvestigation,
+    deleteInvestigation,
+    updateInvestigationStatus,
+    updateInvestigationPriority,
+    attachEvidence,
+    detachEvidence,
+    analysisHistory,
+    analysisHistoryTotal,
+    analysisHistoryPage,
+    analysisHistoryLoading,
+    fetchAnalysisHistory,
+  } = useAppStore()
 
   useEffect(() => {
     void fetchInvestigations()
   }, [fetchInvestigations])
   const [selectedInv, setSelectedInv] = useState<Investigation | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [evidenceDialogOpen, setEvidenceDialogOpen] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState('')
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    analyst: '',
+    priority: 'medium' as InvestigationPriority,
+    tags: '',
+    caseNumber: '',
+    firNumber: '',
+    officerBadge: '',
+    jurisdiction: '',
+  })
   const [newTitle, setNewTitle] = useState('')
   const [newDescription, setNewDescription] = useState('')
   const [newPriority, setNewPriority] = useState<InvestigationPriority>('medium')
@@ -380,6 +422,101 @@ export function InvestigationsTab() {
   const [newFirNumber, setNewFirNumber] = useState('')
   const [newOfficerBadge, setNewOfficerBadge] = useState('')
   const [newJurisdiction, setNewJurisdiction] = useState('')
+
+  useEffect(() => {
+    if (!selectedInv) return
+    const refreshed = investigations.find((inv) => inv.id === selectedInv.id)
+    if (refreshed) {
+  queueMicrotask(() => setSelectedInv(refreshed))
+}
+  }, [investigations, selectedInv?.id])
+
+  const openEditDialog = () => {
+    if (!selectedInv) return
+    setEditForm({
+      title: selectedInv.title,
+      description: selectedInv.description,
+      analyst: selectedInv.assignedAnalyst,
+      priority: selectedInv.priority,
+      tags: selectedInv.tags.join(', '),
+      caseNumber: selectedInv.caseNumber ?? '',
+      firNumber: selectedInv.firNumber ?? '',
+      officerBadge: selectedInv.officerBadge ?? '',
+      jurisdiction: selectedInv.jurisdiction ?? '',
+    })
+    setEditDialogOpen(true)
+  }
+
+  const handleUpdate = async () => {
+    if (!selectedInv || !editForm.title.trim()) return
+    const changes = {
+      title: editForm.title.trim(),
+      description: editForm.description,
+      assignedAnalyst: editForm.analyst.trim() || 'Unassigned',
+      priority: editForm.priority,
+      tags: editForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+      caseNumber: editForm.caseNumber.trim() || null,
+      firNumber: editForm.firNumber.trim() || null,
+      officerBadge: editForm.officerBadge.trim() || null,
+      jurisdiction: editForm.jurisdiction.trim() || null,
+    }
+    if (await updateInvestigation(selectedInv.id, changes)) {
+      setSelectedInv((current) => current ? { ...current, ...changes } : current)
+      setEditDialogOpen(false)
+      toast.success('Investigation updated')
+    }
+  }
+
+  const handleStatusChange = async (status: InvestigationStatus) => {
+    if (!selectedInv) return
+    if (await updateInvestigationStatus(selectedInv.id, status)) {
+      setSelectedInv((current) => current ? { ...current, status } : current)
+    }
+  }
+
+  const handlePriorityChange = async (priority: InvestigationPriority) => {
+    if (!selectedInv) return
+    if (await updateInvestigationPriority(selectedInv.id, priority)) {
+      setSelectedInv((current) => current ? { ...current, priority } : current)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!selectedInv || !window.confirm(`Delete investigation "${selectedInv.title}"? This cannot be undone.`)) return
+    if (await deleteInvestigation(selectedInv.id)) {
+      setSelectedInv(null)
+      toast.success('Investigation deleted')
+    }
+  }
+
+  const loadEligibleReports = (page = 1) => {
+    setSelectedReportId('')
+    void fetchAnalysisHistory({
+      page,
+      limit: 10,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      unattachedOnly: true,
+    })
+  }
+
+  const openEvidenceDialog = () => {
+    setEvidenceDialogOpen(true);
+    loadEligibleReports();
+  }
+
+  const handleAttachEvidence = async () => {
+    if (!selectedInv || !selectedReportId) return
+    if (await attachEvidence(selectedInv.id, selectedReportId)) {
+      // Close dialog by resetting selectedReportId; Dialog will close via onOpenChange
+      setSelectedReportId('')
+    }
+  }
+
+  const handleDetachEvidence = async (reportId: string) => {
+    if (!selectedInv) return
+    await detachEvidence(selectedInv.id, reportId)
+  }
 
   const handleCreate = () => {
     if (!newTitle.trim()) return
@@ -656,7 +793,7 @@ export function InvestigationsTab() {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <EvidenceSection inv={selectedInv} />
+                        <EvidenceSection inv={selectedInv} onDetach={(reportId) => void handleDetachEvidence(reportId)} />
                       </CardContent>
                     </Card>
 
@@ -681,10 +818,50 @@ export function InvestigationsTab() {
                     {/* Action Buttons */}
                     <Card>
                       <CardContent className="p-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium">Status</label>
+                            <Select
+                              value={selectedInv.status}
+                              onValueChange={(value) => void handleStatusChange(value as InvestigationStatus)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="open">Open</SelectItem>
+                                <SelectItem value="in_progress">In Progress</SelectItem>
+                                <SelectItem value="closed">Closed</SelectItem>
+                                <SelectItem value="archived">Archived</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium">Priority</label>
+                            <Select
+                              value={selectedInv.priority}
+                              onValueChange={(value) => void handlePriorityChange(value as InvestigationPriority)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="low">Low</SelectItem>
+                                <SelectItem value="medium">Medium</SelectItem>
+                                <SelectItem value="high">High</SelectItem>
+                                <SelectItem value="critical">Critical</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
                         <div className="flex flex-col sm:flex-row gap-3">
+                          <Button variant="outline" className="flex-1" onClick={openEditDialog}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Edit Investigation
+                          </Button>
                           <Button
                             className="bg-zinc-600 hover:bg-zinc-700 text-white flex-1"
-                            onClick={() => toast.success('Evidence form opened - feature coming soon!')}
+                            onClick={openEvidenceDialog}
                           >
                             <PlusCircle className="h-4 w-4 mr-2" />
                             Add Evidence
@@ -692,22 +869,215 @@ export function InvestigationsTab() {
                           <Button
                             variant="outline"
                             className="border-red-500/50 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300 flex-1"
-                            onClick={() => toast.success(`Investigation ${selectedInv.id} escalated!`, { description: 'Priority has been raised and stakeholders notified.' })}
+                            onClick={() => void handlePriorityChange('critical')}
+                            disabled={selectedInv.priority === 'critical'}
                           >
                             <AlertOctagon className="h-4 w-4 mr-2" />
                             Escalate
                           </Button>
+                          {selectedInv.status === 'closed' ? (
+                            <Button variant="outline" className="flex-1" onClick={() => void handleStatusChange('in_progress')}>
+                              <FolderOpen className="h-4 w-4 mr-2" />
+                              Reopen Investigation
+                            </Button>
+                          ) : (
+                            <Button variant="outline" className="flex-1" onClick={() => void handleStatusChange('closed')}>
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Close Investigation
+                            </Button>
+                          )}
                           <Button
                             variant="outline"
-                            className="flex-1"
-                            onClick={() => toast.info(`Investigation ${selectedInv.id} close requested.`, { description: 'This action requires supervisor approval.' })}
+                            className="border-red-500/50 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300 flex-1"
+                            onClick={() => void handleDelete()}
                           >
-                            <XCircle className="h-4 w-4 mr-2" />
-                            Close Investigation
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Investigation
                           </Button>
                         </div>
                       </CardContent>
                     </Card>
+
+                    <Dialog
+                      open={evidenceDialogOpen}
+                      onOpenChange={(open) => {
+                        setEvidenceDialogOpen(open)
+                        if (!open) setSelectedReportId('')
+                      }}
+                    >
+                      <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                          <DialogTitle>Add Evidence</DialogTitle>
+                          <DialogDescription>Select an unattached analysis report to link to this investigation.</DialogDescription>
+                        </DialogHeader>
+                        <div className="max-h-[55vh] space-y-2 overflow-y-auto">
+                          {analysisHistoryLoading ? (
+                            <p className="py-6 text-center text-sm text-muted-foreground">Loading analysis reports...</p>
+                          ) : analysisHistory.length === 0 ? (
+                            <p className="py-6 text-center text-sm text-muted-foreground">No unattached analysis reports found.</p>
+                          ) : (
+                            analysisHistory.map((report) => (
+                              <label
+                                key={report.id}
+                                htmlFor={`evidence-report-${report.id}`}
+                                className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 hover:bg-muted/50"
+                              >
+                                <input
+                                  id={`evidence-report-${report.id}`}
+                                  type="radio"
+                                  name="evidence-report"
+                                  value={report.id}
+                                  checked={selectedReportId === report.id}
+                                  onChange={() => setSelectedReportId(report.id)}
+                                  className="mt-1"
+                                />
+                                <span className="min-w-0 flex-1">
+                                  <span className="block truncate text-sm font-medium">
+                                    {ANALYSIS_LABEL[report.analysisType] ?? report.analysisType} · {report.mediaFileName}
+                                  </span>
+                                  <span className="mt-1 block text-xs text-muted-foreground">
+                                    {report.riskLevel ?? 'unrated'} risk · Trust {Math.round(report.trustScore ?? 0)} · {report.createdAt.split('T')[0]}
+                                  </span>
+                                </span>
+                              </label>
+                            ))
+                          )}
+                        </div>
+                        {analysisHistoryTotal > 10 && (
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={analysisHistoryPage <= 1 || analysisHistoryLoading}
+                              onClick={() => loadEligibleReports(analysisHistoryPage - 1)}
+                            >
+                              Previous
+                            </Button>
+                            <span>Page {analysisHistoryPage} of {Math.ceil(analysisHistoryTotal / 10)}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={analysisHistoryPage >= Math.ceil(analysisHistoryTotal / 10) || analysisHistoryLoading}
+                              onClick={() => loadEligibleReports(analysisHistoryPage + 1)}
+                            >
+                              Next
+                            </Button>
+                          </div>
+                        )}
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setEvidenceDialogOpen(false)}>Cancel</Button>
+                          <Button
+                            onClick={() => void handleAttachEvidence()}
+                            disabled={!selectedReportId || analysisHistoryLoading}
+                            className="bg-zinc-600 hover:bg-zinc-700 text-white"
+                          >
+                            Attach Evidence
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                      <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                          <DialogTitle>Edit Investigation</DialogTitle>
+                          <DialogDescription>Update the case details and assignment.</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-sm font-medium">Title</label>
+                            <Input
+                              value={editForm.title}
+                              onChange={(event) => setEditForm((form) => ({ ...form, title: event.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Description</label>
+                            <Textarea
+                              value={editForm.description}
+                              onChange={(event) => setEditForm((form) => ({ ...form, description: event.target.value }))}
+                              className="min-h-[80px]"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-sm font-medium">Analyst</label>
+                              <Input
+                                value={editForm.analyst}
+                                onChange={(event) => setEditForm((form) => ({ ...form, analyst: event.target.value }))}
+                              />
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium">Priority</label>
+                              <Select
+                                value={editForm.priority}
+                                onValueChange={(value) => setEditForm((form) => ({ ...form, priority: value as InvestigationPriority }))}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="low">Low</SelectItem>
+                                  <SelectItem value="medium">Medium</SelectItem>
+                                  <SelectItem value="high">High</SelectItem>
+                                  <SelectItem value="critical">Critical</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Tags (comma-separated)</label>
+                            <Input
+                              value={editForm.tags}
+                              onChange={(event) => setEditForm((form) => ({ ...form, tags: event.target.value }))}
+                            />
+                          </div>
+                          <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
+                            <p className="text-xs font-semibold text-muted-foreground">Case record</p>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs font-medium">Case / DD number</label>
+                                <Input
+                                  value={editForm.caseNumber}
+                                  onChange={(event) => setEditForm((form) => ({ ...form, caseNumber: event.target.value }))}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium">FIR number</label>
+                                <Input
+                                  value={editForm.firNumber}
+                                  onChange={(event) => setEditForm((form) => ({ ...form, firNumber: event.target.value }))}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium">Officer badge</label>
+                                <Input
+                                  value={editForm.officerBadge}
+                                  onChange={(event) => setEditForm((form) => ({ ...form, officerBadge: event.target.value }))}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium">Jurisdiction</label>
+                                <Input
+                                  value={editForm.jurisdiction}
+                                  onChange={(event) => setEditForm((form) => ({ ...form, jurisdiction: event.target.value }))}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+                          <Button
+                            onClick={() => void handleUpdate()}
+                            disabled={!editForm.title.trim()}
+                            className="bg-zinc-600 hover:bg-zinc-700 text-white"
+                          >
+                            Save Changes
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </ScrollArea>
               </motion.div>

@@ -164,9 +164,9 @@ export function AudioDeepfakeTab() {
   const [playbackPosition, setPlaybackPosition] = useState(0)
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const playbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null) 
-  const audioElRef = useRef<HTMLAudioElement>(null) 
-  const [localPlaybackUrl, setLocalPlaybackUrl] = useState<string | null>(null) 
+  const playbackIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const audioElRef = useRef<HTMLAudioElement>(null)
+  const [localPlaybackUrl, setLocalPlaybackUrl] = useState<string | null>(null)
   const [analysisError, setAnalysisError] = useState<string | null>(null)
   const [history, setHistory] = useState<AudioHistoryEntry[]>([])
   const [clipSeconds, setClipSeconds] = useState(0)
@@ -219,10 +219,10 @@ export function AudioDeepfakeTab() {
   return
 }
     setAudioFile(file)
-     // Decode once for real duration + waveform peaks. 
-    setLocalPlaybackUrl((prev) => { 
-      if (prev) URL.revokeObjectURL(prev) 
-      return URL.createObjectURL(file) 
+     // Decode once for real duration + waveform peaks.
+    setLocalPlaybackUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(file)
     })
     void (async () => {
       try {
@@ -345,7 +345,7 @@ export function AudioDeepfakeTab() {
         ],
         findings: a.artifacts,
       }); console.log('STEP 3 - setResult finished, no crash')
-      
+
     } catch (e) {
       console.error(e)
       setResult(null)
@@ -362,9 +362,9 @@ export function AudioDeepfakeTab() {
     setIsPlaying(false)
     setPlaybackPosition(0)
     if (fileInputRef.current) fileInputRef.current.value = ''
-    setLocalPlaybackUrl((prev) => { 
-      if (prev) URL.revokeObjectURL(prev) 
-      return null 
+    setLocalPlaybackUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return null
     })
   }
 
@@ -650,11 +650,11 @@ export function AudioDeepfakeTab() {
                     max="100"
                     value={playbackPosition}
                     onChange={(e) =>
-                      { const pct = Number(e.target.value) 
-                      setPlaybackPosition(pct) 
-                      
-                      const el = audioElRef.current 
-                      if (el && el.duration) 
+                      { const pct = Number(e.target.value)
+                      setPlaybackPosition(pct)
+
+                      const el = audioElRef.current
+                      if (el && el.duration)
                         el.currentTime = (pct / 100) * el.duration }}
                     className="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-zinc-500"
                   />
@@ -1038,8 +1038,8 @@ export function AudioDeepfakeTab() {
                       <span className="text-sm font-medium">Spectral Difference Summary</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      3 anomalous regions detected with significant spectral deviations from the baseline. 
-                      The most prominent anomaly at 0:12-0:15 shows a 76% deviation in the 2-4kHz frequency range, 
+                      3 anomalous regions detected with significant spectral deviations from the baseline.
+                      The most prominent anomaly at 0:12-0:15 shows a 76% deviation in the 2-4kHz frequency range,
                       consistent with AI voice synthesis artifacts.
                     </p>
                   </div>

@@ -103,10 +103,19 @@ export interface ImageAnalysisResult {
   }
 }
 
+
 export interface VideoAnalysisResult {
   deepfakeProbability: number
-  frameAnalysis: { totalFrames: number; flaggedFrames: number; consistency: number }
-  faceAnalysis: { facesDetected: number; anomalies: string[]; confidence: number }
+  frameAnalysis: {
+    totalFrames: number
+    flaggedFrames: number
+    consistency: number
+  }
+  faceAnalysis: {
+    facesDetected: number
+    anomalies: string[]
+    confidence: number
+  }
   temporalConsistency: number
   /** 0-1. Real audio-forensics trust score when the audio track was decodable, otherwise a neutral 0.5. */
   audioVisualSync: number
@@ -114,6 +123,7 @@ export interface VideoAnalysisResult {
   audioAnalysis: { available: boolean; note: string }
   riskAssessment: RiskLevel
 }
+
 
 export interface FactCheckResult {
   verdict: Verdict
@@ -233,6 +243,7 @@ export interface ChatMessage {
 
 export interface AnalysisHistoryItem {
   id: string
+  investigationId: string | null
   createdAt: string
   analysisType: string
   trustScore: number | null
@@ -341,6 +352,12 @@ interface AppState {
   fetchInvestigations: () => Promise<void>
   /** Body is passed to POST /api/investigations as-is (API field names, e.g. `assignedTo`). */
   createInvestigation: (data: Partial<Investigation> & Record<string, unknown>) => Promise<void>
+  updateInvestigation: (id: string, data: Partial<Investigation> & Record<string, unknown>) => Promise<boolean>
+  deleteInvestigation: (id: string) => Promise<boolean>
+  attachEvidence: (investigationId: string, reportId: string) => Promise<boolean>
+  detachEvidence: (investigationId: string, reportId: string) => Promise<boolean>
+  updateInvestigationStatus: (id: string, status: InvestigationStatus) => Promise<boolean>
+  updateInvestigationPriority: (id: string, priority: InvestigationPriority) => Promise<boolean>
   fetchAlerts: () => Promise<void>
   markAlertRead: (id: string) => void
   resetTextResult: () => void
@@ -359,7 +376,7 @@ interface AppState {
   analysisHistoryTotal: number
   analysisHistoryPage: number
   analysisHistoryLoading: boolean
-  fetchAnalysisHistory: (params?: { type?: string; riskLevel?: string; search?: string; page?: number; limit?: number; sortBy?: string; sortOrder?: string }) => Promise<void>
+  fetchAnalysisHistory: (params?: { type?: string; riskLevel?: string; search?: string; page?: number; limit?: number; sortBy?: string; sortOrder?: string; unattachedOnly?: boolean }) => Promise<void>
 }
 
 /** Relative "x min ago" label used across list views. */
@@ -1114,6 +1131,98 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  updateInvestigation: async (id, data) => {
+    try {
+      const payload: Record<string, unknown> = { ...data }
+      if (data.assignedAnalyst !== undefined && payload.assignedTo === undefined) {
+        payload.assignedTo = data.assignedAnalyst
+      }
+      const res = await fetch(`/api/investigations/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Update failed')
+      }
+      await get().fetchInvestigations()
+      return true
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not update investigation')
+      return false
+    }
+  },
+
+  deleteInvestigation: async (id) => {
+    try {
+      const res = await fetch(`/api/investigations/${id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Delete failed')
+      }
+      await get().fetchInvestigations()
+      return true
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not delete investigation')
+      return false
+    }
+  },
+
+  attachEvidence: async (investigationId, reportId) => {
+    try {
+      const res = await fetch(`/api/investigations/${investigationId}/evidence/${reportId}`, {
+        method: 'POST',
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Could not attach evidence')
+      }
+      await get().fetchInvestigations()
+      toast.success('Evidence attached')
+      return true
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not attach evidence')
+      return false
+    }
+  },
+
+  detachEvidence: async (investigationId, reportId) => {
+    try {
+      const res = await fetch(`/api/investigations/${investigationId}/evidence/${reportId}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Could not detach evidence')
+      }
+      await get().fetchInvestigations()
+      toast.success('Evidence removed')
+      return true
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not detach evidence')
+      return false
+    }
+  },
+
+  updateInvestigationStatus: async (id, status) => {
+    const success = await get().updateInvestigation(id, { status })
+    if (success) {
+      toast.success(`Investigation status updated to ${status.replace('_', ' ')}`)
+    }
+    return success
+  },
+
+  updateInvestigationPriority: async (id, priority) => {
+    const success = await get().updateInvestigation(id, { priority })
+    if (success) {
+      toast.success(`Priority updated to ${priority}`)
+    }
+    return success
+  },
+
   fetchAlerts: async () => {
     set({ alertsLoading: true })
     try {
@@ -1192,6 +1301,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (params.limit) searchParams.set('limit', String(params.limit))
       if (params.sortBy) searchParams.set('sortBy', params.sortBy)
       if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder)
+      if (params.unattachedOnly) searchParams.set('unattachedOnly', 'true')
       const res = await fetch(`/api/analysis/history?${searchParams.toString()}`)
       if (res.ok) {
         const data: AnalysisHistoryResponse = await res.json()

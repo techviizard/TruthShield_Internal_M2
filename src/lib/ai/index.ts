@@ -136,10 +136,13 @@ export async function vlmImageAnalysis(
     )
   }
   const content = await p.chat(
-    [{ role: 'user', content: [{ type: 'text', text: prompt }, { type: 'image', url: imageUrl }] }],
-    { model: cfg.visionModel },
-  )
-  return extractJson(content)
+  [{ role: 'user', content: [{ type: 'text', text: prompt }, { type: 'image', url: imageUrl }] }],
+  { model: cfg.visionModel },
+)
+
+console.log('[VLM] Raw response:', content)
+
+return extractJson(content)
 }
 
 /**

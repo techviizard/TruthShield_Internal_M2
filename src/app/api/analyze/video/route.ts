@@ -63,6 +63,13 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+
+      if (videoFile.size === 0) {
+        return NextResponse.json(
+          { error: 'Uploaded video file is empty.' },
+          { status: 400 }
+        );
+      }
     }
 
     const systemPrompt = `You are an expert video deepfake detection and digital forensics analyst. You specialize in analyzing videos for signs of AI manipulation and deepfake creation. You have deep expertise in:

@@ -4,8 +4,10 @@
  * Preprocess is the real engineering: deskew, binarize, denoise improves VLM accuracy.
  */
 
+
 import sharp from 'sharp'
-import { vlmImageAnalysis } from '@/lib/ai'
+import { createWorker } from 'tesseract.js'
+
 
 export interface OcrResult {
   text: string
@@ -32,18 +34,11 @@ export async function preprocessForOcr(input: Buffer): Promise<{ buffer: Buffer;
     steps.push('upscale_1200')
   }
 
-  pipe = pipe.grayscale()
-  steps.push('grayscale')
+ //pipe = pipe.grayscale()
+//steps.push('grayscale')
 
-  pipe = pipe.normalize()
-  steps.push('contrast_normalize')
-
-  pipe = pipe.sharpen({ sigma: 1 })
-  steps.push('sharpen_sigma_1')
-
-  // Slight threshold to crisp text without losing anti-aliasing
-  pipe = pipe.linear(1.2, -20)
-  steps.push('linear_contrast_boost')
+//pipe = pipe.normalize()
+//steps.push('contrast_normalize')
 
   const buffer = await pipe.png({ quality: 100 }).toBuffer()
   return { buffer, steps }
@@ -73,52 +68,59 @@ export function detectScripts(text: string): { code: string; label: string }[] {
  */
 export async function runOcr(input: Buffer, mimeType: string): Promise<OcrResult> {
   const { buffer, steps } = await preprocessForOcr(input)
-  const dataUrl = `data:image/png;base64,${buffer.toString('base64')}`
 
-  const prompt = `You are an OCR engine specialized in multilingual Indian content.
-Extract ALL visible text from the image. Preserve original script (Devanagari, Tamil, Telugu, Bengali, Gujarati, Kannada, Malayalam, Punjabi, Arabic, Latin).
-Return strict JSON:
-{
-  "text": "<full extracted text, line breaks preserved with \\n>",
-  "language": "<ISO 639-1 code of dominant language>",
-  "confidence": <0..1 estimate of OCR accuracy>,
-  "blocks": [{"text": "<paragraph or label>"}, ...]
-}
-No additional commentary.`
-
-  let parsed: Record<string, unknown> = {}
+ const worker = await createWorker('eng+tel+hin', 1, {
+  workerPath: `${process.cwd()}/node_modules/tesseract.js/src/worker-script/node/index.js`,
+})
   try {
-    parsed = await vlmImageAnalysis(dataUrl, prompt)
-  } catch (e) {
-    return {
-      text: '',
-      language: 'unknown',
-      confidence: 0,
-      blocks: [],
-      preprocessing: steps,
-      detectedScripts: [],
+    const result = await worker.recognize(buffer)
+
+    const text = result.data.text.trim()
+
+    if (!text) {
+      throw new Error('OCR extraction returned empty text.')
     }
-  }
 
-  const text = typeof parsed.text === 'string' ? parsed.text : ''
-  const language = typeof parsed.language === 'string' ? parsed.language : 'unknown'
-  const rawConf = typeof parsed.confidence === 'number' ? parsed.confidence : 0.5
-  const blocks = Array.isArray(parsed.blocks)
-    ? (parsed.blocks as Array<{ text: string }>).map((b) => ({ text: String(b.text ?? '') }))
-    : text.split(/\n+/).filter(Boolean).map((t) => ({ text: t }))
-  const scripts = detectScripts(text)
+    const scripts = detectScripts(text)
 
-  // Confidence merge: VLM self-report + script-coverage bonus
-  let confidence = rawConf <= 1 ? rawConf * 100 : rawConf
-  if (scripts.length > 0 && text.length > 5) confidence = Math.min(100, confidence + 5)
-  if (text.length < 3) confidence = Math.min(confidence, 20)
+    let language = 'unknown'
 
-  return {
-    text,
-    language,
-    confidence: Math.round(confidence),
-    blocks,
-    preprocessing: steps,
-    detectedScripts: scripts,
+    if (scripts.length === 1) {
+      const scriptToLanguage: Record<string, string> = {
+        te: 'te',
+        ta: 'ta',
+        hi: 'hi',
+        kn: 'kn',
+        ml: 'ml',
+        bn: 'bn',
+        gu: 'gu',
+        pa: 'pa',
+        ur: 'ur',
+        en: 'en',
+      }
+
+      language = scriptToLanguage[scripts[0].code] ?? 'unknown'
+    }
+
+    const confidence = Math.max(
+      0,
+      Math.min(100, Math.round(result.data.confidence))
+    )
+
+    const blocks = text
+      .split(/\n+/)
+      .filter(Boolean)
+      .map((t) => ({ text: t }))
+
+    return {
+      text,
+      language,
+      confidence,
+      blocks,
+      preprocessing: steps,
+      detectedScripts: scripts,
+    }
+  } finally {
+    await worker.terminate()
   }
 }
