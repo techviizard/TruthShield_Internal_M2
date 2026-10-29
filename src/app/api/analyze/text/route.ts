@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  structuredLLMAnalysis,
-  getModelLabelSafe,
-  type AnalysisResult,
-} from '@/lib/ai';
+import { structuredLLMAnalysis, getModelLabelSafe, type AnalysisResult } from '@/lib/ai';
 import { db } from '@/lib/db';
 import { recordAudit, clientIp } from '@/lib/engines/audit-logger';
 import { sha256Text } from '@/lib/engines/integrity';
 import { scoreText } from '@/lib/engines/text-heuristics';
-import {
-  matchKnownHoaxes,
-  recordHoaxHit,
-} from '@/lib/engines/hoax-match';
-import { safeApiError } from '@/lib/api-error';
+import { matchKnownHoaxes, recordHoaxHit } from '@/lib/engines/hoax-match';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -24,13 +16,14 @@ export async function POST(request: NextRequest) {
     if (!text || typeof text !== 'string') {
       return NextResponse.json(
         { error: 'Text content is required' },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (text.length > 25000) {
       return NextResponse.json(
-
+        { error: 'Text content exceeds maximum length of 25000 characters' },
+        { status: 400 }
       );
     }
 
@@ -76,44 +69,27 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
       ? `Analyze the following text (language: ${language}) for misinformation, propaganda, clickbait, and manipulation:\n\n"${text}"`
       : `Analyze the following text for misinformation, propaganda, clickbait, and manipulation:\n\n"${text}"`;
 
-    // In-house lexical pass. Always runs: it needs no network,
-    // so it is both a second opinion on the LLM verdict and
-    // the answer when the LLM is unreachable.
+    // In-house lexical pass. Always runs: it needs no network, so it is both a
+    // second opinion on the LLM verdict and the answer when the LLM is unreachable.
     const heuristic = scoreText(text);
 
-    // Known-narrative check runs before the model.
+    // Known-narrative check runs before the model: a re-worded hoax is
+    // recognisable without spending a model call on it.
     const hoaxMatches = await matchKnownHoaxes(text);
-
-    for (const m of hoaxMatches) {
-      await recordHoaxHit(m.id);
-    }
+    for (const m of hoaxMatches) await recordHoaxHit(m.id);
 
     let analysisResult: Record<string, unknown>;
     let usedFallback = false;
-
     try {
-      analysisResult = await structuredLLMAnalysis(
-        systemPrompt,
-        userPrompt,
-      );
+      analysisResult = await structuredLLMAnalysis(systemPrompt, userPrompt);
     } catch (llmError) {
       usedFallback = true;
-
-      // Detailed LLM error stays server-side.
-      console.warn(
-        'LLM unavailable, serving lexical heuristics only:',
-        llmError,
-      );
-
+      console.warn('LLM unavailable, serving lexical heuristics only:', llmError);
       analysisResult = {
         trustScore: heuristic.trustScore,
         riskLevel: heuristic.riskLevel,
-        flags: heuristic.signals
-          .filter((s) => s.weight > 0)
-          .map((s) => s.id),
-        explanation:
-          `${heuristic.explanation} ` +
-          `(Language model unavailable - this verdict comes from the in-house pattern detector alone.)`,
+        flags: heuristic.signals.filter((s) => s.weight > 0).map((s) => s.id),
+        explanation: `${heuristic.explanation} (Language model unavailable - this verdict comes from the in-house pattern detector alone.)`,
         confidence: 0.5,
         recommendations: [
           'Corroborate with a fact-check source before acting on this verdict.',
@@ -125,66 +101,34 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
 
     const processingTime = Date.now() - startTime;
 
-    // Ensure the result has all required fields with defaults.
+    // Ensure the result has all required fields with defaults
     const result: AnalysisResult = {
-      trustScore:
-        typeof analysisResult.trustScore === 'number'
-          ? Math.max(
-              0,
-              Math.min(100, analysisResult.trustScore),
-            )
-          : 50,
-
-      riskLevel:
-        ['low', 'medium', 'high', 'critical'].includes(
-          analysisResult.riskLevel as string,
-        )
-          ? (analysisResult.riskLevel as AnalysisResult['riskLevel'])
-          : 'medium',
-
-      flags:
-        Array.isArray(analysisResult.flags)
-          ? analysisResult.flags
-          : [],
-
-      explanation:
-        typeof analysisResult.explanation === 'string'
-          ? analysisResult.explanation
-          : 'Analysis completed',
-
-      confidence:
-        typeof analysisResult.confidence === 'number'
-          ? Math.max(
-              0,
-              Math.min(1, analysisResult.confidence),
-            )
-          : 0.5,
-
-      recommendations:
-        Array.isArray(analysisResult.recommendations)
-          ? analysisResult.recommendations
-          : [],
-
-      details:
-        (analysisResult.details as Record<string, unknown>) || {},
+      trustScore: typeof analysisResult.trustScore === 'number'
+        ? Math.max(0, Math.min(100, analysisResult.trustScore))
+        : 50,
+      riskLevel: ['low', 'medium', 'high', 'critical'].includes(analysisResult.riskLevel as string)
+        ? (analysisResult.riskLevel as AnalysisResult['riskLevel'])
+        : 'medium',
+      flags: Array.isArray(analysisResult.flags) ? analysisResult.flags : [],
+      explanation: typeof analysisResult.explanation === 'string'
+        ? analysisResult.explanation
+        : 'Analysis completed',
+      confidence: typeof analysisResult.confidence === 'number'
+        ? Math.max(0, Math.min(1, analysisResult.confidence))
+        : 0.5,
+      recommendations: Array.isArray(analysisResult.recommendations)
+        ? analysisResult.recommendations
+        : [],
+      details: (analysisResult.details as Record<string, unknown>) || {},
     };
 
-    // Signal-level evidence for the "why was this flagged" panel.
-    const scoreGap = Math.abs(
-      result.trustScore - heuristic.trustScore,
-    );
-
+    // Signal-level evidence for the "why was this flagged" panel, and the
+    // agreement check between the two detectors.
+    const scoreGap = Math.abs(result.trustScore - heuristic.trustScore);
     result.details = {
       ...result.details,
-
       detectorBreakdown: {
-        model: usedFallback
-          ? null
-          : {
-              trustScore: result.trustScore,
-              label: getModelLabelSafe(),
-            },
-
+        model: usedFallback ? null : { trustScore: result.trustScore, label: getModelLabelSafe() },
         heuristic: {
           trustScore: heuristic.trustScore,
           riskLevel: heuristic.riskLevel,
@@ -192,61 +136,40 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
           explanation: heuristic.explanation,
           signals: heuristic.signals,
         },
-
         agreement: usedFallback
           ? 'model_unavailable'
-          : scoreGap <= 15
-            ? 'agree'
-            : scoreGap <= 35
-              ? 'partial'
-              : 'conflict',
-
-        scoreGap: usedFallback
-          ? null
-          : Math.round(scoreGap),
+          : scoreGap <= 15 ? 'agree' : scoreGap <= 35 ? 'partial' : 'conflict',
+        scoreGap: usedFallback ? null : Math.round(scoreGap),
       },
-
       knownHoaxMatches: hoaxMatches,
     };
 
-    // A strong registry match is decisive on its own.
-    const strongHoax = hoaxMatches.find(
-      (m) => m.similarity >= 45,
-    );
-
+    // A strong registry match is decisive on its own - a message that is a
+    // re-wording of an already-debunked narrative should not pass because the
+    // model was hedging.
+    const strongHoax = hoaxMatches.find((m) => m.similarity >= 45);
     if (strongHoax && result.trustScore > 30) {
       result.trustScore = 25;
       result.riskLevel = 'high';
-
       result.explanation =
-        `${result.explanation} ` +
-        `Overridden by the recurring-hoax registry: this text is ${strongHoax.similarity}% similar to the known narrative "${strongHoax.title}".`;
-
-      result.flags = [
-        ...new Set([
-          ...result.flags,
-          'known_hoax_narrative',
-        ]),
-      ];
+        `${result.explanation} Overridden by the recurring-hoax registry: this text is ${strongHoax.similarity}% similar to the known narrative "${strongHoax.title}".`;
+      result.flags = [...new Set([...result.flags, 'known_hoax_narrative'])];
     }
 
-    // Create a MediaUpload record for the text.
+    // Create a MediaUpload record for the text
     const mediaUpload = await db.mediaUpload.create({
       data: {
         fileName: `text-analysis-${Date.now()}.txt`,
         fileType: 'text',
         mimeType: 'text/plain',
         fileSize: new TextEncoder().encode(text).length,
-        metadata: JSON.stringify({
-          language: language || 'auto',
-          charCount: text.length,
-        }),
+        metadata: JSON.stringify({ language: language || 'auto', charCount: text.length }),
         status: 'completed',
         sha256: sha256Text(text),
       },
     });
 
-    // Create an AnalysisReport record.
+    // Create an AnalysisReport record
     const report = await db.analysisReport.create({
       data: {
         mediaUploadId: mediaUpload.id,
@@ -255,36 +178,27 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
         results: JSON.stringify(result),
         trustScore: result.trustScore,
         riskLevel: result.riskLevel,
-        aiModel: usedFallback
-          ? 'in-house:lexical-heuristics-v1'
-          : getModelLabelSafe(),
+        aiModel: usedFallback ? 'in-house:lexical-heuristics-v1' : getModelLabelSafe(),
         processingTime,
         explanation: result.explanation,
         confidence: result.confidence,
         flags: JSON.stringify(result.flags),
-        recommendations: JSON.stringify(
-          result.recommendations,
-        ),
+        recommendations: JSON.stringify(result.recommendations),
       },
     });
 
     await recordAudit({
       action: 'analysis_completed',
-      resource: `Text Analysis #${report.id
-        .slice(-6)
-        .toUpperCase()}`,
+      resource: `Text Analysis #${report.id.slice(-6).toUpperCase()}`,
       ipAddress: clientIp(request),
       details: {
         reportId: report.id,
-        model: usedFallback
-          ? 'in-house:lexical-heuristics-v1'
-          : getModelLabelSafe(),
+        model: usedFallback ? 'in-house:lexical-heuristics-v1' : getModelLabelSafe(),
         processingTime: `${processingTime}ms`,
         flagsFound: String(result.flags.length),
         riskLevel: result.riskLevel,
         trustScore: result.trustScore,
-        summary:
-          `Text analysis completed. Trust score: ${result.trustScore}/100 - ${result.riskLevel} risk.`,
+        summary: `Text analysis completed. Trust score: ${result.trustScore}/100 - ${result.riskLevel} risk.`,
       },
     });
 
@@ -295,63 +209,44 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
       processingTime,
     });
   } catch (error) {
-    /*
-     * Keep detailed error server-side.
-     * Client receives only a generic message and requestId.
-     */
-    console.error(
-      'Text analysis error:',
-      error,
-    );
+    console.error('Text analysis error:', error);
+    const processingTime = Date.now() - startTime;
 
-    /*
-     * Create a failed report if possible.
-     *
-     * IMPORTANT:
-     * Do not save error.message because it may contain
-     * database paths, provider details, stack information,
-     * or other internal implementation details.
-     */
+    // Create a failed report if possible
     try {
-      const body = await new NextRequest(
-        request.clone(),
-      )
-        .json()
-        .catch(() => null);
-
+      const body = await new NextRequest(request.clone()).json().catch(() => null);
       if (body?.text) {
-        const mediaUpload =
-          await db.mediaUpload.create({
-            data: {
-              fileName: `text-analysis-failed-${Date.now()}.txt`,
-              fileType: 'text',
-              mimeType: 'text/plain',
-              fileSize: 0,
-              status: 'failed',
-            },
-          });
+        const mediaUpload = await db.mediaUpload.create({
+          data: {
+            fileName: `text-analysis-failed-${Date.now()}.txt`,
+            fileType: 'text',
+            mimeType: 'text/plain',
+            fileSize: 0,
+            status: 'failed',
+          },
+        });
 
         await db.analysisReport.create({
           data: {
             mediaUploadId: mediaUpload.id,
             analysisType: 'text_fake_news',
             status: 'failed',
-            processingTime:
-              Date.now() - startTime,
-
-            explanation:
-              'Text analysis failed due to an internal processing error.',
+            processingTime,
+            explanation: error instanceof Error ? error.message : 'Unknown error occurred',
           },
         });
       }
     } catch {
-      // Ignore database errors in error handler.
+      // Ignore database errors in error handler
     }
 
-    return safeApiError(
-      error,
-      'Text analysis',
-      500,
+    return NextResponse.json(
+      {
+        error: 'Failed to analyze text',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        processingTime,
+      },
+      { status: 500 }
     );
   }
-
+}
