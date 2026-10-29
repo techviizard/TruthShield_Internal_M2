@@ -619,7 +619,7 @@ export function AudioDeepfakeTab() {
                 )}
               </div>
 
-              <audio ref={audioElRef} src={localPlaybackUrl || audioUrl || undefined} 
+              <audio ref={audioElRef} src={localPlaybackUrl || undefined} 
                 onPlay={() => setIsPlaying(true)} 
                 onPause={() => setIsPlaying(false)} 
                 onTimeUpdate={(e) => { 
