@@ -345,7 +345,7 @@ interface AppState {
   // Actions
   analyzeText: () => Promise<void>
   analyzeImage: (file: File) => Promise<void>
-  analyzeVideo: (source: File | { url: string }) => Promise<void>
+  analyzeVideo: (file: File) => Promise<void>
   verifyFact: (claim: string, language?: string) => Promise<void>
   factCheckError: string | null
   fetchDashboardStats: () => Promise<void>
