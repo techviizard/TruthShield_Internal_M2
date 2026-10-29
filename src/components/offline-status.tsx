@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import {
   listQueue, drainQueue, clearSynced, removeFromQueue, type QueuedAnalysis,
 } from '@/lib/offline-queue'
+import { useTranslations } from 'next-intl'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -39,6 +40,7 @@ function subscribeOnline(callback: () => void) {
  * registration next to the UI that depends on it.
  */
 export function OfflineStatus() {
+  const t = useTranslations('connectivity')
   const online = useSyncExternalStore(
     subscribeOnline,
     () => navigator.onLine,
@@ -139,7 +141,7 @@ export function OfflineStatus() {
       {installEvent && (
         <Button variant="outline" size="sm" onClick={install} className="hidden h-8 gap-1 text-xs sm:flex">
           <Download className="h-3 w-3" />
-          Install
+          {t('install')}
         </Button>
       )}
 
@@ -149,7 +151,7 @@ export function OfflineStatus() {
             variant="ghost"
             size="sm"
             className={`h-8 gap-1.5 px-2 text-xs ${online ? '' : 'text-amber-600 dark:text-amber-400'}`}
-            title={online ? 'Online' : 'Offline - analyses are scored on-device and queued'}
+            title={online ? t('online') : t('workingOffline')}
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
@@ -161,7 +163,7 @@ export function OfflineStatus() {
                 {online ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
               </motion.span>
             </AnimatePresence>
-            <span className="hidden lg:inline">{online ? 'Online' : 'Offline'}</span>
+            <span className="hidden lg:inline">{online ? t('online') : t('offline')}</span>
             {pending > 0 && (
               <Badge variant="outline" className="ml-0.5 h-4 border-amber-500/40 px-1 text-[10px] text-amber-600 dark:text-amber-400">
                 {pending}
@@ -175,17 +177,15 @@ export function OfflineStatus() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold">
-                  {online ? 'Connected' : 'Working offline'}
+                  {online ? t('connected') : t('workingOffline')}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {online
-                    ? 'Full pipeline available.'
-                    : 'On-device pattern detection only - no model reasoning or web corroboration.'}
+                  {online ? t('fullPipeline') : t('onDeviceOnly')}
                 </p>
               </div>
               <Button size="sm" className="h-7 gap-1 text-[11px]" onClick={sync} disabled={syncing || !online || pending === 0}>
                 {syncing ? <Loader2 className="h-3 w-3 animate-spin" /> : <CloudUpload className="h-3 w-3" />}
-                Sync {pending > 0 ? `(${pending})` : ''}
+                {t('sync')} {pending > 0 ? `(${pending})` : ''}
               </Button>
             </div>
           </div>
@@ -193,7 +193,7 @@ export function OfflineStatus() {
           <div className="max-h-72 overflow-y-auto">
             {queue.length === 0 ? (
               <p className="p-4 text-center text-xs text-muted-foreground">
-                Nothing queued. Analyses submitted while offline appear here.
+                {t('queueEmpty')}
               </p>
             ) : (
               queue.map((q) => (
@@ -237,7 +237,7 @@ export function OfflineStatus() {
                 variant="ghost" size="sm" className="h-7 w-full gap-1 text-[11px]"
                 onClick={async () => { const n = await clearSynced(); void refresh(); toast.info(`Cleared ${n} synced item(s)`) }}
               >
-                <Check className="h-3 w-3" /> Clear synced
+                <Check className="h-3 w-3" /> {t('clearSynced')}
               </Button>
             </div>
           )}

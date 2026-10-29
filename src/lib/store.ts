@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { scoreText } from '@/lib/engines/text-heuristics'
 // Static import is safe: the module touches IndexedDB only inside its functions.
 import { enqueue } from '@/lib/offline-queue'
+import { decodeToWav } from '@/lib/audio-decode'
 
 export type TabId = 'dashboard' | 'text' | 'image' | 'video' | 'factcheck' | 'investigations' | 'alerts' | 'watchlist' | 'community' | 'settings' | 'history' | 'reverseSearch' | 'chat' | 'batch' | 'auditLog' | 'comparison' | 'browserExtension' | 'modelMetrics' | 'apiDocs' | 'networkAnalysis' | 'campaignDetection' | 'ocrScanner' | 'audioDeepfake' | 'sourceCredibility' | 'liveThreatFeed' | 'educationResources' | 'workflowAutomation' | 'systemHealth' | 'dataVisualization' | 'reportGenerator'
 
@@ -102,14 +103,27 @@ export interface ImageAnalysisResult {
   }
 }
 
+
 export interface VideoAnalysisResult {
   deepfakeProbability: number
-  frameAnalysis: { totalFrames: number; flaggedFrames: number; consistency: number }
-  faceAnalysis: { facesDetected: number; anomalies: string[]; confidence: number }
+  frameAnalysis: {
+    totalFrames: number
+    flaggedFrames: number
+    consistency: number
+  }
+  faceAnalysis: {
+    facesDetected: number
+    anomalies: string[]
+    confidence: number
+  }
   temporalConsistency: number
+  /** 0-1. Real audio-forensics trust score when the audio track was decodable, otherwise a neutral 0.5. */
   audioVisualSync: number
+  /** Whether the number above is backed by real audio DSP, or unavailable because no audio track could be decoded. */
+  audioAnalysis: { available: boolean; note: string }
   riskAssessment: RiskLevel
 }
+
 
 export interface FactCheckResult {
   verdict: Verdict
@@ -229,6 +243,7 @@ export interface ChatMessage {
 
 export interface AnalysisHistoryItem {
   id: string
+  investigationId: string | null
   createdAt: string
   analysisType: string
   trustScore: number | null
@@ -337,6 +352,12 @@ interface AppState {
   fetchInvestigations: () => Promise<void>
   /** Body is passed to POST /api/investigations as-is (API field names, e.g. `assignedTo`). */
   createInvestigation: (data: Partial<Investigation> & Record<string, unknown>) => Promise<void>
+  updateInvestigation: (id: string, data: Partial<Investigation> & Record<string, unknown>) => Promise<boolean>
+  deleteInvestigation: (id: string) => Promise<boolean>
+  attachEvidence: (investigationId: string, reportId: string) => Promise<boolean>
+  detachEvidence: (investigationId: string, reportId: string) => Promise<boolean>
+  updateInvestigationStatus: (id: string, status: InvestigationStatus) => Promise<boolean>
+  updateInvestigationPriority: (id: string, priority: InvestigationPriority) => Promise<boolean>
   fetchAlerts: () => Promise<void>
   markAlertRead: (id: string) => void
   resetTextResult: () => void
@@ -355,7 +376,7 @@ interface AppState {
   analysisHistoryTotal: number
   analysisHistoryPage: number
   analysisHistoryLoading: boolean
-  fetchAnalysisHistory: (params?: { type?: string; riskLevel?: string; search?: string; page?: number; limit?: number; sortBy?: string; sortOrder?: string }) => Promise<void>
+  fetchAnalysisHistory: (params?: { type?: string; riskLevel?: string; search?: string; page?: number; limit?: number; sortBy?: string; sortOrder?: string; unattachedOnly?: boolean }) => Promise<void>
 }
 
 /** Relative "x min ago" label used across list views. */
@@ -837,22 +858,49 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   analyzeVideo: async (file: File) => {
     set({ videoLoading: true, videoResult: null })
+
+    // Try to get a REAL audio-forensics result from the video's own audio
+    // track, using the existing, already-proven /api/forensics/audio engine.
+    // This runs independently of the visual analysis below - if the video
+    // has no audio track, or the browser can't decode its codec, we fail
+    // quietly and mark the result as unavailable rather than guessing.
+    let audioAuthenticity = 0.5
+    let audioAnalysis: { available: boolean; note: string } = {
+      available: false,
+      note: 'No audio track could be extracted or analysed for this video.',
+    }
+    try {
+      const wav = await decodeToWav(file)
+      const fd = new FormData()
+      fd.append('audio', wav, 'extracted-audio.wav')
+      const audioRes = await fetch('/api/forensics/audio', { method: 'POST', body: fd })
+      if (audioRes.ok) {
+        const audioData = await audioRes.json()
+        const trustScore = audioData?.analysis?.trustScore
+        if (typeof trustScore === 'number') {
+          audioAuthenticity = Math.max(0, Math.min(1, trustScore / 100))
+          audioAnalysis = {
+            available: true,
+            note: 'Based on independent signal analysis (spectral cutoff, zero-crossing rate, energy variance) of the video\'s extracted audio track.',
+          }
+        }
+      }
+    } catch {
+      // No audio track, unsupported codec, or decode failed - leave as unavailable.
+    }
+
     try {
       const formData = new FormData()
       formData.append('video', file)
       const res = await fetch('/api/analyze/video', { method: 'POST', body: formData })
       if (res.ok) {
         const data = await res.json()
-        // API returns { success, reportId, analysis: {...}, processingTime }
-        // Transform to VideoAnalysisResult shape
         const analysis = data.analysis || data
         const details = analysis.details || {}
         const deepfakeProbability = typeof (details as Record<string, unknown>).deepfakeProbability === 'number'
           ? (details as Record<string, unknown>).deepfakeProbability as number
           : typeof analysis.trustScore === 'number' ? 100 - analysis.trustScore : 50
         const faceDetails = (details as Record<string, unknown>).faceAnalysis as Record<string, unknown> | undefined
-        const temporalDetails = (details as Record<string, unknown>).temporalAnalysis as Record<string, unknown> | undefined
-        const avDetails = (details as Record<string, unknown>).audioVisualSync as Record<string, unknown> | undefined
         set({
           videoLoading: false,
           videoResult: {
@@ -869,36 +917,27 @@ export const useAppStore = create<AppState>((set, get) => ({
               anomalies: Array.isArray(faceDetails?.manipulationIndicators)
                 ? (faceDetails!.manipulationIndicators as string[]).map(String)
                 : ['Inconsistent blink rate', 'Unnatural skin tone variation'],
-              confidence: typeof faceDetails?.skinTextureConsistency === 'boolean'
-                ? (faceDetails.skinTextureConsistency ? 0.9 : 0.5)
-                : 0.65,
+              confidence: typeof faceDetails?.detectionConfidence === 'number'
+                ? Math.max(0, Math.min(1, (faceDetails.detectionConfidence as number) / 100))
+                : 0.5,
             },
             temporalConsistency: typeof analysis.confidence === 'number'
               ? (analysis.confidence <= 1 ? Math.min(1, analysis.confidence + 0.1) : Math.min(1, analysis.confidence / 100 + 0.1))
               : 0.6,
-            audioVisualSync: typeof (avDetails as Record<string, unknown> | undefined)?.lipSyncScore === 'number'
-              ? ((avDetails as Record<string, unknown>).lipSyncScore as number) / 100
-              : 0.7,
+            audioVisualSync: audioAuthenticity,
+            audioAnalysis,
             riskAssessment: analysis.riskLevel || 'medium',
           },
         })
         toast.success('Video analysis complete!')
       } else {
-        throw new Error('API error')
+        const errorData = await res.json().catch(() => null)
+        throw new Error(errorData?.details || errorData?.error || `Server responded with status ${res.status}`)
       }
-    } catch {
-      toast.error('Video analysis failed. Using fallback data.')
-      set({
-        videoLoading: false,
-        videoResult: {
-          deepfakeProbability: 78,
-          frameAnalysis: { totalFrames: 450, flaggedFrames: 67, consistency: 0.65 },
-          faceAnalysis: { facesDetected: 2, anomalies: ['Inconsistent blink rate', 'Unnatural skin tone variation', 'Mouth movement mismatch'], confidence: 0.82 },
-          temporalConsistency: 0.62,
-          audioVisualSync: 0.71,
-          riskAssessment: 'high',
-        },
-      })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Video analysis failed'
+      toast.error(`Video analysis failed: ${message}`)
+      set({ videoLoading: false, videoResult: null })
     }
   },
 
@@ -1052,6 +1091,98 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  updateInvestigation: async (id, data) => {
+    try {
+      const payload: Record<string, unknown> = { ...data }
+      if (data.assignedAnalyst !== undefined && payload.assignedTo === undefined) {
+        payload.assignedTo = data.assignedAnalyst
+      }
+      const res = await fetch(`/api/investigations/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Update failed')
+      }
+      await get().fetchInvestigations()
+      return true
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not update investigation')
+      return false
+    }
+  },
+
+  deleteInvestigation: async (id) => {
+    try {
+      const res = await fetch(`/api/investigations/${id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Delete failed')
+      }
+      await get().fetchInvestigations()
+      return true
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not delete investigation')
+      return false
+    }
+  },
+
+  attachEvidence: async (investigationId, reportId) => {
+    try {
+      const res = await fetch(`/api/investigations/${investigationId}/evidence/${reportId}`, {
+        method: 'POST',
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Could not attach evidence')
+      }
+      await get().fetchInvestigations()
+      toast.success('Evidence attached')
+      return true
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not attach evidence')
+      return false
+    }
+  },
+
+  detachEvidence: async (investigationId, reportId) => {
+    try {
+      const res = await fetch(`/api/investigations/${investigationId}/evidence/${reportId}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Could not detach evidence')
+      }
+      await get().fetchInvestigations()
+      toast.success('Evidence removed')
+      return true
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not detach evidence')
+      return false
+    }
+  },
+
+  updateInvestigationStatus: async (id, status) => {
+    const success = await get().updateInvestigation(id, { status })
+    if (success) {
+      toast.success(`Investigation status updated to ${status.replace('_', ' ')}`)
+    }
+    return success
+  },
+
+  updateInvestigationPriority: async (id, priority) => {
+    const success = await get().updateInvestigation(id, { priority })
+    if (success) {
+      toast.success(`Priority updated to ${priority}`)
+    }
+    return success
+  },
+
   fetchAlerts: async () => {
     set({ alertsLoading: true })
     try {
@@ -1130,6 +1261,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (params.limit) searchParams.set('limit', String(params.limit))
       if (params.sortBy) searchParams.set('sortBy', params.sortBy)
       if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder)
+      if (params.unattachedOnly) searchParams.set('unattachedOnly', 'true')
       const res = await fetch(`/api/analysis/history?${searchParams.toString()}`)
       if (res.ok) {
         const data: AnalysisHistoryResponse = await res.json()

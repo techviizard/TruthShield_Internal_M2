@@ -2,12 +2,8 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import {
-  Film, Loader2, Play, AlertTriangle, Scissors, Activity, Fingerprint,
-} from 'lucide-react'
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot,
-} from 'recharts'
+import {Film, Loader2, Play, AlertTriangle, Scissors, Activity, Fingerprint, RotateCcw,} from 'lucide-react'
+import {LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot,} from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -40,6 +36,9 @@ interface TemporalVerdict {
 }
 
 const TARGET_FRAMES = 24
+const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB
+const VALID_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-matroska', 'video/x-msvideo', 'video/avi']
+const VALID_VIDEO_EXTS = ['mp4', 'mov','avi']
 
 /**
  * Frame-level video forensics.
@@ -146,6 +145,19 @@ export function VideoFrameAnalysis() {
     }
   }, [file])
 
+  const handleReset = useCallback(() => {
+    if (videoUrl) URL.revokeObjectURL(videoUrl)
+    setFile(null)
+    setVideoUrl(null)
+    setStage('idle')
+    setProgress(0)
+    setVerdict(null)
+    setTrustScore(null)
+    setEvidenceHash(null)
+    setError(null)
+    setSelectedFrame(null)
+  }, [videoUrl])
+
   const chartData = verdict?.frames.map((f) => ({
     t: f.timestamp,
     score: f.score,
@@ -163,7 +175,7 @@ export function VideoFrameAnalysis() {
         </CardTitle>
         <CardDescription>
           Samples {TARGET_FRAMES} frames in your browser and runs error-level, sensor-noise and
-          frequency checks on each, then compares them across time.
+          frequency checks on each, then compares them across time. Upload Video File in MP4, AVI, MOV (Max file size:100MB)
         </CardDescription>
       </CardHeader>
 
@@ -171,10 +183,23 @@ export function VideoFrameAnalysis() {
         <div className="flex flex-wrap items-center gap-3">
           <input
             type="file"
-            accept="video/*"
+            accept=".mp4,.mov,.avi,video/mp4,video/quicktime,video/x-matroska,video/x-msvideo"
             className="text-xs file:mr-3 file:rounded-md file:border file:border-border file:bg-muted file:px-3 file:py-1.5 file:text-xs"
             onChange={(e) => {
               const f = e.target.files?.[0] ?? null
+              if (f) {
+                const ext = f.name.split('.').pop()?.toLowerCase()
+                if (!VALID_VIDEO_TYPES.includes(f.type) && !VALID_VIDEO_EXTS.includes(ext || '')) {
+                  toast.error(`"${f.name}" is not a supported video format. Please use MP4, MOV, or AVI.`)
+                  e.target.value = ''
+                  return
+                }
+                if (f && f.size > MAX_FILE_SIZE) {
+                  toast.error(`"${f.name}" exceeds the 100MB limit for video files.`)
+                  e.target.value = '' // reset the input so the same oversized file can be re-selected later
+                  return
+                }
+              }
               setFile(f)
               setVerdict(null)
               setStage('idle')
@@ -192,6 +217,16 @@ export function VideoFrameAnalysis() {
               ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
               : <Play className="h-3.5 w-3.5" />}
             {stage === 'sampling' ? 'Sampling frames…' : stage === 'analyzing' ? 'Analysing…' : 'Analyse frames'}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleReset}
+            disabled={(!file && !verdict) || stage === 'sampling' || stage === 'analyzing'}
+            className="gap-1.5"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset
           </Button>
         </div>
 

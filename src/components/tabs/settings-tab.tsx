@@ -11,6 +11,8 @@ import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { useAppStore } from '@/lib/store'
+import { useTranslations } from 'next-intl'
+import { useLocaleSwitcher, LOCALES, LOCALE_LABELS, type Locale } from '@/components/locale-provider'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useState, useEffect} from 'react'
@@ -21,6 +23,8 @@ import {
 } from 'lucide-react'
 
 export function SettingsTab() {
+  const t = useTranslations('settings')
+  const { locale, setLocale } = useLocaleSwitcher()
   const {
     analysisSensitivity, setAnalysisSensitivity,
     notificationsEnabled, setNotificationsEnabled,
@@ -102,8 +106,8 @@ export function SettingsTab() {
   }, [])
 
   const handleSaveChanges = () => {
-    toast.success('Settings saved successfully!', {
-      description: 'All changes have been applied to your profile.',
+    toast.success(t('savedSuccess'), {
+      description: t('savedDesc'),
     })
   }
 
@@ -135,10 +139,10 @@ export function SettingsTab() {
                 <div className="flex items-center gap-3 mt-2">
                   <Badge variant="secondary" className="text-xs">
                     <User className="h-3 w-3 mr-1" />
-                    {cfg?.demo.enabled ? 'Demo account' : 'Configured account'}
+                    {cfg?.demo.enabled ? t('demoAccount') : t('configuredAccount')}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    Authentication is not enabled - single-tenant mode
+                    {t('singleTenant')}
                   </span>
                 </div>
               </div>
@@ -153,11 +157,10 @@ export function SettingsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Key className="h-4 w-4 text-zinc-500" />
-              Integrations
+              {t('integrations')}
             </CardTitle>
             <CardDescription>
-              Configured in <code>.env.local</code> and resolved by <code>src/config/app.config.ts</code>.
-              Keys are never displayed or editable from the UI.
+              {t('integrationsDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -165,7 +168,7 @@ export function SettingsTab() {
               <div className="min-w-0">
                 <p className="text-sm font-medium flex items-center gap-2">
                   <Lock className="h-3 w-3" />
-                  AI provider
+                  {t('aiProvider')}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   {cfg ? `${cfg.ai.provider} · ${cfg.ai.model}` : ' - '}
@@ -179,7 +182,7 @@ export function SettingsTab() {
                     : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25'
                 }
               >
-                {cfg?.ai.configured ? 'key configured' : 'AI_API_KEY missing'}
+                {cfg?.ai.configured ? t('keyConfigured') : t('keyMissing')}
               </Badge>
             </div>
 
@@ -187,31 +190,31 @@ export function SettingsTab() {
               <div className="min-w-0">
                 <p className="text-sm font-medium flex items-center gap-2">
                   <Lock className="h-3 w-3" />
-                  Vision model
+                  {t('visionModel')}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">{cfg?.ai.visionModel ?? ' - '}</p>
               </div>
-              <Badge variant="outline">{cfg?.features.visionAnalysis ? 'enabled' : 'disabled'}</Badge>
+              <Badge variant="outline">{cfg?.features.visionAnalysis ? t('enabled') : t('disabled')}</Badge>
             </div>
 
             <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30">
               <div className="min-w-0">
                 <p className="text-sm font-medium flex items-center gap-2">
                   <Lock className="h-3 w-3" />
-                  Web search
+                  {t('webSearch')}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   {cfg?.search.enabled ? cfg.search.provider : 'SEARCH_PROVIDER=none'}
                 </p>
               </div>
-              <Badge variant="outline">{cfg?.search.enabled ? 'enabled' : 'disabled'}</Badge>
+              <Badge variant="outline">{cfg?.search.enabled ? t('enabled') : t('disabled')}</Badge>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
-              <div>Max image upload: {cfg?.limits.maxImageUploadMB ?? ' - '} MB</div>
-              <div>Max video upload: {cfg?.limits.maxVideoUploadMB ?? ' - '} MB</div>
-              <div>Max audio upload: {cfg?.limits.maxAudioUploadMB ?? ' - '} MB</div>
-              <div>Dashboard refresh: {(cfg?.dashboard.refreshIntervalMs ?? 0) / 1000}s</div>
+              <div>{t('maxImageUpload')}: {cfg?.limits.maxImageUploadMB ?? ' - '} MB</div>
+              <div>{t('maxVideoUpload')}: {cfg?.limits.maxVideoUploadMB ?? ' - '} MB</div>
+              <div>{t('maxAudioUpload')}: {cfg?.limits.maxAudioUploadMB ?? ' - '} MB</div>
+              <div>{t('dashboardRefresh')}: {(cfg?.dashboard.refreshIntervalMs ?? 0) / 1000}s</div>
             </div>
           </CardContent>
         </Card>
@@ -223,13 +226,13 @@ export function SettingsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Globe className="h-4 w-4 text-zinc-500" />
-              Language Preferences
+              {t('languagePreferences')}
             </CardTitle>
-            <CardDescription>Set your default language for analysis</CardDescription>
+            <CardDescription>{t('languagePreferencesDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Default Analysis Language</label>
+              <label className="text-sm font-medium">{t('defaultAnalysisLanguage')}</label>
               <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
                 <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select language" />
@@ -250,14 +253,17 @@ export function SettingsTab() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Interface Language</label>
-              <Select defaultValue="en">
+              <label className="text-sm font-medium">{t('interfaceLanguage')}</label>
+              <Select value={locale} onValueChange={(val) => setLocale(val as Locale)}>
                 <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="hi">Hindi</SelectItem>
+                  {LOCALES.map((l) => (
+                    <SelectItem key={l} value={l}>
+                      {LOCALE_LABELS[l].native} ({LOCALE_LABELS[l].english})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -271,15 +277,15 @@ export function SettingsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Bell className="h-4 w-4 text-zinc-500" />
-              Notification Settings
+              {t('notificationSettings')}
             </CardTitle>
-            <CardDescription>Configure when and how you receive notifications</CardDescription>
+            <CardDescription>{t('notificationSettingsDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Enable Notifications</p>
-                <p className="text-xs text-muted-foreground">Receive alerts for critical findings</p>
+                <p className="text-sm font-medium">{t('enableNotifications')}</p>
+                <p className="text-xs text-muted-foreground">{t('enableNotificationsDesc')}</p>
               </div>
               <Switch
                 checked={notificationsEnabled}
@@ -289,24 +295,24 @@ export function SettingsTab() {
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Critical Alerts</p>
-                <p className="text-xs text-muted-foreground">Get notified for critical severity threats</p>
+                <p className="text-sm font-medium">{t('criticalAlerts')}</p>
+                <p className="text-xs text-muted-foreground">{t('criticalAlertsDesc')}</p>
               </div>
               <Switch defaultChecked />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Analysis Complete</p>
-                <p className="text-xs text-muted-foreground">Notify when analysis finishes</p>
+                <p className="text-sm font-medium">{t('analysisComplete')}</p>
+                <p className="text-xs text-muted-foreground">{t('analysisCompleteDesc')}</p>
               </div>
               <Switch defaultChecked />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Daily Digest</p>
-                <p className="text-xs text-muted-foreground">Daily summary of platform activity</p>
+                <p className="text-sm font-medium">{t('dailyDigest')}</p>
+                <p className="text-xs text-muted-foreground">{t('dailyDigestDesc')}</p>
               </div>
               <Switch />
             </div>
@@ -320,14 +326,14 @@ export function SettingsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Sliders className="h-4 w-4 text-zinc-500" />
-              Analysis Sensitivity
+              {t('analysisSensitivity')}
             </CardTitle>
-            <CardDescription>Adjust how sensitive the detection algorithms are</CardDescription>
+            <CardDescription>{t('analysisSensitivityDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Sensitivity Level</span>
+                <span className="text-muted-foreground">{t('sensitivityLevel')}</span>
                 <span className="font-medium">{analysisSensitivity}%</span>
               </div>
               <Slider
@@ -338,23 +344,23 @@ export function SettingsTab() {
                 className="w-full"
               />
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>Conservative</span>
-                <span>Balanced</span>
-                <span>Aggressive</span>
+                <span>{t('conservative')}</span>
+                <span>{t('balanced')}</span>
+                <span>{t('aggressive')}</span>
               </div>
             </div>
             <Separator />
             <div>
-              <p className="text-sm font-medium mb-2">Sensitivity Impact</p>
+              <p className="text-sm font-medium mb-2">{t('sensitivityImpact')}</p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-lg border text-center hover:border-zinc-500/30 transition-colors">
                   <Shield className="h-5 w-5 mx-auto text-zinc-500 mb-1" />
-                  <p className="text-xs font-medium">False Positive Rate</p>
+                  <p className="text-xs font-medium">{t('falsePositiveRate')}</p>
                   <p className="text-sm font-bold">{analysisSensitivity > 75 ? 'High' : analysisSensitivity > 40 ? 'Medium' : 'Low'}</p>
                 </div>
                 <div className="p-3 rounded-lg border text-center hover:border-zinc-500/30 transition-colors">
                   <Eye className="h-5 w-5 mx-auto text-blue-500 mb-1" />
-                  <p className="text-xs font-medium">Detection Rate</p>
+                  <p className="text-xs font-medium">{t('detectionRate')}</p>
                   <p className="text-sm font-bold">{analysisSensitivity > 75 ? 'Very High' : analysisSensitivity > 40 ? 'High' : 'Standard'}</p>
                 </div>
               </div>
@@ -369,7 +375,7 @@ export function SettingsTab() {
           <span className="w-full border-t border-dashed border-zinc-500/20" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-3 text-muted-foreground">Advanced Settings</span>
+          <span className="bg-background px-3 text-muted-foreground">{t('advancedSettings')}</span>
         </div>
       </div>
 
@@ -379,15 +385,15 @@ export function SettingsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Database className="h-4 w-4 text-zinc-500" />
-              Data Management
+              {t('dataManagement')}
             </CardTitle>
-            <CardDescription>Manage your analysis data and storage</CardDescription>
+            <CardDescription>{t('dataManagementDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             {/* Storage Usage */}
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="font-medium">Storage Usage</span>
+                <span className="font-medium">{t('storageUsage')}</span>
                 <span className="text-muted-foreground">2.4 GB of 10 GB used</span>
               </div>
               <Progress value={24} className="h-2" />
@@ -399,8 +405,8 @@ export function SettingsTab() {
             {/* Auto-delete toggle */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Auto-delete old analyses</p>
-                <p className="text-xs text-muted-foreground">Automatically remove analyses past retention period</p>
+                <p className="text-sm font-medium">{t('autoDeleteOld')}</p>
+                <p className="text-xs text-muted-foreground">{t('autoDeleteOldDesc')}</p>
               </div>
               <Switch
                 checked={autoDeleteOld}
@@ -410,7 +416,7 @@ export function SettingsTab() {
 
             {/* Retention period */}
             <div>
-              <label className="text-sm font-medium">Retention period</label>
+              <label className="text-sm font-medium">{t('retentionPeriod')}</label>
               <Select value={retentionPeriod} onValueChange={setRetentionPeriod}>
                 <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select retention period" />
@@ -430,15 +436,15 @@ export function SettingsTab() {
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="hover:bg-zinc-500/10 hover:border-zinc-500/30 transition-colors">
                 <Download className="h-4 w-4 mr-2" />
-                Export All Data
+                {t('exportAllData')}
               </Button>
               <Button variant="destructive" className="hover:opacity-90 transition-opacity">
                 <Trash2 className="h-4 w-4 mr-2" />
-                Clear All History
+                {t('clearAllHistory')}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              ⚠️ Clearing history is permanent and cannot be undone. All analysis records will be removed.
+              {t('clearHistoryWarning')}
             </p>
           </CardContent>
         </Card>
@@ -450,19 +456,19 @@ export function SettingsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Palette className="h-4 w-4 text-zinc-500" />
-              Appearance
+              {t('appearance')}
             </CardTitle>
-            <CardDescription>Customize the look and feel</CardDescription>
+            <CardDescription>{t('appearanceDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             {/* Theme selector */}
             <div>
-              <label className="text-sm font-medium mb-3 block">Theme</label>
+              <label className="text-sm font-medium mb-3 block">{t('theme')}</label>
               <div className="flex gap-2">
                 {[
-                  { value: 'light' as const, label: 'Light', icon: Sun },
-                  { value: 'dark' as const, label: 'Dark', icon: Moon },
-                  { value: 'system' as const, label: 'System', icon: Monitor },
+                  { value: 'light' as const, label: t('themeLight'), icon: Sun },
+                  { value: 'dark' as const, label: t('themeDark'), icon: Moon },
+                  { value: 'system' as const, label: t('themeSystem'), icon: Monitor },
                 ].map((opt) => (
                   <Button
                     key={opt.value}
@@ -486,7 +492,7 @@ export function SettingsTab() {
 
             {/* Accent color picker */}
             <div>
-              <label className="text-sm font-medium mb-3 block">Accent Color</label>
+              <label className="text-sm font-medium mb-3 block">{t('accentColor')}</label>
               <div className="flex gap-3">
                 {accentColors.map((color) => (
                   <button
@@ -511,12 +517,12 @@ export function SettingsTab() {
 
             {/* Font size */}
             <div>
-              <label className="text-sm font-medium mb-3 block">Font Size</label>
+              <label className="text-sm font-medium mb-3 block">{t('fontSize')}</label>
               <div className="flex gap-2">
                 {[
-                  { value: 'small' as const, label: 'Small' },
-                  { value: 'medium' as const, label: 'Medium' },
-                  { value: 'large' as const, label: 'Large' },
+                  { value: 'small' as const, label: t('fontSizeSmall') },
+                  { value: 'medium' as const, label: t('fontSizeMedium') },
+                  { value: 'large' as const, label: t('fontSizeLarge') },
                 ].map((opt) => (
                   <Button
                     key={opt.value}
@@ -540,8 +546,8 @@ export function SettingsTab() {
             {/* Compact mode */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Compact mode</p>
-                <p className="text-xs text-muted-foreground">Reduce spacing and padding for denser layout</p>
+                <p className="text-sm font-medium">{t('compactMode')}</p>
+                <p className="text-xs text-muted-foreground">{t('compactModeDesc')}</p>
               </div>
               <Switch
                 checked={compactMode}
@@ -554,8 +560,8 @@ export function SettingsTab() {
             {/* Animations */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Animations</p>
-                <p className="text-xs text-muted-foreground">Enable smooth transitions and motion effects</p>
+                <p className="text-sm font-medium">{t('animations')}</p>
+                <p className="text-xs text-muted-foreground">{t('animationsDesc')}</p>
               </div>
               <Switch
                 checked={animationsEnabled}
@@ -572,9 +578,9 @@ export function SettingsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="h-4 w-4 text-zinc-500" />
-              Security & Privacy
+              {t('securityPrivacy')}
             </CardTitle>
-            <CardDescription>Protect your account and data</CardDescription>
+            <CardDescription>{t('securityPrivacyDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             {/* Two-factor auth */}
@@ -584,8 +590,8 @@ export function SettingsTab() {
                   <ShieldCheck className="h-4 w-4 text-zinc-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Two-factor authentication</p>
-                  <p className="text-xs text-muted-foreground">Add an extra layer of security to your account</p>
+                  <p className="text-sm font-medium">{t('twoFactor')}</p>
+                  <p className="text-xs text-muted-foreground">{t('twoFactorDesc')}</p>
                 </div>
               </div>
               <Switch
@@ -598,7 +604,7 @@ export function SettingsTab() {
 
             {/* Session timeout */}
             <div>
-              <label className="text-sm font-medium">Session timeout</label>
+              <label className="text-sm font-medium">{t('sessionTimeout')}</label>
               <Select value={sessionTimeout} onValueChange={setSessionTimeout}>
                 <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select timeout" />
@@ -614,7 +620,7 @@ export function SettingsTab() {
 
             {/* Audit log retention */}
             <div>
-              <label className="text-sm font-medium">Audit log retention</label>
+              <label className="text-sm font-medium">{t('auditLogRetention')}</label>
               <Select value={auditLogRetention} onValueChange={setAuditLogRetention}>
                 <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select retention period" />
@@ -632,12 +638,12 @@ export function SettingsTab() {
             {/* Data encryption status */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Data encryption</p>
-                <p className="text-xs text-muted-foreground">End-to-end encryption for all stored data</p>
+                <p className="text-sm font-medium">{t('dataEncryption')}</p>
+                <p className="text-xs text-muted-foreground">{t('dataEncryptionDesc')}</p>
               </div>
               <Badge className="bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20">
                 <Lock className="h-3 w-3 mr-1" />
-                Enabled
+                {t('enabled')}
               </Badge>
             </div>
 
@@ -647,15 +653,15 @@ export function SettingsTab() {
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="hover:bg-zinc-500/10 hover:border-zinc-500/30 transition-colors">
                 <Download className="h-4 w-4 mr-2" />
-                Download My Data
+                {t('downloadData')}
               </Button>
               <Button variant="destructive" className="hover:opacity-90 transition-opacity">
                 <Trash className="h-4 w-4 mr-2" />
-                Delete Account
+                {t('deleteAccount')}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              ⚠️ Account deletion is irreversible. All your data, analyses, and investigation records will be permanently removed.
+              {t('deleteAccountWarning')}
             </p>
           </CardContent>
         </Card>
@@ -667,9 +673,9 @@ export function SettingsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Plug className="h-4 w-4 text-zinc-500" />
-              Integrations
+              {t('integrations')}
             </CardTitle>
-            <CardDescription>Connect external services</CardDescription>
+            <CardDescription>{t('integrationsDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -723,9 +729,9 @@ export function SettingsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Keyboard className="h-4 w-4 text-zinc-500" />
-              Keyboard Shortcuts
+              {t('keyboardShortcuts')}
             </CardTitle>
-            <CardDescription>Quick access keys for efficient workflow</CardDescription>
+            <CardDescription>{t('keyboardShortcutsDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -768,24 +774,24 @@ export function SettingsTab() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Info className="h-4 w-4 text-zinc-500" />
-              About
+              {t('about')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Platform Version</span>
+              <span className="text-muted-foreground">{t('platformVersion')}</span>
               <span className="font-medium">3.0.0</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">ML Model Version</span>
+              <span className="text-muted-foreground">{t('mlModelVersion')}</span>
               <span className="font-medium">v3.2.1</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Detection Engine</span>
+              <span className="text-muted-foreground">{t('detectionEngine')}</span>
               <span className="font-medium">TruthShield Core</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">License</span>
+              <span className="text-muted-foreground">{t('license')}</span>
               <Badge variant="secondary">Enterprise</Badge>
             </div>
             <Separator />
@@ -808,14 +814,14 @@ export function SettingsTab() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
         <div className="flex justify-end gap-3 pb-4">
           <Button variant="outline" className="hover:bg-zinc-500/10 hover:border-zinc-500/30 transition-colors">
-            Reset to Defaults
+            {t('resetDefaults')}
           </Button>
           <Button
             onClick={handleSaveChanges}
             className="bg-zinc-600 hover:bg-zinc-700 text-white transition-all hover:shadow-lg hover:shadow-zinc-500/20"
           >
             <Save className="h-4 w-4 mr-2" />
-            Save Changes
+            {t('saveChanges')}
           </Button>
         </div>
       </motion.div>

@@ -149,10 +149,11 @@ function hasValidImageSignature(
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
-
+  
   try {
     const formData = await request.formData();
-    const imageFile = formData.get('image');
+    const imageFile = formData.get('image') as File | null;
+    const aiPayload = formData.get('aiPayload') as string | null; // The compressed string for OpenRouter
 
     if (!(imageFile instanceof File)) {
       return NextResponse.json(
@@ -376,13 +377,9 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
       }
 
       let analysisResult: Record<string, unknown>;
-      let usedFallback = false;
-
+      let usedFallback = true;
       try {
-        analysisResult = await vlmImageAnalysis(
-          dataUrl,
-          `${systemPrompt}\n\n${userPrompt}`,
-        );
+       analysisResult = await vlmImageAnalysis(aiPayload || dataUrl, `${systemPrompt}\n\n${userPrompt}`);
       } catch (vlmError) {
         usedFallback = true;
 
@@ -397,12 +394,9 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
         analysisResult = {
           trustScore: forensics.trustScore,
           riskLevel: forensics.riskLevel,
-          flags: forensics.signals
-            .filter((signal) => signal.contribution > 0)
-            .map((signal) => signal.id),
-          explanation:
-            `${forensics.explanation} ` +
-            `(Vision model unavailable - this verdict comes from pixel-level forensics and metadata alone; no semantic scene reasoning was performed.)`,
+          flags: forensics.signals.filter((s) => s.contribution > 0).map((s) => s.id),
+          explanation: `${forensics.explanation} (Vision model unavailable - this verdict comes from pixel-level forensics and metadata alone; no semantic scene reasoning was performed.)`,
+          forensicFindings: ["Vision model analysis failed due to size/timeout. Relying on pixel-level forensics."],
           confidence: 0.55,
           recommendations: [
             'Inspect the highlighted ELA regions against the visible image before concluding.',

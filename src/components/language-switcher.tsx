@@ -27,20 +27,21 @@ export function LanguageSwitcher() {
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="text-xs">{t('language')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {LOCALES.map((l: Locale) => (
-          <DropdownMenuItem key={l} onClick={() => setLocale(l)} className="gap-2">
-            <span className="flex-1">{LOCALE_LABELS[l].native}</span>
-            <span className="text-[10px] text-muted-foreground">{LOCALE_LABELS[l].english}</span>
-            {locale === l && <Check className="h-3.5 w-3.5 text-emerald-500" />}
-          </DropdownMenuItem>
-        ))}
+        <div className="max-h-72 overflow-y-auto space-y-0.5">
+          {LOCALES.map((l: Locale) => (
+            <DropdownMenuItem key={l} onClick={() => setLocale(l)} className="gap-2 cursor-pointer">
+              <span className="flex-1 font-medium">{LOCALE_LABELS[l].native}</span>
+              <span className="text-[10px] text-muted-foreground">{LOCALE_LABELS[l].english}</span>
+              {locale === l && <Check className="h-3.5 w-3.5 text-emerald-500" />}
+            </DropdownMenuItem>
+          ))}
+        </div>
         <DropdownMenuSeparator />
         <p className="px-2 py-1.5 text-[10px] leading-snug text-muted-foreground">
-          Changes the console interface. Analysis covers every configured language regardless of this
-          setting.
+          {t('languageHint')}
         </p>
       </DropdownMenuContent>
     </DropdownMenu>

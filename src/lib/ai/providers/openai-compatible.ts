@@ -50,19 +50,33 @@ async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<string> {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${process.env.AI_API_KEY}`,
-        "HTTP-Referer": "http://localhost:3000", 
-        "X-Title": "TruthShield" 
+        "HTTP-Referer": "http://localhost:3000",
+        "X-Title": "TruthShield"
       },
-      body: JSON.stringify({
-        model: opts?.model || process.env.AI_MODEL || "openrouter/free",
-        messages: messages,
-        temperature: opts?.temperature ?? 0.2
-      })
+    body: JSON.stringify({
+  model: opts?.model || process.env.AI_MODEL || "openrouter/free",
+  messages: messages.map((message) => ({
+    ...message,
+    content: Array.isArray(message.content)
+      ? message.content.map((part) =>
+          part.type === 'image'
+            ? {
+                type: 'image_url',
+                image_url: {
+                  url: part.url,
+                },
+              }
+            : part
+        )
+      : message.content,
+  })),
+  temperature: opts?.temperature ?? 0.2
+})
     });
 
     // 3. Parse the response
     const rawText = await response.text();
-    
+
     if (rawText.trim().startsWith("<")) {
       console.error("HTML ERROR RETURNED:", rawText);
       throw new Error("Received an HTML error page. Check your API key and URL.");
