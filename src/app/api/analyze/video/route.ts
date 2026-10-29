@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { appConfig } from '@/config/app.config';
 import { writeFile, unlink, readFile } from 'fs/promises';
 import path from 'path';
+import os from 'os';
 import { randomUUID } from 'crypto';
 import { fingerprint, type EvidenceFingerprint } from '@/lib/engines/integrity';
 import { recordAudit, clientIp } from '@/lib/engines/audit-logger';
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
 
 - Detecting face manipulation and deepfake indicators (face swapping, lip-sync manipulation, expression transfer)
 - Identifying temporal inconsistencies between frames (flickering, unnatural transitions)
-- Analyzing audio-visual synchronization issues
+- - Analyzing visual signs of manipulation from sampled frames alone (this model is not given audio, so audio-visual sync is assessed separately with real signal analysis, not by this prompt)
 - Detecting blink irregularities and unnatural eye movements
 - Identifying compression artifacts that may indicate manipulation
 - Evaluating skin texture consistency and blending artifacts
@@ -94,19 +95,15 @@ You MUST respond in strict JSON format with the following structure:
     "deepfakeProbability": <number 0-100>,
     "faceAnalysis": {
       "facesDetected": <number>,
-      "manipulationIndicators": [<list>],
-      "blinkPattern": "<natural|irregular|absent>",
-      "eyeMovementConsistency": "<consistent|inconsistent>"
+      "detectionConfidence": <number 0-100, how confident you are in this face detection based on frame clarity, resolution, and how visible faces are>
+      "manipulationIndicators": [<list — your visual impression from the sampled still frames only, not a tracked measurement>],
+      "blinkPattern": "<natural|irregular|absent — your visual impression, not a frame-by-frame blink-tracking measurement>",
+      "eyeMovementConsistency": "<consistent|inconsistent — your visual impression, not a tracked measurement>"
     },
     "temporalAnalysis": {
       "frameConsistency": "<consistent|irregular|suspicious>",
       "flickeringDetected": <boolean>,
       "unnaturalTransitions": <number>
-    },
-    "audioVisualSync": {
-      "lipSyncScore": <number 0-100>,
-      "desyncDetected": <boolean>,
-      "audioAnomalies": [<list>]
     },
     "overallAssessment": "<authentic|likely_manipulated|likely_deepfake|uncertain>"
   }
@@ -125,7 +122,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
         fileName: videoFile.name,
         mimeType: videoFile.type,
       });
-      tempFilePath = path.join('/tmp', `video-${randomUUID()}-${videoFile.name}`);
+      tempFilePath = path.join(os.tmpdir(), `video-${randomUUID()}-${videoFile.name}`);
       await writeFile(tempFilePath, videoBuffer);
 
       try {
@@ -165,7 +162,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
     // Ensure the result has all required fields with defaults
     const result: AnalysisResult = {
       trustScore: typeof analysisResult.trustScore === 'number'
-        ? Math.max(0, Math.min(100, analysisResult.trustScore ?? 0))
+        ? Math.max(0, Math.min(100, analysisResult.trustScore))
         : 50,
       riskLevel: ['low', 'medium', 'high', 'critical'].includes(analysisResult.riskLevel as string)
         ? (analysisResult.riskLevel as AnalysisResult['riskLevel'])
@@ -247,7 +244,7 @@ IMPORTANT: Respond ONLY with valid JSON. No additional text or explanation outsi
     return NextResponse.json(
       {
         error: 'Failed to analyze video',
-        details: 'An unexpected error occurred. Please try again later.',
+        details: error instanceof Error ? error.message : 'Unknown error',
         processingTime,
       },
       { status: 500 }

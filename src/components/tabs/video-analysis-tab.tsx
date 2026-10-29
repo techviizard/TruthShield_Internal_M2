@@ -260,7 +260,7 @@ const handleAnalyzeClick = () => { if (videoFile) analyzeVideo(videoFile) }
                   color={videoResult.audioVisualSync < 0.75 ? '#f97316' : '#a855f7'}
                 />
                 <p className="text-[10px] text-muted-foreground/70 italic mt-1 text-center">
-                  {videoResult.audioAnalysis?.available ? 'From real audio signal analysis' : 'No audio track detected'}
+                  {videoResult.audioAnalysis.available ? 'From real audio signal analysis' : 'No audio track detected'}
                 </p>
               </Card>
 
@@ -370,7 +370,7 @@ const handleAnalyzeClick = () => { if (videoFile) analyzeVideo(videoFile) }
                   <div className="text-center p-4 rounded-lg gradient-border">
                     <span className="text-xs text-muted-foreground">Audio</span>
                     <p className={`text-lg font-bold mt-1 ${videoResult.audioVisualSync < 0.75 ? 'text-orange-500' : 'text-green-500'}`}>
-                      {videoResult.audioAnalysis?.available ? (videoResult.audioVisualSync < 0.75 ? 'Suspicious' : 'Clean') : 'N/A'}
+                      {videoResult.audioAnalysis.available ? (videoResult.audioVisualSync < 0.75 ? 'Suspicious' : 'Clean') : 'N/A'}
                     </p>
                   </div>
                   <div className="text-center p-4 rounded-lg gradient-border">

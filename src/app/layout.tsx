@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { LocaleProvider } from "@/components/locale-provider";
 
 const geistSans = Geist({
@@ -72,6 +73,7 @@ export default function RootLayout({
             </a>
             {children}
             <Toaster />
+            <SonnerToaster />
           </LocaleProvider>
         </ThemeProvider>
       </body>

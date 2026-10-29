@@ -619,19 +619,19 @@ export function AudioDeepfakeTab() {
                 )}
               </div>
 
-              <audio ref={audioElRef} src={localPlaybackUrl || undefined}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onTimeUpdate={(e) => {
-                  const el = e.currentTarget
-                  if (el.duration) setPlaybackPosition((el.currentTime / el.duration) * 100)
-                }}
-                onEnded={() => {
-                  setIsPlaying(false);
-                  setPlaybackPosition(0)
-                }}
+              <audio ref={audioElRef} src={localPlaybackUrl || audioUrl || undefined} 
+                onPlay={() => setIsPlaying(true)} 
+                onPause={() => setIsPlaying(false)} 
+                onTimeUpdate={(e) => { 
+                  const el = e.currentTarget 
+                  if (el.duration) setPlaybackPosition((el.currentTime / el.duration) * 100) 
+                }} 
+                onEnded={() => { 
+                  setIsPlaying(false); 
+                  setPlaybackPosition(0) 
+                }} 
                 className="hidden"
-              />
+              /> 
 
               {/* Playback Controls */}
               <div className="flex items-center gap-4">

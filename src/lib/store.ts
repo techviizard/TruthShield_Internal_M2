@@ -117,11 +117,10 @@ export interface VideoAnalysisResult {
     confidence: number
   }
   temporalConsistency: number
+  /** 0-1. Real audio-forensics trust score when the audio track was decodable, otherwise a neutral 0.5. */
   audioVisualSync: number
-  audioAnalysis?: {
-    available: boolean
-    note: string
-  }
+  /** Whether the number above is backed by real audio DSP, or unavailable because no audio track could be decoded. */
+  audioAnalysis: { available: boolean; note: string }
   riskAssessment: RiskLevel
 }
 
@@ -346,7 +345,7 @@ interface AppState {
   // Actions
   analyzeText: () => Promise<void>
   analyzeImage: (file: File) => Promise<void>
-  analyzeVideo: (file: File) => Promise<void>
+  analyzeVideo: (source: File | { url: string }) => Promise<void>
   verifyFact: (claim: string, language?: string) => Promise<void>
   factCheckError: string | null
   fetchDashboardStats: () => Promise<void>
@@ -813,31 +812,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   analyzeImage: async (file: File) => {
     set({ imageLoading: true, imageResult: null })
     try {
-     const formData = new FormData()
-        // 1. Send the RAW file for local pixel forensics
-        formData.append('image', file)
-        
-        // 2. Compress a copy specifically for OpenRouter using a Promise
-        const compressedBase64 = await new Promise<string>((resolve, reject) => {
-          const img = new window.Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const scale = 800 / img.width;
-            canvas.width = 800;
-            canvas.height = img.height * scale;
-            ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', 0.7));
-          };
-          img.onerror = () => reject(new Error("Failed to compress image"));
-          img.src = URL.createObjectURL(file);
-        });
-
-        // Attach the compressed tiny payload for the AI
-        formData.append('aiPayload', compressedBase64);
-
-        // 3. Dispatch the dual-payload request to your backend
-        const res = await fetch('/api/analyze/image', { method: 'POST', body: formData })
+      const formData = new FormData()
+      formData.append('image', file)
+      const res = await fetch('/api/analyze/image', { method: 'POST', body: formData })
       if (res.ok) {
         const data = await res.json()
         // API returns { success, reportId, analysis: {...}, processingTime }
@@ -921,53 +898,49 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   analyzeVideo: async (file: File) => {
     set({ videoLoading: true, videoResult: null })
+
+    // Try to get a REAL audio-forensics result from the video's own audio
+    // track, using the existing, already-proven /api/forensics/audio engine.
+    // This runs independently of the visual analysis below - if the video
+    // has no audio track, or the browser can't decode its codec, we fail
+    // quietly and mark the result as unavailable rather than guessing.
     let audioAuthenticity = 0.5
-let audioAnalysis: { available: boolean; note: string } = {
-  available: false,
-  note: 'No audio track could be extracted or analysed for this video.',
-}
-
-try {
-  const wav = await decodeToWav(file)
-  const audioFormData = new FormData()
-  audioFormData.append('audio', wav, 'extracted-audio.wav')
-
-  const audioRes = await fetch('/api/forensics/audio', {
-    method: 'POST',
-    body: audioFormData,
-  })
-
-  if (audioRes.ok) {
-    const audioData = await audioRes.json()
-    const trustScore = audioData?.analysis?.trustScore
-
-    if (typeof trustScore === 'number') {
-      audioAuthenticity = Math.max(0, Math.min(1, trustScore / 100))
-      audioAnalysis = {
-        available: true,
-        note: "Based on independent signal analysis of the video's extracted audio track.",
-      }
+    let audioAnalysis: { available: boolean; note: string } = {
+      available: false,
+      note: 'No audio track could be extracted or analysed for this video.',
     }
-  }
-} catch {
-  // Audio extraction may fail if no decodable audio track exists.
-}
+    try {
+      const wav = await decodeToWav(file)
+      const fd = new FormData()
+      fd.append('audio', wav, 'extracted-audio.wav')
+      const audioRes = await fetch('/api/forensics/audio', { method: 'POST', body: fd })
+      if (audioRes.ok) {
+        const audioData = await audioRes.json()
+        const trustScore = audioData?.analysis?.trustScore
+        if (typeof trustScore === 'number') {
+          audioAuthenticity = Math.max(0, Math.min(1, trustScore / 100))
+          audioAnalysis = {
+            available: true,
+            note: 'Based on independent signal analysis (spectral cutoff, zero-crossing rate, energy variance) of the video\'s extracted audio track.',
+          }
+        }
+      }
+    } catch {
+      // No audio track, unsupported codec, or decode failed - leave as unavailable.
+    }
+
     try {
       const formData = new FormData()
       formData.append('video', file)
       const res = await fetch('/api/analyze/video', { method: 'POST', body: formData })
       if (res.ok) {
         const data = await res.json()
-        // API returns { success, reportId, analysis: {...}, processingTime }
-        // Transform to VideoAnalysisResult shape
         const analysis = data.analysis || data
         const details = analysis.details || {}
         const deepfakeProbability = typeof (details as Record<string, unknown>).deepfakeProbability === 'number'
           ? (details as Record<string, unknown>).deepfakeProbability as number
           : typeof analysis.trustScore === 'number' ? 100 - analysis.trustScore : 50
         const faceDetails = (details as Record<string, unknown>).faceAnalysis as Record<string, unknown> | undefined
-        const temporalDetails = (details as Record<string, unknown>).temporalAnalysis as Record<string, unknown> | undefined
-        const avDetails = (details as Record<string, unknown>).audioVisualSync as Record<string, unknown> | undefined
         set({
           videoLoading: false,
           videoResult: {
@@ -984,37 +957,27 @@ try {
               anomalies: Array.isArray(faceDetails?.manipulationIndicators)
                 ? (faceDetails!.manipulationIndicators as string[]).map(String)
                 : ['Inconsistent blink rate', 'Unnatural skin tone variation'],
-              confidence: typeof faceDetails?.skinTextureConsistency === 'boolean'
-                ? (faceDetails.skinTextureConsistency ? 0.9 : 0.5)
-                : 0.65,
+              confidence: typeof faceDetails?.detectionConfidence === 'number'
+                ? Math.max(0, Math.min(1, (faceDetails.detectionConfidence as number) / 100))
+                : 0.5,
             },
             temporalConsistency: typeof analysis.confidence === 'number'
               ? (analysis.confidence <= 1 ? Math.min(1, analysis.confidence + 0.1) : Math.min(1, analysis.confidence / 100 + 0.1))
               : 0.6,
-            audioVisualSync: typeof avDetails?.lipSyncScore === 'number'
-              ? Math.max(0, Math.min(1, avDetails.lipSyncScore / 100))
-              : 0.5,
+            audioVisualSync: audioAuthenticity,
             audioAnalysis,
             riskAssessment: analysis.riskLevel || 'medium',
           },
         })
         toast.success('Video analysis complete!')
       } else {
-        throw new Error('API error')
+        const errorData = await res.json().catch(() => null)
+        throw new Error(errorData?.details || errorData?.error || `Server responded with status ${res.status}`)
       }
-    } catch {
-      toast.error('Video analysis failed. Using fallback data.')
-      set({
-        videoLoading: false,
-        videoResult: {
-          deepfakeProbability: 78,
-          frameAnalysis: { totalFrames: 450, flaggedFrames: 67, consistency: 0.65 },
-          faceAnalysis: { facesDetected: 2, anomalies: ['Inconsistent blink rate', 'Unnatural skin tone variation', 'Mouth movement mismatch'], confidence: 0.82 },
-          temporalConsistency: 0.62,
-          audioVisualSync: 0.71,
-          riskAssessment: 'high',
-        },
-      })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Video analysis failed'
+      toast.error(`Video analysis failed: ${message}`)
+      set({ videoLoading: false, videoResult: null })
     }
   },
 
