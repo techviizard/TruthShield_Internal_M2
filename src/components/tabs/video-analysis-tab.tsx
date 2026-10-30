@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { toast } from 'sonner'
 import { Progress } from '@/components/ui/progress'
 import { useAppStore, type RiskLevel } from '@/lib/store'
 import { VideoFrameAnalysis } from '@/components/video-frame-analysis'
@@ -14,6 +15,10 @@ import {
   RotateCcw, Scan, Users, Clock, Volume2, Shield, XCircle,
 } from 'lucide-react'
 import { ExportButton } from '@/components/export-button'
+
+const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB
+const VALID_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-matroska', 'video/x-msvideo', 'video/avi']
+const VALID_VIDEO_EXTS = ['mp4', 'mov', 'avi']
 
 const riskBadgeClass: Record<RiskLevel, string> = {
   critical: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/25',
@@ -62,14 +67,26 @@ export function VideoAnalysisTab() {
   const { videoLoading, videoResult, analyzeVideo, resetVideoResult } = useAppStore()
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [videoUrl, setVideoUrl] = useState('')
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [urlLoading, setUrlLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = useCallback((file: File) => {
-    if (!file.type.startsWith('video/')) return
-    const url = URL.createObjectURL(file)
-    setPreviewUrl(url)
-    analyzeVideo(file)
-  }, [analyzeVideo])
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  if (!VALID_VIDEO_TYPES.includes(file.type) && !VALID_VIDEO_EXTS.includes(ext || '')) {
+    toast.error(`"${file.name}" is not a supported video format. Please use MP4, AVI, MOV.`)
+    return
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    toast.error(`"${file.name}" exceeds the 100MB limit for videos.`)
+    return
+  }
+  const url = URL.createObjectURL(file)
+  setPreviewUrl(url)
+  setVideoFile(file)
+}, [analyzeVideo])
+
+const handleAnalyzeClick = () => { if (videoFile) analyzeVideo(videoFile) }
 
   const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -80,15 +97,8 @@ export function VideoAnalysisTab() {
     resetVideoResult()
     setPreviewUrl(null)
     setVideoUrl('')
+    setVideoFile(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
-  const handleUrlSubmit = () => {
-    if (!videoUrl.trim()) return
-    // Simulate video analysis from URL
-    setPreviewUrl(videoUrl)
-    const fakeFile = new File([''], 'video.mp4', { type: 'video/mp4' })
-    analyzeVideo(fakeFile)
   }
 
   return (
@@ -107,7 +117,7 @@ export function VideoAnalysisTab() {
             <CardDescription>Upload a video to detect deepfakes, face manipulation, and temporal inconsistencies</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-gap-4">
               {/* File Upload */}
               <div
                 className="border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer hover:border-zinc-500/50 hover:bg-muted/30"
@@ -116,7 +126,7 @@ export function VideoAnalysisTab() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="video/*"
+                  accept=".mp4,.mov,.avi,video/mp4,video/quicktime,video/x-matroska,video/x-msvideo"
                   onChange={handleFileInput}
                   className="hidden"
                 />
@@ -125,22 +135,6 @@ export function VideoAnalysisTab() {
                 <p className="text-xs text-muted-foreground mt-1">MP4, AVI, MOV (max 100MB)</p>
               </div>
 
-              {/* URL Input */}
-              <div className="space-y-3">
-                <p className="text-sm font-medium">Or enter video URL</p>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="https://example.com/video.mp4"
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button onClick={handleUrlSubmit} disabled={videoLoading || !videoUrl.trim()} className="bg-zinc-600 hover:bg-zinc-700 text-white">
-                    <Play className="h-4 w-4 mr-1" />
-                    Analyze
-                  </Button>
-                </div>
-              </div>
             </div>
 
             {previewUrl && (
@@ -165,6 +159,24 @@ export function VideoAnalysisTab() {
                 <Button variant="outline" size="sm" onClick={handleReset}>
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Clear & Upload New
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleAnalyzeClick}
+                  disabled={videoLoading || !videoFile}
+                  className="bg-zinc-600 hover:bg-zinc-700 text-white"
+                >
+                  {videoLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Analyzing…
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 mr-2" />
+                      Analyze
+                    </>
+                  )}
                 </Button>
                 {videoResult && (
                   <ExportButton
@@ -238,15 +250,18 @@ export function VideoAnalysisTab() {
                 />
               </Card>
 
-              {/* Audio-Visual Sync - Progress Ring */}
+              {/* Audio Authenticity - Progress Ring, backed by real audio DSP */}
               <Card className="flex flex-col items-center justify-center p-6">
                 <Volume2 className="h-5 w-5 text-purple-500 mb-2" />
-                <span className="text-sm text-muted-foreground mb-1">Audio-Visual Sync</span>
+                <span className="text-sm text-muted-foreground mb-1">Audio Authenticity</span>
                 <ProgressRing
                   value={videoResult.audioVisualSync * 100}
                   size={80}
                   color={videoResult.audioVisualSync < 0.75 ? '#f97316' : '#a855f7'}
                 />
+                <p className="text-[10px] text-muted-foreground/70 italic mt-1 text-center">
+                  {videoResult.audioAnalysis.available ? 'From real audio signal analysis' : 'No audio track detected'}
+                </p>
               </Card>
 
               {/* Frame Analysis */}
@@ -310,7 +325,7 @@ export function VideoAnalysisTab() {
                     <span className="font-medium">{(videoResult.faceAnalysis.confidence * 100).toFixed(1)}%</span>
                   </div>
                   <div>
-                    <span className="text-sm text-muted-foreground">Anomalies</span>
+                    <span className="text-sm text-muted-foreground">AI's visual impression from sampled frames</span>
                     <div className="mt-2 space-y-2">
                       {videoResult.faceAnalysis.anomalies.map((anomaly, i) => (
                         <motion.div
@@ -353,9 +368,9 @@ export function VideoAnalysisTab() {
                     </p>
                   </div>
                   <div className="text-center p-4 rounded-lg gradient-border">
-                    <span className="text-xs text-muted-foreground">A/V Sync</span>
+                    <span className="text-xs text-muted-foreground">Audio</span>
                     <p className={`text-lg font-bold mt-1 ${videoResult.audioVisualSync < 0.75 ? 'text-orange-500' : 'text-green-500'}`}>
-                      {videoResult.audioVisualSync < 0.75 ? 'Mismatch' : 'Synchronized'}
+                      {videoResult.audioAnalysis.available ? (videoResult.audioVisualSync < 0.75 ? 'Suspicious' : 'Clean') : 'N/A'}
                     </p>
                   </div>
                   <div className="text-center p-4 rounded-lg gradient-border">
@@ -381,7 +396,7 @@ export function VideoAnalysisTab() {
               </div>
               <div>
                 <p className="text-lg font-medium">Upload a Video to Begin</p>
-                <p className="text-sm text-muted-foreground mt-1">Upload a video file or provide a URL to detect deepfakes, face manipulation, and temporal inconsistencies</p>
+                <p className="text-sm text-muted-foreground mt-1">Upload a video file to detect deepfakes, face manipulation, and temporal inconsistencies</p>
               </div>
             </CardContent>
           </Card>

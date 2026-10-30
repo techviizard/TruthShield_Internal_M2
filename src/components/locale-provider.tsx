@@ -5,6 +5,19 @@ import { NextIntlClientProvider } from 'next-intl'
 import en from '../../messages/en.json'
 import hi from '../../messages/hi.json'
 import gu from '../../messages/gu.json'
+import bn from '../../messages/bn.json'
+import te from '../../messages/te.json'
+import mr from '../../messages/mr.json'
+import ta from '../../messages/ta.json'
+import ur from '../../messages/ur.json'
+import kn from '../../messages/kn.json'
+import orLocale from '../../messages/or.json'
+import ml from '../../messages/ml.json'
+import pa from '../../messages/pa.json'
+import asLocale from '../../messages/as.json'
+import mai from '../../messages/mai.json'
+import kok from '../../messages/kok.json'
+import sa from '../../messages/sa.json'
 
 /**
  * UI localisation without locale-prefixed routes.
@@ -19,16 +32,63 @@ import gu from '../../messages/gu.json'
  * trip: the console must stay fully usable offline, in any supported language.
  */
 
-export const LOCALES = ['en', 'hi', 'gu'] as const
+export const LOCALES = [
+  'en',
+  'hi',
+  'bn',
+  'te',
+  'mr',
+  'ta',
+  'ur',
+  'gu',
+  'kn',
+  'or',
+  'ml',
+  'pa',
+  'as',
+  'mai',
+  'kok',
+  'sa',
+] as const
 export type Locale = (typeof LOCALES)[number]
 
 export const LOCALE_LABELS: Record<Locale, { native: string; english: string }> = {
   en: { native: 'English', english: 'English' },
   hi: { native: 'हिन्दी', english: 'Hindi' },
+  bn: { native: 'বাংলা', english: 'Bengali' },
+  te: { native: 'తెలుగు', english: 'Telugu' },
+  mr: { native: 'मराठी', english: 'Marathi' },
+  ta: { native: 'தமிழ்', english: 'Tamil' },
+  ur: { native: 'اردو', english: 'Urdu' },
   gu: { native: 'ગુજરાતી', english: 'Gujarati' },
+  kn: { native: 'ಕನ್ನಡ', english: 'Kannada' },
+  or: { native: 'ଓଡ଼ିଆ', english: 'Odia' },
+  ml: { native: 'മലയാളം', english: 'Malayalam' },
+  pa: { native: 'ਪੰਜਾਬੀ', english: 'Punjabi' },
+  as: { native: 'অসমীয়া', english: 'Assamese' },
+  mai: { native: 'मैथिली', english: 'Maithili' },
+  kok: { native: 'कोंकणी', english: 'Konkani' },
+  sa: { native: 'संस्कृतम्', english: 'Sanskrit' },
 }
 
-const CATALOGUES: Record<Locale, Record<string, unknown>> = { en, hi, gu }
+const CATALOGUES: Record<Locale, Record<string, unknown>> = {
+  en,
+  hi,
+  gu,
+  bn,
+  te,
+  mr,
+  ta,
+  ur,
+  kn,
+  or: orLocale,
+  ml,
+  pa,
+  as: asLocale,
+  mai,
+  kok,
+  sa,
+}
 const STORAGE_KEY = 'truthshield-locale'
 
 interface LocaleContextValue {

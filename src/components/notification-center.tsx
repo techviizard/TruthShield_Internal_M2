@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useAppStore, type Alert, type AlertSeverity, type AlertType } from '@/lib/store'
+import { useTranslations } from 'next-intl'
 import {
   Bell, CheckCircle2, AlertTriangle, Video, FileText, ImageIcon,
   TrendingUp, Settings, CheckCheck, ArrowRight, BellOff
@@ -99,6 +100,7 @@ function severityLabel(severity: AlertSeverity): string {
 
 export function NotificationCenter({ children }: { children: React.ReactNode }) {
   const { alerts, fetchAlerts, markAlertRead, setActiveTab } = useAppStore()
+  const t = useTranslations('notifications')
 
   useEffect(() => {
     void fetchAlerts()
@@ -131,7 +133,7 @@ export function NotificationCenter({ children }: { children: React.ReactNode }) 
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-zinc-500" />
-            <h3 className="text-sm font-semibold">Notifications</h3>
+            <h3 className="text-sm font-semibold">{t('title')}</h3>
             {unreadAlerts.length > 0 && (
               <Badge className="bg-red-500 text-white text-[10px] px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center border-0">
                 {unreadAlerts.length}
@@ -146,7 +148,7 @@ export function NotificationCenter({ children }: { children: React.ReactNode }) 
               onClick={handleMarkAllRead}
             >
               <CheckCheck className="h-3.5 w-3.5 mr-1" />
-              Mark all read
+              {t('markAllRead')}
             </Button>
           )}
         </div>
@@ -155,8 +157,8 @@ export function NotificationCenter({ children }: { children: React.ReactNode }) 
         {recentAlerts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 px-4">
             <BellOff className="h-10 w-10 text-muted-foreground/40 mb-3" />
-            <p className="text-sm text-muted-foreground font-medium">No notifications</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">You&apos;re all caught up!</p>
+            <p className="text-sm text-muted-foreground font-medium">{t('empty')}</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">{t('caughtUp')}</p>
           </div>
         ) : (
           <ScrollArea className="max-h-[400px]">
@@ -224,7 +226,7 @@ export function NotificationCenter({ children }: { children: React.ReactNode }) 
             className="w-full justify-center text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-500/5 h-9 rounded-none font-medium"
             onClick={handleViewAll}
           >
-            View All Alerts
+            {t('viewAll')}
             <ArrowRight className="h-3 w-3 ml-1" />
           </Button>
         </div>

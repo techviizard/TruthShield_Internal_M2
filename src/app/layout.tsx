@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { LocaleProvider } from "@/components/locale-provider";
 
 const geistSans = Geist({
@@ -63,8 +64,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LocaleProvider>
+            {/* Skip to main content link */}
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:border-border focus:shadow-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none text-sm font-medium rounded-md"
+            >
+              Skip to main content
+            </a>
             {children}
             <Toaster />
+            <SonnerToaster />
           </LocaleProvider>
         </ThemeProvider>
       </body>
