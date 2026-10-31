@@ -427,6 +427,104 @@ export function InvestigationsTab() {
    * Exports the selected investigation and its attached analyses/evidence.
    * The data is refreshed from the existing investigation API before export.
    */
+  const handleAddEvidence = async () => {
+  if (!selectedInv) return
+
+  try {
+    const historyResponse = await fetch('/api/analysis/history?limit=20')
+    const historyData = await historyResponse.json()
+    const items = historyData.items ?? []
+
+    if (!historyResponse.ok || items.length === 0) {
+      toast.error('No analysis reports found')
+      return
+    }
+
+    const choices = items
+      .map((item: any) => `${item.id} — ${item.analysisType}`)
+      .join('\n')
+
+    const analysisId = window.prompt(
+      `Enter the analysis ID to attach:\n\n${choices}`
+    )
+
+    if (!analysisId) return
+
+    const response = await fetch(
+      `/api/investigations/${selectedInv.id}/evidence`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysisId: analysisId.trim() }),
+      }
+    )
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      toast.error(result.error ?? 'Could not attach evidence')
+      return
+    }
+
+    toast.success('Evidence attached')
+    await fetchInvestigations()
+  } catch (error) {
+    console.error(error)
+    toast.error('Could not attach evidence')
+  }
+}
+const handleEscalate = async () => {
+  if (!selectedInv) return
+
+  const nextPriority =
+    selectedInv.priority === 'low' ? 'medium' :
+    selectedInv.priority === 'medium' ? 'high' :
+    'critical'
+
+  try {
+    const response = await fetch(`/api/investigations/${selectedInv.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priority: nextPriority }),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      toast.error(result.error ?? 'Could not escalate investigation')
+      return
+    }
+
+    toast.success(`Priority raised to ${nextPriority}`)
+    await fetchInvestigations()
+  } catch {
+    toast.error('Could not escalate investigation')
+  }
+}
+
+const handleCloseInvestigation = async () => {
+  if (!selectedInv) return
+
+  try {
+    const response = await fetch(`/api/investigations/${selectedInv.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'closed' }),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      toast.error(result.error ?? 'Could not close investigation')
+      return
+    }
+
+    toast.success('Investigation closed')
+    await fetchInvestigations()
+  } catch {
+    toast.error('Could not close investigation')
+  }
+}
   const handleExportInvestigation = async (format: 'pdf' | 'json') => {
     if (!selectedInv || isExporting) return
 
@@ -989,7 +1087,7 @@ const safeName = String(
                           <div className="flex flex-col sm:flex-row gap-3">
                             <Button
                               className="bg-zinc-600 hover:bg-zinc-700 text-white flex-1"
-                              onClick={() => toast.success('Evidence form opened - feature coming soon!')}
+                              onClick={handleAddEvidence}
                             >
                               <PlusCircle className="h-4 w-4 mr-2" />
                               Add Evidence
@@ -998,8 +1096,10 @@ const safeName = String(
                             <Button
                               variant="outline"
                               className="border-red-500/50 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300 flex-1"
-                              onClick={() => toast.success(`Investigation ${selectedInv.id} escalated!`, { description: 'Priority has been raised and stakeholders notified.' })}
-                            >
+                              onClick={handleEscalate}
+                           
+                           
+                           >
                               <AlertOctagon className="h-4 w-4 mr-2" />
                               Escalate
                             </Button>
@@ -1007,10 +1107,11 @@ const safeName = String(
                             <Button
                               variant="outline"
                               className="flex-1"
-                              onClick={() => toast.info(`Investigation ${selectedInv.id} close requested.`, { description: 'This action requires supervisor approval.' })}
+                              onClick={handleCloseInvestigation}
                             >
                               <XCircle className="h-4 w-4 mr-2" />
                               Close Investigation
+                              
                             </Button>
                           </div>
 
