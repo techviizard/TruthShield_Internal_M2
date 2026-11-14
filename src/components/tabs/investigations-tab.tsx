@@ -1,4 +1,3 @@
-
 'use client'
 
 import { jsPDF } from 'jspdf'
@@ -194,12 +193,14 @@ function RiskGauge({ priority }: { priority: InvestigationPriority }) {
         </Badge>
       </div>
       <div className="relative h-4 rounded-full overflow-hidden bg-muted">
+        {/* Gradient bar */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
             background: 'linear-gradient(to right, #22c55e, #eab308, #f97316, #ef4444)',
           }}
         />
+        {/* Marker */}
         <motion.div
           className="absolute top-0 bottom-0 w-1.5 bg-white dark:bg-gray-900 shadow-lg rounded-full"
           style={{ left: `${markerPosition}%`, transform: 'translateX(-50%)' }}
@@ -340,6 +341,7 @@ function EnhancedTimeline({ inv }: { inv: Investigation }) {
             transition={{ delay: idx * 0.08, duration: 0.3 }}
             className="flex gap-3"
           >
+            {/* Timeline line and dot */}
             <div className="flex flex-col items-center">
               <motion.div
                 className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${config.dotClass}/15 border-2 ${config.dotClass}`}
@@ -354,7 +356,8 @@ function EnhancedTimeline({ inv }: { inv: Investigation }) {
               )}
             </div>
 
-            <div className="pb-4">
+            {/* Event content */}
+            <div className={`pb-4 ${isLast ? '' : ''}`}>
               <p className={`text-sm font-medium ${config.color}`}>
                 {item.event}
               </p>
@@ -395,7 +398,6 @@ export function InvestigationsTab() {
   useEffect(() => {
     void fetchInvestigations()
   }, [fetchInvestigations])
-
   const [selectedInv, setSelectedInv] = useState<Investigation | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -433,25 +435,22 @@ export function InvestigationsTab() {
     setIsExporting(true)
 
     try {
-      const investigationUrl =
-  `/api/investigations/${encodeURIComponent(selectedInv.id)}`
+      const investigationUrl = `/api/investigations/${encodeURIComponent(selectedInv.id)}`
 
-const response =
-  format === 'json'
-    ? await fetch(`${investigationUrl}/report`, { method: 'POST' })
-    : await fetch(investigationUrl)
+      const response =
+        format === 'json'
+          ? await fetch(`${investigationUrl}/report`, { method: 'POST' })
+          : await fetch(investigationUrl)
 
-const result = await response.json()
+      const result = await response.json()
 
-if (!response.ok || !result.success || !result.data) {
-  throw new Error(result.error || 'Could not retrieve investigation details')
-}
+      if (!response.ok || !result.success || !result.data) {
+        throw new Error(result.error || 'Could not retrieve investigation details')
+      }
 
-const investigation =
-  format === 'json' ? result.data.investigation : result.data      
+      const investigation = format === 'json' ? result.data.investigation : result.data
 
-
-const safeName = String(
+      const safeName = String(
         investigation.title || `investigation-${selectedInv.id}`
       ).replace(/[^a-z0-9_-]/gi, '_')
 
@@ -581,8 +580,8 @@ const safeName = String(
     if (!selectedInv) return
     const refreshed = investigations.find((inv) => inv.id === selectedInv.id)
     if (refreshed) {
-  queueMicrotask(() => setSelectedInv(refreshed))
-}
+      queueMicrotask(() => setSelectedInv(refreshed))
+    }
   }, [investigations, selectedInv?.id])
 
   const openEditDialog = () => {
@@ -674,11 +673,11 @@ const safeName = String(
 
   const handleCreate = () => {
     if (!newTitle.trim()) return
-
     createInvestigation({
       title: newTitle,
       description: newDescription,
       priority: newPriority,
+      // The API column is `assignedTo`; it also doubles as the officer of record.
       assignedTo: newAnalyst || 'Unassigned',
       officerName: newAnalyst || null,
       officerBadge: newOfficerBadge || null,
@@ -687,7 +686,6 @@ const safeName = String(
       jurisdiction: newJurisdiction || null,
       tags: newTags.split(',').map((t) => t.trim()).filter(Boolean),
     })
-
     setDialogOpen(false)
     setNewTitle('')
     setNewDescription('')
@@ -717,7 +715,6 @@ const safeName = String(
             </h2>
             <p className="text-sm text-muted-foreground">Manage and track investigation cases</p>
           </div>
-
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-zinc-600 hover:bg-zinc-700 text-white">
@@ -725,24 +722,20 @@ const safeName = String(
                 New Investigation
               </Button>
             </DialogTrigger>
-
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Create New Investigation</DialogTitle>
                 <DialogDescription>Start a new investigation case</DialogDescription>
               </DialogHeader>
-
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium">Title</label>
                   <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Investigation title" />
                 </div>
-
                 <div>
                   <label className="text-sm font-medium">Description</label>
                   <Textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} placeholder="Brief description" className="min-h-[80px]" />
                 </div>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-sm font-medium">Priority</label>
@@ -758,40 +751,34 @@ const safeName = String(
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div>
                     <label className="text-sm font-medium">Analyst</label>
                     <Input value={newAnalyst} onChange={(e) => setNewAnalyst(e.target.value)} placeholder="Assigned to" />
                   </div>
                 </div>
-
                 <div>
                   <label className="text-sm font-medium">Tags (comma-separated)</label>
                   <Input value={newTags} onChange={(e) => setNewTags(e.target.value)} placeholder="e.g. deepfake, politics, media" />
                 </div>
 
-                {/* Case metadata */}
+                {/* Case metadata - optional, but what makes an export citable in a case file */}
                 <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
                   <p className="text-xs font-semibold text-muted-foreground">
                     Case record <span className="font-normal">(optional - appears on exported reports)</span>
                   </p>
-
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium">Case / DD number</label>
                       <Input value={newCaseNumber} onChange={(e) => setNewCaseNumber(e.target.value)} placeholder="DS/2026/0142" />
                     </div>
-
                     <div>
                       <label className="text-xs font-medium">FIR number</label>
                       <Input value={newFirNumber} onChange={(e) => setNewFirNumber(e.target.value)} placeholder="0091/2026" />
                     </div>
-
                     <div>
                       <label className="text-xs font-medium">Officer badge</label>
                       <Input value={newOfficerBadge} onChange={(e) => setNewOfficerBadge(e.target.value)} placeholder="CCB-2214" />
                     </div>
-
                     <div>
                       <label className="text-xs font-medium">Jurisdiction</label>
                       <Input value={newJurisdiction} onChange={(e) => setNewJurisdiction(e.target.value)} placeholder="Cyber Crime Branch" />
@@ -799,7 +786,6 @@ const safeName = String(
                   </div>
                 </div>
               </div>
-
               <DialogFooter>
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleCreate} disabled={!newTitle.trim()} className="bg-zinc-600 hover:bg-zinc-700 text-white">Create</Button>
@@ -835,7 +821,6 @@ const safeName = String(
                         </div>
                         <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
                       </div>
-
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
                         <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${statusConfig[inv.status].color}`}>
                           {statusConfig[inv.status].label}
@@ -881,17 +866,21 @@ const safeName = String(
                           </Badge>
                         </div>
                       </CardHeader>
-
                       <CardContent className="space-y-4">
                         <p className="text-sm">{selectedInv.description}</p>
 
                         <CaseRecord inv={selectedInv} />
+
                         <Separator />
 
+                        {/* Risk Assessment Gauge */}
                         <RiskGauge priority={selectedInv.priority} />
+
                         <Separator />
 
+                        {/* Quick Stats */}
                         <QuickStats inv={selectedInv} />
+
                         <Separator />
 
                         <div className="grid grid-cols-2 gap-4">
@@ -902,7 +891,6 @@ const safeName = String(
                               <p className="text-sm font-medium">{selectedInv.assignedAnalyst}</p>
                             </div>
                           </div>
-
                           <div className="flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                             <div>
@@ -912,7 +900,6 @@ const safeName = String(
                               </Badge>
                             </div>
                           </div>
-
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <div>
@@ -920,7 +907,6 @@ const safeName = String(
                               <p className="text-sm font-medium">{selectedInv.createdAt}</p>
                             </div>
                           </div>
-
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <div>
@@ -982,40 +968,90 @@ const safeName = String(
                       </CardContent>
                     </Card>
 
-                    {/* Action Buttons and Report Downloads */}
+                    {/* Action Buttons */}
                     <Card>
                       <CardContent className="p-4">
-                        <div className="flex flex-col gap-3">
-                          <div className="flex flex-col sm:flex-row gap-3">
-                            <Button
-                              className="bg-zinc-600 hover:bg-zinc-700 text-white flex-1"
-                              onClick={() => toast.success('Evidence form opened - feature coming soon!')}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium">Status</label>
+                            <Select
+                              value={selectedInv.status}
+                              onValueChange={(value) => void handleStatusChange(value as InvestigationStatus)}
                             >
-                              <PlusCircle className="h-4 w-4 mr-2" />
-                              Add Evidence
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="open">Open</SelectItem>
+                                <SelectItem value="in_progress">In Progress</SelectItem>
+                                <SelectItem value="closed">Closed</SelectItem>
+                                <SelectItem value="archived">Archived</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium">Priority</label>
+                            <Select
+                              value={selectedInv.priority}
+                              onValueChange={(value) => void handlePriorityChange(value as InvestigationPriority)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="low">Low</SelectItem>
+                                <SelectItem value="medium">Medium</SelectItem>
+                                <SelectItem value="high">High</SelectItem>
+                                <SelectItem value="critical">Critical</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                          <Button variant="outline" className="flex-1" onClick={openEditDialog}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Edit Investigation
+                          </Button>
+                          <Button
+                            className="bg-zinc-600 hover:bg-zinc-700 text-white flex-1"
+                            onClick={openEvidenceDialog}
+                          >
+                            <PlusCircle className="h-4 w-4 mr-2" />
+                            Add Evidence
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="border-red-500/50 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300 flex-1"
+                            onClick={() => void handlePriorityChange('critical')}
+                            disabled={selectedInv.priority === 'critical'}
+                          >
+                            <AlertOctagon className="h-4 w-4 mr-2" />
+                            Escalate
+                          </Button>
+                          {selectedInv.status === 'closed' ? (
+                            <Button variant="outline" className="flex-1" onClick={() => void handleStatusChange('in_progress')}>
+                              <FolderOpen className="h-4 w-4 mr-2" />
+                              Reopen Investigation
                             </Button>
-
-                            <Button
-                              variant="outline"
-                              className="border-red-500/50 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300 flex-1"
-                              onClick={() => toast.success(`Investigation ${selectedInv.id} escalated!`, { description: 'Priority has been raised and stakeholders notified.' })}
-                            >
-                              <AlertOctagon className="h-4 w-4 mr-2" />
-                              Escalate
-                            </Button>
-
-                            <Button
-                              variant="outline"
-                              className="flex-1"
-                              onClick={() => toast.info(`Investigation ${selectedInv.id} close requested.`, { description: 'This action requires supervisor approval.' })}
-                            >
+                          ) : (
+                            <Button variant="outline" className="flex-1" onClick={() => void handleStatusChange('closed')}>
                               <XCircle className="h-4 w-4 mr-2" />
                               Close Investigation
                             </Button>
-                          </div>
+                          )}
+                          <Button
+                            variant="outline"
+                            className="border-red-500/50 text-red-600 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300 flex-1"
+                            onClick={() => void handleDelete()}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Investigation
+                          </Button>
+                        </div>
 
-                          <Separator />
+                        <Separator className="my-4" />
 
+                        <div className="flex flex-col gap-3">
                           <p className="text-sm font-semibold">Generate Investigation Report</p>
                           <p className="text-xs text-muted-foreground">
                             Export this investigation and its linked analyses and evidence.
@@ -1238,9 +1274,7 @@ const safeName = String(
                     </div>
                     <div>
                       <p className="text-lg font-medium">Select an Investigation</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Click on a case from the list to view details, evidence, and timeline
-                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">Click on a case from the list to view details, evidence, and timeline</p>
                     </div>
                   </CardContent>
                 </Card>

@@ -381,7 +381,7 @@ export default function Home() {
   const activeLabel = tNav(activeTab)
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="h-dvh overflow-hidden flex flex-col bg-background">
       {/* Global Search Dialog */}
       <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
 
@@ -498,10 +498,10 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-h-0">
         {/* Desktop Sidebar */}
         <aside className="hidden lg:flex w-60 border-r border-border/60 flex-col shrink-0 bg-sidebar">
-          <ScrollArea className="flex-1 py-4">
+          <ScrollArea className="flex-1 min-h-0 py-4">
             <SidebarNav activeTab={activeTab} setActiveTab={setActiveTab} />
           </ScrollArea>
           <div className="p-3 border-t border-border/60">
@@ -517,8 +517,8 @@ export default function Home() {
         </aside>
 
         {/* Main Content */}
-        <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 bg-background outline-none">
-          <ScrollArea className="h-[calc(100vh-3.5rem-3rem-2px)]">
+        <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 min-h-0 bg-background outline-none">
+          <ScrollArea className="h-full">
             <div className="p-4 md:p-6 lg:p-8">
               <AnimatePresence mode="wait">
                 <motion.div

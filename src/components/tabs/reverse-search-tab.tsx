@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, Upload, Link, Eye, Globe, Shield, AlertTriangle,
   CheckCircle, Loader2, ImagePlus, ExternalLink, ArrowRight,
-  Sparkles, Fingerprint,
+  Sparkles, Fingerprint, RotateCcw, X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppConfig } from '@/hooks/use-app-config'
@@ -44,11 +44,11 @@ export function ReverseSearchTab() {
   const [imageUrl, setImageUrl] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null) 
   const [activeStep, setActiveStep] = useState<AnalysisStep>('idle')
   const [result, setResult] = useState<ReverseSearchResult | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [processingTime, setProcessingTime] = useState(0)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const cfg = useAppConfig()
   const maxImageMB = cfg?.limits.maxImageUploadMB ?? 20
 
@@ -141,8 +141,10 @@ export function ReverseSearchTab() {
     setImageFile(null)
     setImagePreview(null)
     setResult(null)
+    setSearchError(null)
     setActiveStep('idle')
     setProcessingTime(0)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const progressValue = (() => {
@@ -208,7 +210,7 @@ export function ReverseSearchTab() {
                       className="absolute top-2 right-2 h-6 w-6"
                       onClick={(e) => { e.stopPropagation(); resetSearch() }}
                     >
-                      <AlertTriangle className="h-3 w-3" />
+                      <X className="h-3 w-3" />
                     </Button>
                   </div>
                 ) : (
@@ -262,6 +264,19 @@ export function ReverseSearchTab() {
                     Search Image
                   </>
                 )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={resetSearch}
+                disabled={
+                  activeStep === 'uploading' || activeStep === 'describing' ||
+                  activeStep === 'searching' || activeStep === 'analyzing' ||
+                  (!imageFile && !imageUrl.trim() && !result && !searchError)
+                }
+                className="w-full gap-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Reset
               </Button>
 
               {activeStep !== 'idle' && (

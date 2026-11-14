@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-
+import { jsPDF } from 'jspdf'
 function formatReportData(data: Record<string, unknown>, indent = ''): string {
   const lines: string[] = []
 
@@ -68,6 +68,57 @@ function generateTextReport(data: Record<string, unknown>, title: string): strin
   return reportLines.join('\n')
 }
 
+function generatePdfReport(
+  data: Record<string, unknown>,
+  title: string
+): ArrayBuffer {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'pt',
+    format: 'a4',
+  })
+
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+  const margin = 48
+  const maxWidth = pageWidth - margin * 2
+  let y = margin
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(18)
+  doc.text(title, margin, y)
+
+  y += 30
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.text(
+    `Generated: ${new Date().toLocaleString()}`,
+    margin,
+    y
+  )
+
+  y += 25
+
+  doc.setFontSize(10)
+
+  const content = generateTextReport(data, title)
+    .replace(/[═─]/g, '-')
+
+  const lines = doc.splitTextToSize(content, maxWidth)
+
+  for (const line of lines) {
+    if (y > pageHeight - margin) {
+      doc.addPage()
+      y = margin
+    }
+
+    doc.text(line, margin, y)
+    y += 14
+  }
+
+  return doc.output('arraybuffer')
+}
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -132,21 +183,29 @@ export async function GET(request: NextRequest) {
     const filename = `truthshield-report-${report.analysisType}-${reportId.slice(-6)}`
 
     if (format === 'pdf') {
-      const textContent = generateTextReport(
-        reportData as unknown as Record<string, unknown>,
-        `TruthShield ${report.analysisType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} Report`
-      )
-      return new NextResponse(textContent, {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Content-Disposition': `attachment; filename="${filename}.txt"`,
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      })
-    }
+  const analysisType = String(
+    reportData.analysisType || 'analysis'
+  )
+
+  const title = `TruthShield ${analysisType
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())} Report`
+
+  const pdfBytes = generatePdfReport(
+  reportData as unknown as Record<string, unknown>,
+  title
+)
+  return new NextResponse(pdfBytes, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}.pdf"`,
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
+}
 
     // Default: JSON format
     const jsonContent = JSON.stringify(reportData, null, 2)
@@ -187,25 +246,30 @@ export async function POST(request: NextRequest) {
 
     const filename = customFilename || `truthshield-report-${Date.now()}`
 
-    if (format === 'pdf') {
-      const analysisType = String(
-        reportData.analysisType || reportData.type || 'analysis'
-      )
-      const textContent = generateTextReport(
-        reportData,
-        `TruthShield ${analysisType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} Report`
-      )
-      return new NextResponse(textContent, {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Content-Disposition': `attachment; filename="${filename}.txt"`,
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      })
-    }
+    
+if (format === 'pdf') {
+  const analysisType = String(
+  reportData.analysisType || 'analysis'
+)
+
+  const title = `TruthShield ${analysisType
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())} Report`
+
+  const pdfBytes = generatePdfReport(reportData, title)
+
+  return new NextResponse(pdfBytes, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}.pdf"`,
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
+}
+
 
     // Default: JSON format
     const jsonContent = JSON.stringify(reportData, null, 2)

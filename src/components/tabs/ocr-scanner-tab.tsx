@@ -70,27 +70,15 @@ type ProcessingStep = 'idle' | 'preprocessing' | 'scriptDetection' | 'textExtrac
 
 const SUPPORTED_LANGUAGES = [
   { code: 'auto', label: 'Auto-detect', script: 'Multiple' },
+  { code: 'en', label: 'English', script: 'Latin' },
   { code: 'hi', label: 'Hindi (Devanagari)', script: 'Devanagari' },
-  { code: 'ta', label: 'Tamil', script: 'Tamil' },
   { code: 'te', label: 'Telugu', script: 'Telugu' },
-  { code: 'bn', label: 'Bengali', script: 'Bengali' },
-  { code: 'gu', label: 'Gujarati', script: 'Gujarati' },
-  { code: 'ml', label: 'Malayalam', script: 'Malayalam' },
-  { code: 'kn', label: 'Kannada', script: 'Kannada' },
-  { code: 'pa', label: 'Punjabi (Gurmukhi)', script: 'Gurmukhi' },
-  { code: 'ur', label: 'Urdu (Arabic script)', script: 'Arabic' },
 ]
 
 const LANGUAGE_BADGES = [
+  'English',
   'Hindi (Devanagari)',
-  'Tamil',
   'Telugu',
-  'Bengali',
-  'Gujarati',
-  'Malayalam',
-  'Kannada',
-  'Punjabi (Gurmukhi)',
-  'Urdu (Arabic script)',
 ]
 
 
@@ -205,6 +193,7 @@ export function OcrScannerTab() {
   const [processingStep, setProcessingStep] = useState<ProcessingStep>('idle')
   const [ocrResult, setOcrResult] = useState<OcrResult | null>(null)
   const [showTranslation, setShowTranslation] = useState(false)
+  const [isTranslating, setIsTranslating] = useState(false)
   const [copied, setCopied] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [history, setHistory] = useState<OcrHistoryItem[]>([])
@@ -212,8 +201,9 @@ export function OcrScannerTab() {
 
   // File handling
   const handleFile = useCallback((file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file')
+    const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/tiff']
+    if (!allowed.includes(file.type)) {
+      toast.error('Unsupported file. Use PNG, JPG, JPEG, WebP or TIFF')
       return
     }
     const url = URL.createObjectURL(file)
@@ -256,11 +246,37 @@ export function OcrScannerTab() {
     }
   }, [ocrResult])
 
+  const handleTranslate = async () => {
+  if (!ocrResult) return
+  setShowTranslation(true)
+  if (ocrResult.languageCode === 'en') {
+    setOcrResult((prev) => (prev ? { ...prev, translation: prev.extractedText } : prev))
+    return
+  }
+  setIsTranslating(true)
+  try {
+    const res = await fetch('/api/forensics/ocr/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: ocrResult.extractedText, language: ocrResult.languageCode }),
+    })
+    const j = await res.json()
+    if (!res.ok) throw new Error(j.error || 'Translation failed')
+    setOcrResult((prev) => (prev ? { ...prev, translation: j.translation } : prev))
+  } catch (e) {
+    toast.error(e instanceof Error ? e.message : 'Translation failed')
+    setShowTranslation(false)
+  } finally {
+    setIsTranslating(false)
+  }
+} 
+
  const runRealOcr = useCallback(async () => {
   if (!uploadedFile) return
 
   setIsProcessing(true)
   setOcrResult(null)
+  setShowTranslation(false)
   setProcessingStep('preprocessing')
 
   try {
@@ -387,8 +403,7 @@ export function OcrScannerTab() {
         ['ur', 'ar'].includes(j.language)
           ? 'Right-to-Left'
           : 'Left-to-Right',
-      translation:
-        '(Translation requires separate LLM call)',
+      translation: '',
       translationConfidence: 0,
       threatAnalysis,
       characterCount: extractedText.length,
@@ -445,16 +460,29 @@ export function OcrScannerTab() {
     if (file) handleFile(file)
   }, [handleFile])
 
-  const handleUrlSubmit = useCallback(() => {
-    if (!imageUrl.trim()) {
-      toast.error('Please enter an image URL')
-      return
+  const handleUrlSubmit = useCallback(async () => {
+  if (!imageUrl.trim()) {
+    toast.error('Please enter an image URL')
+    return
+  }
+  try {
+    const res = await fetch('/api/forensics/ocr/fetch-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: imageUrl.trim() }),
+    })
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}))
+      throw new Error(j.error || 'Could not load this URL')
     }
-    setPreviewUrl(imageUrl)
-    setOcrResult(null)
-    setProcessingStep('idle')
-    toast.success('Image URL loaded')
-  }, [imageUrl])
+    const blob = await res.blob()
+    const name = imageUrl.split('?')[0].split('/').pop() || 'image-from-url'
+    handleFile(new File([blob], name, { type: blob.type }))
+    toast.success('Image loaded from URL')
+  } catch (e) {
+    toast.error(e instanceof Error ? e.message : 'Could not load this URL')
+  }
+}, [imageUrl, handleFile])
 
   const handleExtract = useCallback(() => {
     if (!previewUrl) {
@@ -559,7 +587,7 @@ export function OcrScannerTab() {
                   OCR Scanner
                 </CardTitle>
                 <CardDescription className="mt-1">
-                  Extract and analyze text from images with Indian script support
+                  Extract and analyze text from images with English, Hindi and Telugu
                 </CardDescription>
               </div>
               <Button
@@ -622,14 +650,14 @@ export function OcrScannerTab() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/jpg,image/webp,image/bmp,image/tiff"
+                accept="image/png,image/jpeg,image/webp,image/tiff"
                 onChange={handleFileInput}
                 className="hidden"
               />
               <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
               <p className="text-sm font-medium">Drag & drop an image here, or click to browse</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Supported: PNG, JPG, JPEG, WebP, BMP, TIFF
+                Supported: PNG, JPG, JPEG, WebP, TIFF
               </p>
             </div>
 
@@ -923,7 +951,8 @@ export function OcrScannerTab() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setShowTranslation(true)}
+                          onClick={handleTranslate}
+                          disabled={isTranslating}
                           className="text-cyan-600 border-cyan-500/30 hover:bg-cyan-500/10"
                         >
                           <ArrowRightLeft className="h-3 w-3 mr-1.5" />
@@ -959,14 +988,8 @@ export function OcrScannerTab() {
                               English Translation
                             </p>
                             <div className="border rounded-lg p-3 bg-cyan-500/5 border-cyan-500/20 text-sm">
-                              {ocrResult.translation}
+                              {isTranslating ? 'Translating…' : ocrResult.translation}
                             </div>
-                          </div>
-                          <div className="flex items-center justify-end gap-2 mt-2">
-                            <span className="text-xs text-muted-foreground">Translation Confidence:</span>
-                            <Badge variant="outline" className="text-cyan-600 border-cyan-500/30">
-                              {ocrResult.translationConfidence}%
-                            </Badge>
                           </div>
                         </motion.div>
                       )}
@@ -1124,7 +1147,7 @@ export function OcrScannerTab() {
               <div>
                 <p className="text-lg font-medium">Upload an Image to Extract Text</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Upload an image containing Indian script text for OCR extraction, translation, and threat analysis.
+                  Upload an image containing English, Hindi or Telugu Text for OCR extraction, translation, and threat analysis.
                   Then click &quot;Run OCR&quot; to extract text with the in-house engine.
                 </p>
               </div>
@@ -1145,7 +1168,7 @@ export function OcrScannerTab() {
               <FileText className="h-4 w-4 text-zinc-500" />
               OCR Scan History
             </CardTitle>
-            <CardDescription>Recent OCR extractions across Indian languages</CardDescription>
+            <CardDescription>Recent OCR extractions</CardDescription>
           </CardHeader>
           <CardContent>
             <ScrollArea className="max-h-80">
