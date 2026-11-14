@@ -25,6 +25,8 @@ const verdictConfig: Record<string, { icon: React.ReactNode; color: string; bg: 
   partially_true: { icon: <AlertCircle className="h-8 w-8" />, color: 'text-blue-500', bg: 'bg-blue-500/10 border-blue-500/20', label: 'PARTIALLY TRUE' },
 }
 
+const MAX_CHARS = 10000
+
 const languages = [
   { value: 'en', label: 'English' },
   { value: 'hi', label: 'Hindi' },
@@ -59,6 +61,9 @@ export function FactCheckTab() {
   const [language, setLanguage] = useState('en')
   const [stage, setStage] = useState(0)
 
+  const charCount = claim.length
+  const isOverLimit = charCount > MAX_CHARS
+
 useEffect(() => {
   if (!factCheckLoading) return
 
@@ -70,7 +75,7 @@ useEffect(() => {
 }, [factCheckLoading])
 
 const handleVerify = () => {
-  if (!claim.trim()) return
+  if (!claim.trim() || isOverLimit || factCheckLoading) return
   setStage(0)
   verifyFact(claim, language)
 }
@@ -95,10 +100,11 @@ const handleVerify = () => {
           <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
-                placeholder="Enter a claim to verify (e.g., '5G networks cause health problems')"
+                placeholder="Enter a claim to verify (maximum 10,000 characters)"
                 value={claim}
                 onChange={(e) => setClaim(e.target.value)}
-                className="flex-1"
+                aria-invalid={isOverLimit}
+                className={`flex-1 ${isOverLimit ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                 onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
               />
               <Select value={language} onValueChange={setLanguage}>
@@ -113,7 +119,7 @@ const handleVerify = () => {
               </Select>
               <Button
                 onClick={handleVerify}
-                disabled={factCheckLoading || !claim.trim()}
+                disabled={factCheckLoading || !claim.trim() || isOverLimit}
                 className="bg-zinc-600 hover:bg-zinc-700 text-white"
               >
                 {factCheckLoading ? (
@@ -129,17 +135,31 @@ const handleVerify = () => {
                 )}
               </Button>
               {factCheckResult && (
-                <>
-                  <ExportButton
-                    data={factCheckResult as unknown as Record<string, unknown>}
-                    filename={`truthshield-factcheck-${Date.now()}`}
-                    size="sm"
-                  />
-                  <Button variant="outline" onClick={handleReset}>
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Reset
-                  </Button>
-                </>
+  <ExportButton
+    data={factCheckResult as unknown as Record<string, unknown>}
+    filename={`truthshield-factcheck-${Date.now()}`}
+    size="sm"
+  />
+)}
+
+{(claim.trim() || factCheckResult || factCheckError) && (
+  <Button variant="outline" onClick={handleReset}>
+    <RotateCcw className="h-4 w-4 mr-2" />
+    Reset
+  </Button>
+)}
+
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <p className={`text-xs ${isOverLimit ? 'text-red-500 font-medium' : 'text-muted-foreground'}`}>
+                {charCount.toLocaleString()} / {MAX_CHARS.toLocaleString()} characters
+              </p>
+              {isOverLimit && (
+                <p role="alert" className="text-xs text-red-500 flex items-center gap-1">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  Text limit exceeded by {(charCount - MAX_CHARS).toLocaleString()} characters.
+                  Shorten your text or click Reset to clear it.
+                </p>
               )}
             </div>
           </CardContent>
@@ -155,9 +175,14 @@ const handleVerify = () => {
                 <Loader2 className="h-12 w-12 animate-spin text-zinc-500" />
                 <div className="text-center space-y-2">
                   <p className="text-lg font-medium">Verifying Claim...</p>
-                  <p className="text-sm text-muted-foreground">{loadingStages[stage]}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {loadingStages[stage]}
+                  </p>
                 </div>
-                <Progress value={((stage + 1) / (loadingStages.length + 1)) * 100} className="h-2 w-full max-w-md" />
+                <Progress
+                  value={((stage + 1) / (loadingStages.length + 1)) * 100}
+                  className="h-2 w-full max-w-md"
+                />
               </div>
             </CardContent>
           </Card>

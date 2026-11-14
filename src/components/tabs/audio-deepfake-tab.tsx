@@ -565,7 +565,7 @@ export function AudioDeepfakeTab() {
 
       {/* Waveform Visualization */}
       {(audioFile || result) && !isAnalyzing && (
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} initial="hidden" animate="visible">
           <Card className="glass">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
@@ -674,7 +674,7 @@ export function AudioDeepfakeTab() {
       {/* Results */}
       <AnimatePresence>
         {result && !isAnalyzing && (
-          <motion.div initial={false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
+          <motion.div variants={containerVariants} initial="hidden" animate="visible" exit={{ opacity: 0 }} className="space-y-6">
 
             {/* Top Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
