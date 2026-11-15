@@ -35,6 +35,8 @@ export function ImageForensicsTab() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const shownPreview = previewUrl ?? imageResult?.previewUrl ?? null
+
 
   const handleFile = useCallback((file: File) => {
     // 1. Strict File Type Check
@@ -124,10 +126,10 @@ export function ImageForensicsTab() {
               <p className="text-xs text-muted-foreground mt-1">Supports JPG, PNG, WebP (max {maxImageMB}MB)</p>
             </div>
 
-            {previewUrl && (
+            {shownPreview && (
               <div className="flex flex-col sm:flex-row items-start gap-4">
                 <div className="relative w-full sm:w-64 h-48 rounded-lg overflow-hidden border">
-                  <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <img src={shownPreview} alt="Preview" className="w-full h-full object-cover" />
                   {imageLoading && (
                     <>
                       {/* Scan-line overlay */}
