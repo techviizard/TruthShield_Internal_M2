@@ -17,6 +17,7 @@ import {
   Monitor, Layers, Shield,
 } from 'lucide-react'
 import { ExportButton } from '@/components/export-button'
+import { toast } from 'sonner'
 import {
   ElaEvidence, SpectralEvidence, ProvenancePanel, ForensicContribution,
 } from '@/components/forensic-panels'
@@ -39,22 +40,30 @@ export function ImageForensicsTab() {
 
 
   const handleFile = useCallback((file: File) => {
-    // 1. Strict File Type Check
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    // 1. File type check
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
     if (!validTypes.includes(file.type)) {
-      alert("Invalid file type! TruthShield only supports JPG, PNG, and WebP.");
-      return; 
+      toast.error('Unsupported file type', {
+        description: 'Please upload a JPG, PNG or WebP image.',
+      })
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
     }
 
-    // 2. Pass the RAW, uncompressed file directly to the backend
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    
-    // If you have a size limit variable like maxImageMB defined, you can add it to the dependency array. 
-    // Otherwise, this cleanly sends the raw file.
-    analyzeImage(file); 
+    // 2. File size check (limit comes from the app config, 20MB by default)
+    if (file.size > maxImageMB * 1024 * 1024) {
+      toast.error(`File too large. Maximum size is ${maxImageMB}MB`, {
+        description: `Your file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.`,
+      })
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
 
-  }, [analyzeImage]);
+    // 3. Pass the RAW, uncompressed file directly to the backend
+    const url = URL.createObjectURL(file)
+    setPreviewUrl(url)
+    analyzeImage(file)
+  }, [analyzeImage, maxImageMB])
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -117,7 +126,7 @@ export function ImageForensicsTab() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleFileInput}
                 className="hidden"
               />
