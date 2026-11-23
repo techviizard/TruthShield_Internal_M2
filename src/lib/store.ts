@@ -1294,11 +1294,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   chatMessages: [],
   chatLoading: false,
   sendChatMessage: async (message: string) => {
+    // Capture history BEFORE adding the new message - the API route appends the
+    // current message itself, so including it here would send it twice.
+    const history = get().chatMessages.map((m) => ({ role: m.role, content: m.content }))
     const userMsg: ChatMessage = { role: 'user', content: message, timestamp: new Date() }
     set((state) => ({ chatMessages: [...state.chatMessages, userMsg], chatLoading: true }))
     try {
-      const { chatMessages } = get()
-      const history = chatMessages.map((m) => ({ role: m.role, content: m.content }))
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1309,7 +1310,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         const aiMsg: ChatMessage = { role: 'assistant', content: data.response || 'I apologize, but I was unable to generate a response.', timestamp: new Date() }
         set((state) => ({ chatMessages: [...state.chatMessages, aiMsg], chatLoading: false }))
       } else {
-        const aiMsg: ChatMessage = { role: 'assistant', content: 'I apologize, but I encountered an error processing your request. Please try again.', timestamp: new Date() }
+        const err = await res.json().catch(() => null)
+        const reason = err?.details || err?.error || `HTTP ${res.status}`
+        const aiMsg: ChatMessage = { role: 'assistant', content: `I encountered an error processing your request: ${reason}`, timestamp: new Date() }
         set((state) => ({ chatMessages: [...state.chatMessages, aiMsg], chatLoading: false }))
       }
     } catch {

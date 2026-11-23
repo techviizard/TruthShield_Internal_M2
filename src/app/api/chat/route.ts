@@ -26,6 +26,20 @@ Guidelines:
 
 You are part of the TruthShield platform, an AI-Powered Digital Media Verification Platform that helps combat misinformation and manipulated media.`;
 
+/**
+ * Append a message, merging it into the previous one if the role is the same.
+ * Some models (e.g. Gemma/Mistral behind OpenRouter) reject consecutive
+ * messages from the same role, so keep the conversation strictly alternating.
+ */
+function pushMerged(messages: ChatMessage[], role: 'user' | 'assistant', content: string) {
+  const last = messages[messages.length - 1];
+  if (last && last.role === role && typeof last.content === 'string') {
+    last.content += '\n\n' + content;
+  } else {
+    messages.push({ role, content });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -56,15 +70,28 @@ export async function POST(request: NextRequest) {
       for (const msg of recentHistory) {
         if (msg.role && msg.content && typeof msg.content === 'string') {
           const role = msg.role === 'assistant' ? 'assistant' : 'user';
-          messages.push({ role, content: msg.content });
+          pushMerged(messages, role, msg.content);
         }
       }
     }
 
     // Add the current user message
-    messages.push({ role: 'user', content: message });
+    pushMerged(messages, 'user', message);
 
-    const responseContent = await chatCompletion(messages);
+    // Free OpenRouter models are often rate-limited or briefly unavailable, and
+    // the router may pick a different model on the next try - retry a couple of times.
+    let responseContent = '';
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        responseContent = await chatCompletion(messages);
+        if (responseContent) break;
+      } catch (err) {
+        lastError = err;
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+      }
+    }
+    if (!responseContent && lastError) throw lastError;
 
     if (!responseContent) {
       return NextResponse.json(

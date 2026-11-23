@@ -86,7 +86,14 @@ async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<string> {
 
     if (!res || !res.choices || res.choices.length === 0) {
       console.error("NO CHOICES. RAW JSON:", res);
-      throw new Error(`No choices returned from OpenRouter`);
+      // Some providers (e.g. Google Gemini's OpenAI endpoint) wrap errors in an array.
+      const errBody = Array.isArray(res) ? res[0] : res;
+      const reason = errBody?.error?.message || errBody?.error?.code || errBody?.message;
+      throw new Error(
+        reason
+          ? `AI provider error: ${typeof reason === 'string' ? reason : JSON.stringify(reason)}`
+          : `No choices returned from the AI provider`
+      );
     }
 
     const content = res.choices[0]?.message?.content;

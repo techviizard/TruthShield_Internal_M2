@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect} from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FileText, GripVertical, Eye, EyeOff, Download, ChevronRight,
@@ -51,6 +51,16 @@ interface RecentReport {
   pages: number
   status: 'Generated' | 'Draft'
   format: string
+  reportIds?: string[]
+}
+
+interface AnalysisOption {
+  id: string
+  createdAt: string
+  analysisType: string
+  trustScore: number | null
+  riskLevel: string | null
+  mediaFileName: string
 }
 
 // --- Default Sections ---
@@ -211,46 +221,107 @@ export function ReportGeneratorTab() {
   )
   const [dateTo, setDateTo] = useState(new Date().toISOString().split('T')[0])
   const [classification, setClassification] = useState('Internal')
-  const [includeCharts, setIncludeCharts] = useState(true)
+  const [includeCharts, setIncludeCharts] = useState(false)
   const [includeRawData, setIncludeRawData] = useState(false)
   const [includeRecommendations, setIncludeRecommendations] = useState(true)
   const [coverPage, setCoverPage] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [analyses, setAnalyses] = useState<AnalysisOption[]>([])
+  const [analysesLoading, setAnalysesLoading] = useState(true)
+  const [analysesError, setAnalysesError] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   // "Recent reports" are the real report_exported entries in the audit log.
-  useEffect(() => {
-    let aborted = false
-    Promise.all([
-      fetch('/api/audit/logs?action=report_exported&limit=10').then((r) => r.json()).catch(() => null),
-      fetch('/api/config').then((r) => r.json()).catch(() => null),
-    ]).then(([logs, cfg]) => {
-      if (aborted) return
-      if (cfg?.success && cfg.config?.demo?.name) setAuthorName(cfg.config.demo.name)
-      if (!Array.isArray(logs?.items)) return
-      setRecentReports(
-        logs.items.map((row: Record<string, unknown>) => {
-          let details: Record<string, unknown> = {}
+  const loadRecent = useCallback(async () => {
+    const logs = await fetch('/api/audit/logs?action=report_exported&limit=10')
+      .then((r) => r.json())
+      .catch(() => null)
+    if (!Array.isArray(logs?.items)) return
+    setRecentReports(
+      logs.items.map((row: Record<string, unknown>) => {
+        let details: Record<string, unknown> = {}
+        if (row.details && typeof row.details === 'object') {
+          details = row.details as Record<string, unknown>
+        } else if (typeof row.details === 'string') {
           try {
-            details = typeof row.details === 'string' ? JSON.parse(row.details) : {}
+            details = JSON.parse(row.details)
           } catch {
             details = {}
           }
-          return {
-            id: String(row.id).slice(-8).toUpperCase(),
-            title: String(details.summary ?? 'Generated report'),
-            date: String(row.createdAt ?? '').split('T')[0],
-            type: `${details.count ?? 0} analyses`,
-            pages: Number(details.count ?? 0),
-            status: 'Generated' as const,
-            format: String(details.format ?? 'html').toUpperCase(),
-          }
-        }),
-      )
-    })
+        }
+        return {
+          id: String(row.id).slice(-8).toUpperCase(),
+          title: String(details.summary ?? 'Generated report'),
+          date: String(row.createdAt ?? '').split('T')[0],
+          type: `${details.count ?? 0} analyses`,
+          pages: Number(details.count ?? 0),
+          status: 'Generated' as const,
+          format: String(details.format ?? 'html').toUpperCase(),
+          reportIds: Array.isArray(details.reportIds) ? (details.reportIds as string[]) : undefined,
+        }
+      }),
+    )
+  }, [])
+
+  useEffect(() => {
+    let aborted = false
+    loadRecent()
+    fetch('/api/config')
+      .then((r) => r.json())
+      .then((cfg) => {
+        if (!aborted && cfg?.success && cfg.config?.demo?.name) setAuthorName(cfg.config.demo.name)
+      })
+      .catch(() => {})
+    fetch('/api/analysis/history?limit=100&sortBy=createdAt&sortOrder=desc')
+      .then((r) => r.json())
+      .then((data) => {
+        if (aborted) return
+        if (Array.isArray(data?.items)) {
+          setAnalyses(
+            data.items.map((i: Record<string, unknown>) => ({
+              id: String(i.id),
+              createdAt: String(i.createdAt ?? ''),
+              analysisType: String(i.analysisType ?? ''),
+              trustScore: typeof i.trustScore === 'number' ? i.trustScore : null,
+              riskLevel: typeof i.riskLevel === 'string' ? i.riskLevel : null,
+              mediaFileName: String(i.mediaFileName ?? 'unknown'),
+            })),
+          )
+        } else {
+          setAnalysesError('Could not load past analyses.')
+        }
+      })
+      .catch(() => {
+        if (!aborted) setAnalysesError('Could not load past analyses.')
+      })
+      .finally(() => {
+        if (!aborted) setAnalysesLoading(false)
+      })
     return () => {
       aborted = true
     }
-  }, [])
+  }, [loadRecent])
+
+  // Only analyses inside the chosen date range are offered for the report.
+  const visibleAnalyses = useMemo(
+    () =>
+      analyses.filter((a) => {
+        const day = a.createdAt.slice(0, 10)
+        return (!dateFrom || day >= dateFrom) && (!dateTo || day <= dateTo)
+      }),
+    [analyses, dateFrom, dateTo],
+  )
+  const selectedCount = visibleAnalyses.filter((a) => selectedIds.has(a.id)).length
+
+  const toggleAnalysis = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const selectAllVisible = () => setSelectedIds(new Set(visibleAnalyses.map((a) => a.id)))
+  const clearSelection = () => setSelectedIds(new Set())
 
   const enabledCount = sections.filter((s) => s.enabled).length
   const estimatedPages = useMemo(() => {
@@ -275,7 +346,6 @@ export function ReportGeneratorTab() {
 
   const fileSizeEstimates = useMemo(() => ({
     PDF: `${(estimatedPages * 0.15).toFixed(1)} MB`,
-    DOCX: `${(estimatedPages * 0.08).toFixed(1)} MB`,
     HTML: `${(estimatedPages * 0.04).toFixed(1)} MB`,
     JSON: `${(estimatedPages * 0.12).toFixed(1)} MB`,
   }), [estimatedPages])
@@ -299,12 +369,97 @@ export function ReportGeneratorTab() {
     toast.success(`Applied "${template.name}" template`)
   }
 
-  const handleGenerate = (format: string) => {
+  const toApiFormat = (f: string): 'html' | 'json' => (f === 'JSON' ? 'json' : 'html')
+
+  const buildBody = (format: 'html' | 'json', reportIds: string[]) => ({
+    reportIds,
+    title: reportTitle,
+    format,
+    author: authorName || undefined,
+    classification,
+    coverPage,
+    sections: sections.filter((s) => s.enabled).map((s) => s.id),
+    includeMetadata: includeRawData,
+    includeRawJson: includeRawData,
+    includeRecommendations,
+  })
+
+  const requestReport = async (body: ReturnType<typeof buildBody>) => {
+    const res = await fetch('/api/reports/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => null)
+      throw new Error(err?.error || `Server returned ${res.status}`)
+    }
+    const blob = await res.blob()
+    const filename =
+      /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '')?.[1] ||
+      `truthshield-report.${body.format}`
+    return { blob, filename }
+  }
+
+  const saveFile = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+
+  const handleGenerate = async (format: string) => {
+    const ids = visibleAnalyses.filter((a) => selectedIds.has(a.id)).map((a) => a.id)
+    if (ids.length === 0) {
+      toast.error('Select at least one analysis to include in the report.')
+      return
+    }
+    // PDF = open the HTML report and let the browser "Save as PDF". The window is opened
+    // right away (before the request) so pop-up blockers treat it as a user action.
+    const wantsPrint = format === 'PDF'
+    const printWin = wantsPrint ? window.open('', '_blank') : null
     setIsGenerating(true)
-    setTimeout(() => {
+    try {
+      const out = await requestReport(buildBody(toApiFormat(format), ids))
+      if (wantsPrint && printWin) {
+        printWin.document.open()
+        printWin.document.write(await out.blob.text())
+        printWin.document.close()
+        printWin.focus()
+        setTimeout(() => printWin.print(), 400)
+        toast.success('Report opened. Choose "Save as PDF" in the print dialog.')
+      } else {
+        saveFile(out.blob, out.filename)
+        toast.success(
+          wantsPrint ? 'Pop-up blocked, so the HTML file was downloaded instead. Open it and print to PDF.' : `Downloaded ${out.filename}`,
+        )
+      }
+      loadRecent()
+    } catch (e) {
+      printWin?.close()
+      toast.error(`Report failed: ${e instanceof Error ? e.message : 'unknown error'}`)
+    } finally {
       setIsGenerating(false)
-      toast.success(`Report generated as ${format} - ${estimatedPages} pages`)
-    }, 2000)
+    }
+  }
+
+  // Re-create a past export from the analyses it covered, using the current settings.
+  const downloadRecent = async (report: RecentReport) => {
+    if (!report.reportIds || report.reportIds.length === 0) {
+      toast.info('This export was made before downloads were tracked. Generate it again from the list above.')
+      return
+    }
+    try {
+      const out = await requestReport(buildBody(toApiFormat(report.format), report.reportIds))
+      saveFile(out.blob, out.filename)
+      toast.success(`Downloaded ${out.filename}`)
+    } catch (e) {
+      toast.error(`Download failed: ${e instanceof Error ? e.message : 'unknown error'}`)
+    }
   }
 
   return (
@@ -552,7 +707,6 @@ export function ReportGeneratorTab() {
                 {/* Toggle options */}
                 <div className="space-y-3">
                   {[
-                    { label: 'Include charts', checked: includeCharts, onChange: setIncludeCharts, icon: BarChart3 },
                     { label: 'Include raw data', checked: includeRawData, onChange: setIncludeRawData, icon: Code },
                     { label: 'Include recommendations', checked: includeRecommendations, onChange: setIncludeRecommendations, icon: Lightbulb },
                     { label: 'Cover page', checked: coverPage, onChange: setCoverPage, icon: FileText },
@@ -626,6 +780,72 @@ export function ReportGeneratorTab() {
         </motion.div>
       </div>
 
+      {/* Analyses to include */}
+      <motion.div variants={itemVariants}>
+        <Card className="glass border">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <CheckCircle2 className="h-4 w-4 text-zinc-500" />
+              <h3 className="text-sm font-semibold">Analyses to include</h3>
+              <span className="text-xs text-muted-foreground ml-auto">
+                {selectedCount} of {visibleAnalyses.length} selected (date range above)
+              </span>
+            </div>
+            <div className="flex gap-2 mb-3">
+              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={selectAllVisible} disabled={visibleAnalyses.length === 0}>
+                Select all
+              </Button>
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={clearSelection} disabled={selectedCount === 0}>
+                Clear selection
+              </Button>
+            </div>
+            {analysesLoading ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">Loading analyses...</p>
+            ) : analysesError ? (
+              <p className="text-sm text-red-500 py-6 text-center">{analysesError}</p>
+            ) : visibleAnalyses.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">
+                No analyses in this date range. Run an analysis first, or widen the From and To dates.
+              </p>
+            ) : (
+              <div className="max-h-[320px] overflow-y-auto">
+                <div className="space-y-2 pr-2">
+                  {visibleAnalyses.map((a) => (
+                    <label
+                      key={a.id}
+                      className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                        selectedIds.has(a.id) ? 'border-zinc-500/40 bg-zinc-500/10' : 'border-border/40 hover:bg-muted/30'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 accent-zinc-500"
+                        checked={selectedIds.has(a.id)}
+                        onChange={() => toggleAnalysis(a.id)}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{a.mediaFileName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {a.analysisType} on {a.createdAt.slice(0, 10)}
+                        </p>
+                      </div>
+                      {a.trustScore != null && (
+                        <span className="text-xs text-muted-foreground">Trust {a.trustScore}</span>
+                      )}
+                      {a.riskLevel && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          {a.riskLevel}
+                        </Badge>
+                      )}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Export Options */}
       <motion.div variants={itemVariants}>
         <Card className="glass border">
@@ -637,10 +857,9 @@ export function ReportGeneratorTab() {
                 Choose your preferred format
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
-                { format: 'PDF', icon: FileDown, desc: 'Print-ready document', ext: '.pdf' },
-                { format: 'DOCX', icon: FileText, desc: 'Editable Word document', ext: '.docx' },
+                { format: 'PDF', icon: FileDown, desc: 'Opens print dialog (Save as PDF)', ext: '.pdf' },
                 { format: 'HTML', icon: Code, desc: 'Web-ready report', ext: '.html' },
                 { format: 'JSON', icon: FileJson, desc: 'Structured data export', ext: '.json' },
               ].map((exp) => (
@@ -648,7 +867,7 @@ export function ReportGeneratorTab() {
                   key={exp.format}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  disabled={isGenerating || enabledCount === 0}
+                  disabled={isGenerating || enabledCount === 0 || selectedCount === 0}
                   onClick={() => handleGenerate(exp.format)}
                   className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-zinc-500/10 hover:border-zinc-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
@@ -733,7 +952,7 @@ export function ReportGeneratorTab() {
                           variant="ghost"
                           size="sm"
                           className="h-7 text-xs gap-1"
-                          onClick={() => toast.success(`Downloading ${report.title}...`)}
+                          onClick={() => downloadRecent(report)}
                         >
                           <Download className="h-3 w-3" />
                           {report.format}
@@ -781,7 +1000,7 @@ export function ReportGeneratorTab() {
                       variant="ghost"
                       size="sm"
                       className="ml-auto h-6 text-[10px] gap-0.5"
-                      onClick={() => toast.success(`Downloading ${report.title}...`)}
+                      onClick={() => downloadRecent(report)}
                     >
                       <Download className="h-3 w-3" />
                       {report.format}
@@ -813,7 +1032,7 @@ export function ReportGeneratorTab() {
         <Button
           size="lg"
           className="bg-zinc-600 hover:bg-zinc-700 text-white gap-2 shadow-lg shadow-zinc-500/20"
-          disabled={isGenerating || enabledCount === 0}
+          disabled={isGenerating || enabledCount === 0 || selectedCount === 0}
           onClick={() => handleGenerate('PDF')}
         >
           {isGenerating ? (
