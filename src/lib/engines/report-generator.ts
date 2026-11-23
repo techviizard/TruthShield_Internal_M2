@@ -16,6 +16,16 @@ export interface ReportOptions {
   format?: 'html' | 'json'
   /** Adds the evidence-integrity annex: per-artifact hashes, case record, chain head. */
   courtReady?: boolean
+  /** Section ids to render (executiveSummary, trustScoreOverview, detailedFindings,
+   *  mediaAnalysisResults, factCheckSummary, threatIntelligence, recommendations, appendix).
+   *  Omit to keep the original layout. */
+  sections?: string[]
+  author?: string
+  classification?: string
+  /** Adds a cover page before the report body. */
+  coverPage?: boolean
+  /** Set false to hide recommendations even when that section is enabled. */
+  includeRecommendations?: boolean
 }
 
 export async function generateReport(opts: ReportOptions): Promise<{ content: string; mime: string; filename: string }> {
@@ -30,6 +40,9 @@ export async function generateReport(opts: ReportOptions): Promise<{ content: st
   })
 
   const title = opts.title ?? 'TruthShield Verification Report'
+  // Section gating. With no `sections` given, behave exactly as before.
+  const enabled = opts.sections ? new Set(opts.sections) : null
+  const has = (id: string, legacyDefault = true) => (enabled ? enabled.has(id) : legacyDefault)
   const ts = new Date().toISOString().replace(/[:.]/g, '-')
 
   // Integrity annex - computed for every export so the JSON and HTML forms of a
@@ -64,7 +77,18 @@ export async function generateReport(opts: ReportOptions): Promise<{ content: st
 
   if (opts.format === 'json') {
     return {
-      content: JSON.stringify({ title, generatedAt, integrity, reports }, null, 2),
+      content: JSON.stringify(
+        {
+          title,
+          generatedAt,
+          ...(opts.author ? { author: opts.author } : {}),
+          ...(opts.classification ? { classification: opts.classification } : {}),
+          integrity,
+          reports,
+        },
+        null,
+        2,
+      ),
       mime: 'application/json',
       filename: `truthshield-report-${ts}.json`,
     }
@@ -74,25 +98,41 @@ export async function generateReport(opts: ReportOptions): Promise<{ content: st
     const flags: string[] = r.flags ? safeJson(r.flags, []) : []
     const recs: string[] = r.recommendations ? safeJson(r.recommendations, []) : []
     const fc = r.factChecks ?? []
+    const showRecs = has('recommendations') && opts.includeRecommendations !== false
+    const showAppendix = has('appendix')
     return `
       <section class="report">
         <h2>${escapeHtml(r.analysisType)} - ${escapeHtml(r.mediaUpload.fileName)}</h2>
-        <div class="grid">
+        ${has('trustScoreOverview') ? `<div class="grid">
           <div><b>Trust Score</b><span class="big">${r.trustScore ?? ' - '}/100</span></div>
           <div><b>Risk Level</b><span class="risk ${r.riskLevel ?? ''}">${r.riskLevel ?? ' - '}</span></div>
           <div><b>Confidence</b><span>${r.confidence != null ? `${Math.round(r.confidence * 100)}%` : ' - '}</span></div>
           <div><b>Processing Time</b><span>${r.processingTime ?? ' - '}ms</span></div>
-        </div>
-        <p><b>Explanation:</b> ${escapeHtml(r.explanation ?? 'n/a')}</p>
-        ${flags.length > 0 ? `<p><b>Flags:</b> ${flags.map(escapeHtml).join(', ')}</p>` : ''}
-        ${recs.length > 0 ? `<ul class="recs">${recs.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul>` : ''}
-        ${fc.length > 0 ? `<details><summary>Fact Check Matches (${fc.length})</summary><ul>${fc.map((m) => `<li>[${escapeHtml(m.verdict ?? '?')}] <a href="${escapeHtml(m.url ?? '#')}">${escapeHtml(m.source)}</a> - ${escapeHtml(m.snippet ?? '')}</li>`).join('')}</ul></details>` : ''}
-        ${opts.includeMetadata && r.mediaUpload.metadata ? `<details><summary>Media Metadata</summary><pre>${escapeHtml(r.mediaUpload.metadata)}</pre></details>` : ''}
-        ${opts.includeRawJson && r.results ? `<details><summary>Raw Analysis</summary><pre>${escapeHtml(r.results)}</pre></details>` : ''}
+        </div>` : ''}
+        ${has('mediaAnalysisResults', false) ? `<p><b>Media:</b> ${escapeHtml(r.mediaUpload.mimeType)} - ${r.mediaUpload.fileSize.toLocaleString()} B - processed in ${r.processingTime ?? ' - '}ms</p>` : ''}
+        ${has('detailedFindings') ? `<p><b>Explanation:</b> ${escapeHtml(r.explanation ?? 'n/a')}</p>
+        ${flags.length > 0 ? `<p><b>Flags:</b> ${flags.map(escapeHtml).join(', ')}</p>` : ''}` : ''}
+        ${showRecs && recs.length > 0 ? `<ul class="recs">${recs.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul>` : ''}
+        ${has('factCheckSummary') && fc.length > 0 ? `<details open><summary>Fact Check Matches (${fc.length})</summary><ul>${fc.map((m) => `<li>[${escapeHtml(m.verdict ?? '?')}] <a href="${escapeHtml(m.url ?? '#')}">${escapeHtml(m.source)}</a> - ${escapeHtml(m.snippet ?? '')}</li>`).join('')}</ul></details>` : ''}
+        ${showAppendix && opts.includeMetadata && r.mediaUpload.metadata ? `<details><summary>Media Metadata</summary><pre>${escapeHtml(r.mediaUpload.metadata)}</pre></details>` : ''}
+        ${showAppendix && opts.includeRawJson && r.results ? `<details><summary>Raw Analysis</summary><pre>${escapeHtml(r.results)}</pre></details>` : ''}
         <hr/>
       </section>
     `
   }).join('\n')
+
+  const cover = opts.coverPage
+    ? `<section class="cover">
+    <h1>${escapeHtml(title)}</h1>
+    ${opts.classification ? `<p><span class="cls">${escapeHtml(opts.classification)}</span></p>` : ''}
+    ${opts.author ? `<p>Prepared by ${escapeHtml(opts.author)}</p>` : ''}
+    <p class="meta">${new Date(generatedAt).toLocaleDateString()} - ${reports.length} analyses</p>
+  </section>`
+    : ''
+  const metaExtra = [opts.author ? `by ${escapeHtml(opts.author)}` : '', opts.classification ? escapeHtml(opts.classification) : '']
+    .filter(Boolean)
+    .map((x) => ` - ${x}`)
+    .join('')
 
   const html = `<!doctype html>
 <html><head><meta charset="utf-8"/><title>${escapeHtml(title)}</title>
@@ -121,14 +161,22 @@ export async function generateReport(opts: ReportOptions): Promise<{ content: st
   table.annex th,table.annex td{border:1px solid #d8e6e0;padding:.3rem .45rem;text-align:left;vertical-align:top}
   table.annex th{background:#eaf7f1}
   table.annex code{word-break:break-all}
+  .cover{text-align:center;padding:5rem 1rem;border:1px solid #ddd;border-radius:8px;margin-bottom:2rem}
+  .cover h1{border:0;font-size:2rem}
+  .cls{display:inline-block;padding:.2rem .7rem;border:1px solid #10b981;border-radius:12px;color:#067a49;font-weight:600}
+  .summary-box{border:1px solid #ddd;border-radius:8px;padding:1rem;margin:1.5rem 0;background:#fafafa}
+  .summary-box h2{margin-top:0;font-size:1.1rem}
   .ok{color:#067a49;font-weight:600}
   .bad{color:#c00;font-weight:600}
-  @media print { body { max-width:none } section { page-break-inside:avoid } }
+  @media print { body { max-width:none } section { page-break-inside:avoid } .cover{page-break-after:always} }
 </style></head>
 <body>
+  ${cover}
   <h1>${escapeHtml(title)}</h1>
-  <p class="meta">Generated ${new Date().toLocaleString()} - ${reports.length} report(s) - TruthShield v3.3.0</p>
+  <p class="meta">Generated ${new Date().toLocaleString()} - ${reports.length} report(s) - TruthShield v3.3.0${metaExtra}</p>
+  ${has('executiveSummary', false) ? renderExecutiveSummary(reports) : ''}
   ${opts.courtReady === false ? '' : renderIntegrityAnnex(integrity)}
+  ${has('threatIntelligence', false) ? renderThreatIntel(reports) : ''}
   ${rows}
   <footer><p class="meta">End of report. To convert to PDF: File → Print → Save as PDF.</p></footer>
 </body></html>`
@@ -138,6 +186,46 @@ export async function generateReport(opts: ReportOptions): Promise<{ content: st
     mime: 'text/html',
     filename: `truthshield-report-${ts}.html`,
   }
+}
+
+type SummaryRow = {
+  trustScore: number | null
+  riskLevel: string | null
+  analysisType: string
+  flags: string | null
+  mediaUpload: { fileName: string }
+}
+
+function renderExecutiveSummary(reports: SummaryRow[]): string {
+  const scored = reports.filter((r) => r.trustScore != null)
+  const avg = scored.length
+    ? Math.round(scored.reduce((sum, r) => sum + (r.trustScore ?? 0), 0) / scored.length)
+    : null
+  const count = (level: string) => reports.filter((r) => r.riskLevel === level).length
+  return `
+  <section class="summary-box">
+    <h2>Executive Summary</h2>
+    <p>${reports.length} analyses reviewed. Average trust score: <b>${avg ?? ' - '}/100</b>.</p>
+    <p>Risk breakdown: <b>${count('critical')}</b> critical, <b>${count('high')}</b> high, <b>${count('medium')}</b> medium, <b>${count('low')}</b> low.</p>
+  </section>`
+}
+
+function renderThreatIntel(reports: SummaryRow[]): string {
+  const risky = reports.filter((r) => r.riskLevel === 'critical' || r.riskLevel === 'high')
+  if (risky.length === 0) {
+    return `<section class="summary-box"><h2>Threat Intelligence</h2><p class="meta">No high or critical risk items in the selected analyses.</p></section>`
+  }
+  return `
+  <section class="summary-box">
+    <h2>Threat Intelligence</h2>
+    <table class="annex">
+      <tr><th>File</th><th>Risk</th><th>Flags</th></tr>
+      ${risky.map((r) => {
+        const flags: string[] = r.flags ? safeJson(r.flags, []) : []
+        return `<tr><td>${escapeHtml(r.mediaUpload.fileName)}</td><td><span class="risk ${r.riskLevel ?? ''}">${escapeHtml(r.riskLevel ?? ' - ')}</span></td><td>${escapeHtml(flags.join(', ') || ' - ')}</td></tr>`
+      }).join('')}
+    </table>
+  </section>`
 }
 
 type CaseRow = {

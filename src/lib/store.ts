@@ -345,7 +345,7 @@ interface AppState {
   // Actions
   analyzeText: () => Promise<void>
   analyzeImage: (file: File) => Promise<void>
-  analyzeVideo: (file: File) => Promise<void>
+  analyzeVideo: (source: File | { url: string }) => Promise<void>
   verifyFact: (claim: string, language?: string) => Promise<void>
   factCheckError: string | null
   fetchDashboardStats: () => Promise<void>
@@ -463,6 +463,9 @@ function mapAlert(row: Record<string, unknown>): Alert {
     source: (row.source as string) || 'TruthShield',
   }
 }
+
+/** Tracks the in-flight image analysis so a newer upload or a reset can cancel it. */
+let imageAnalysisController: AbortController | null = null
 
 export const useAppStore = create<AppState>((set, get) => ({
   // Navigation
@@ -751,113 +754,169 @@ export const useAppStore = create<AppState>((set, get) => ({
           },
         })
         toast.success('Text analysis complete!')
-    } else {
+      } else {
         const errorData = await res.json().catch(() => ({}))
         const message = errorData.error || 'Analysis failed. Please try again.'
         toast.error(message)
-        set({
-          textLoading: false,
-          textResult: null,
-        })
+        set({ textLoading: false, textResult: null })
       }
     } catch {
       toast.error('Network error. Could not reach the analysis server.')
-      set({
-        textLoading: false,
-        textResult: null,
-      })
-    }
-  },  
-
-  analyzeImage: async (file: File) => {
-    set({ imageLoading: true, imageResult: null })
-    try {
-      const formData = new FormData()
-      formData.append('image', file)
-      const res = await fetch('/api/analyze/image', { method: 'POST', body: formData })
-      if (res.ok) {
-        const data = await res.json()
-        // API returns { success, reportId, analysis: {...}, processingTime }
-        // Transform to ImageAnalysisResult shape
-        const analysis = data.analysis || data
-        const details = analysis.details || {}
-        const rawFlags: string[] = Array.isArray(analysis.flags) ? analysis.flags : []
-        const manipulationIndicators = rawFlags.map((f: string) => ({
-          type: f.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
-          // Use the model's real confidence (0-1 → 0-100). No random jitter - this is a verification product.
-          confidence: Math.round(typeof analysis.confidence === 'number' ? (analysis.confidence <= 1 ? analysis.confidence * 100 : analysis.confidence) : 50),
-          description: f.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) + ' detected in analysis',
-        }))
-        const metaAnomalies: string[] = Array.isArray((details.metadataAnalysis as Record<string, unknown>)?.anomalies) ? ((details.metadataAnalysis as Record<string, unknown>).anomalies as string[]) : []
-        const editingSoftware = (details.metadataAnalysis as Record<string, unknown>)?.editingSoftware as string | null
-        const metadataAnalysis = [
-          ...(editingSoftware ? [{ field: 'Software', value: editingSoftware, status: 'suspicious' as const }] : []),
-          ...(metaAnomalies.length > 0 ? [{ field: 'Metadata Anomalies', value: metaAnomalies.join(', '), status: 'warning' as const }] : []),
-          { field: 'Image Dimensions', value: 'Analyzed', status: 'clean' as const },
-        ]
-        const forensicFindings: string[] = Array.isArray(details.manipulationIndicators)
-          ? (details.manipulationIndicators as string[]).map(String)
-          : rawFlags.map((f: string) => `${f.replace(/_/g, ' ')} analysis indicates potential issues`)
-        set({
-          imageLoading: false,
-          imageResult: {
-            trustScore: typeof analysis.trustScore === 'number' ? analysis.trustScore : 50,
-            aiGeneratedLikelihood: typeof (details as Record<string, unknown>).aiGenerationProbability === 'number'
-              ? (details as Record<string, unknown>).aiGenerationProbability as number
-              : typeof analysis.trustScore === 'number' ? 100 - analysis.trustScore : 50,
-            manipulationIndicators,
-            metadataAnalysis,
-            forensicFindings,
-            recommendations: Array.isArray(analysis.recommendations) ? analysis.recommendations.map(String) : [],
-            forensics: details.forensics,
-            provenance: details.provenance,
-            detectorBreakdown: details.detectorBreakdown,
-            previewUrl: URL.createObjectURL(file),
-          },
-        })
-        toast.success('Image analysis complete!')
-      } else {
-        throw new Error('API error')
-      }
-    } catch {
-      toast.error('Image analysis failed. Using fallback data.')
-      set({
-        imageLoading: false,
-        imageResult: {
-          trustScore: 35,
-          aiGeneratedLikelihood: 72,
-          manipulationIndicators: [
-            { type: 'Clone Detection', confidence: 89, description: 'Cloned regions detected in the background area' },
-            { type: 'Noise Inconsistency', confidence: 76, description: 'Inconsistent noise patterns suggesting composite image' },
-            { type: 'JPEG Artifact Mismatch', confidence: 68, description: 'Different compression levels detected across regions' },
-            { type: 'Edge Analysis', confidence: 54, description: 'Unusual edge patterns around subject boundaries' },
-          ],
-          metadataAnalysis: [
-            { field: 'Software', value: 'Adobe Photoshop 2024', status: 'suspicious' },
-            { field: 'Date Modified', value: '2024-01-20 14:32:00', status: 'warning' },
-            { field: 'Camera Model', value: 'Not Available (stripped)', status: 'suspicious' },
-            { field: 'GPS Location', value: 'Not Available (stripped)', status: 'warning' },
-            { field: 'Image Dimensions', value: '1920x1080', status: 'clean' },
-          ],
-          forensicFindings: [
-            'ELA analysis shows inconsistent error levels across image regions',
-            'Multiple editing artifacts detected near subject boundaries',
-            'Metadata indicates post-processing with image editing software',
-            'Noise pattern analysis reveals potential splicing artifacts',
-          ],
-          recommendations: [
-            'Request original unedited version of this image',
-            'Cross-reference with known AI generation signatures',
-            'Perform reverse image search to find original source',
-            'Check for similar images with different modifications',
-          ],
-        },
-      })
+      set({ textLoading: false, textResult: null })
     }
   },
 
-  analyzeVideo: async (file: File) => {
+  analyzeImage: async (file: File) => {
+    // Cancel any previous image analysis.
+    imageAnalysisController?.abort()
+
+    const controller = new AbortController()
+    imageAnalysisController = controller
+    const isStale = () => controller.signal.aborted || imageAnalysisController !== controller
+
+    set({ imageLoading: true, imageResult: null })
+
+    try {
+      const formData = new FormData()
+      // 1. Send the RAW file for local pixel forensics
+      formData.append('image', file)
+
+      // 2. Compress a copy specifically for the AI model (OpenRouter).
+      //    If compression fails we still run the forensic analysis without it.
+      try {
+        const compressedBase64 = await new Promise<string>((resolve, reject) => {
+          const img = new window.Image()
+          const objectUrl = URL.createObjectURL(file)
+          img.onload = () => {
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            const scale = 800 / img.width
+            canvas.width = 800
+            canvas.height = img.height * scale
+            ctx?.drawImage(img, 0, 0, canvas.width, canvas.height)
+            URL.revokeObjectURL(objectUrl)
+            resolve(canvas.toDataURL('image/jpeg', 0.7))
+          }
+          img.onerror = () => {
+            URL.revokeObjectURL(objectUrl)
+            reject(new Error('Failed to compress image'))
+          }
+          img.src = objectUrl
+        })
+        formData.append('aiPayload', compressedBase64)
+      } catch {
+        /* proceed with the raw file only */
+      }
+
+      if (isStale()) return
+
+      // 3. Dispatch the dual-payload request to the backend
+      const res = await fetch('/api/analyze/image', {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      })
+
+      // Ignore responses from cancelled or superseded requests.
+      if (isStale()) return
+
+      if (!res.ok) {
+        throw new Error('Image analysis failed')
+      }
+
+      const data = await res.json()
+
+      if (isStale()) return
+
+      // API returns { success, reportId, analysis: {...}, processingTime }
+      // Transform to ImageAnalysisResult shape
+      const analysis = data.analysis || data
+      const details = analysis.details || {}
+      const rawFlags: string[] = Array.isArray(analysis.flags) ? analysis.flags : []
+
+      const manipulationIndicators = rawFlags.map((f: string) => ({
+        type: f.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
+        // Use the model's real confidence (0-1 → 0-100). No random jitter - this is a verification product.
+        confidence: Math.round(
+          typeof analysis.confidence === 'number'
+            ? analysis.confidence <= 1
+              ? analysis.confidence * 100
+              : analysis.confidence
+            : 50
+        ),
+        description:
+          f.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) +
+          ' detected in analysis',
+      }))
+
+      const metadata = details.metadataAnalysis as Record<string, unknown> | undefined
+      const metaAnomalies: string[] = Array.isArray(metadata?.anomalies)
+        ? (metadata!.anomalies as string[])
+        : []
+      const editingSoftware = metadata?.editingSoftware as string | null | undefined
+
+      const metadataAnalysis = [
+        ...(editingSoftware
+          ? [{ field: 'Software', value: editingSoftware, status: 'suspicious' as const }]
+          : []),
+        ...(metaAnomalies.length > 0
+          ? [{
+              field: 'Metadata Anomalies',
+              value: metaAnomalies.join(', '),
+              status: 'warning' as const,
+            }]
+          : []),
+        { field: 'Image Dimensions', value: 'Analyzed', status: 'clean' as const },
+      ]
+
+      const forensicFindings: string[] = Array.isArray(details.manipulationIndicators)
+        ? (details.manipulationIndicators as string[]).map(String)
+        : rawFlags.map(
+            (f: string) => `${f.replace(/_/g, ' ')} analysis indicates potential issues`
+          )
+
+      set({
+        imageResult: {
+          trustScore: typeof analysis.trustScore === 'number' ? analysis.trustScore : 50,
+          aiGeneratedLikelihood:
+            typeof (details as Record<string, unknown>).aiGenerationProbability === 'number'
+              ? ((details as Record<string, unknown>).aiGenerationProbability as number)
+              : typeof analysis.trustScore === 'number'
+                ? 100 - analysis.trustScore
+                : 50,
+          manipulationIndicators,
+          metadataAnalysis,
+          forensicFindings,
+          recommendations: Array.isArray(analysis.recommendations)
+            ? analysis.recommendations.map(String)
+            : [],
+          forensics: details.forensics,
+          provenance: details.provenance,
+          detectorBreakdown: details.detectorBreakdown,
+          previewUrl: URL.createObjectURL(file),
+        },
+      })
+
+      toast.success('Image analysis complete!')
+    } catch (error) {
+      // Cancellation is intentional; do not show an error or fallback result.
+      if (isStale()) return
+
+      console.error('Image analysis error:', error)
+      set({ imageResult: null })
+      toast.error('Image analysis failed. Please try again.')
+    } finally {
+      // Only the active request may change the loading state.
+      if (imageAnalysisController === controller) {
+        imageAnalysisController = null
+        set({ imageLoading: false })
+      }
+    }
+  },
+
+  analyzeVideo: async (source: File | { url: string }) => {
     set({ videoLoading: true, videoResult: null })
+    const file = source instanceof File ? source : null
 
     // Try to get a REAL audio-forensics result from the video's own audio
     // track, using the existing, already-proven /api/forensics/audio engine.
@@ -870,6 +929,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       note: 'No audio track could be extracted or analysed for this video.',
     }
     try {
+      // Audio extraction needs the actual file; URL sources skip it.
+      if (!file) throw new Error('No local file to decode')
       const wav = await decodeToWav(file)
       const fd = new FormData()
       fd.append('audio', wav, 'extracted-audio.wav')
@@ -890,9 +951,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
 
     try {
-      const formData = new FormData()
-      formData.append('video', file)
-      const res = await fetch('/api/analyze/video', { method: 'POST', body: formData })
+      let res: Response
+      if (file) {
+        const formData = new FormData()
+        formData.append('video', file)
+        res = await fetch('/api/analyze/video', { method: 'POST', body: formData })
+      } else {
+        res = await fetch('/api/analyze/video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: (source as { url: string }).url }),
+        })
+      }
       if (res.ok) {
         const data = await res.json()
         const analysis = data.analysis || data
@@ -1212,7 +1282,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   resetTextResult: () => set({ textResult: null, textInput: '' }),
-  resetImageResult: () => set({ imageResult: null }),
+  resetImageResult: () => {
+    imageAnalysisController?.abort()
+    imageAnalysisController = null
+    set({ imageLoading: false, imageResult: null })
+  },
   resetVideoResult: () => set({ videoResult: null }),
   resetFactCheckResult: () => set({ factCheckResult: null, factCheckError: null }),
 
@@ -1220,11 +1294,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   chatMessages: [],
   chatLoading: false,
   sendChatMessage: async (message: string) => {
+    // Capture history BEFORE adding the new message - the API route appends the
+    // current message itself, so including it here would send it twice.
+    const history = get().chatMessages.map((m) => ({ role: m.role, content: m.content }))
     const userMsg: ChatMessage = { role: 'user', content: message, timestamp: new Date() }
     set((state) => ({ chatMessages: [...state.chatMessages, userMsg], chatLoading: true }))
     try {
-      const { chatMessages } = get()
-      const history = chatMessages.map((m) => ({ role: m.role, content: m.content }))
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1235,7 +1310,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         const aiMsg: ChatMessage = { role: 'assistant', content: data.response || 'I apologize, but I was unable to generate a response.', timestamp: new Date() }
         set((state) => ({ chatMessages: [...state.chatMessages, aiMsg], chatLoading: false }))
       } else {
-        const aiMsg: ChatMessage = { role: 'assistant', content: 'I apologize, but I encountered an error processing your request. Please try again.', timestamp: new Date() }
+        const err = await res.json().catch(() => null)
+        const reason = err?.details || err?.error || `HTTP ${res.status}`
+        const aiMsg: ChatMessage = { role: 'assistant', content: `I encountered an error processing your request: ${reason}`, timestamp: new Date() }
         set((state) => ({ chatMessages: [...state.chatMessages, aiMsg], chatLoading: false }))
       }
     } catch {
