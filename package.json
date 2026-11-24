@@ -6,6 +6,7 @@
   "author": "CyArt <inquiry@cyart.io>",
   "scripts": {
     "dev": "next dev -p 3000",
+    "setup:auth": "node scripts/setup-auth.mjs",
     "build": "next build",
     "postbuild": "node scripts/postbuild.mjs",
     "start": "node .next/standalone/server.js",
