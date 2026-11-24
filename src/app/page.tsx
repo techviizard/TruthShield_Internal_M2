@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useSyncExternalStore } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useAppStore, type TabId } from '@/lib/store'
 import { DashboardTab } from '@/components/tabs/dashboard-tab'
@@ -314,10 +315,20 @@ function IstClock() {
 }
 
 export default function Home() {
+  const router = useRouter()
   const { activeTab, setActiveTab, sidebarOpen, setSidebarOpen, alerts, dashboardStats } = useAppStore()
   const [searchOpen, setSearchOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const unreadAlerts = alerts.filter((a) => !a.read).length
+
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' })
+    } finally {
+      router.replace('/login')
+      router.refresh()
+    }
+  }
 
   // Keyboard shortcuts: Cmd+K for search, ? for shortcuts
   useEffect(() => {
@@ -381,7 +392,7 @@ export default function Home() {
   const activeLabel = tNav(activeTab)
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="h-dvh overflow-hidden flex flex-col bg-background">
       {/* Global Search Dialog */}
       <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
 
@@ -495,30 +506,47 @@ export default function Home() {
 
           {/* User avatar */}
           <Avatar className="ml-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-teal)]/15 text-brand-teal text-xs font-bold ring-1 ring-[var(--brand-teal)]/25">DS</Avatar>
+
+          {/* Sign out */}
+          <HButton
+            variant="ghost"
+            isIconOnly
+            size="sm"
+            className="h-9 w-9"
+            onPress={handleLogout}
+            aria-label="Sign out"
+          >
+            <LogOut className="h-4 w-4" />
+          </HButton>
         </div>
       </header>
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-h-0">
         {/* Desktop Sidebar */}
         <aside className="hidden lg:flex w-60 border-r border-border/60 flex-col shrink-0 bg-sidebar">
-          <ScrollArea className="flex-1 py-4">
+          <ScrollArea className="flex-1 min-h-0 py-4">
             <SidebarNav activeTab={activeTab} setActiveTab={setActiveTab} />
           </ScrollArea>
           <div className="p-3 border-t border-border/60">
-            <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/40 cursor-pointer transition-colors">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 p-2 rounded-lg hover:bg-muted/40 transition-colors text-left"
+              aria-label="Sign out"
+            >
               <Avatar className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-teal)]/15 text-brand-teal text-xs font-bold ring-1 ring-[var(--brand-teal)]/25">DS</Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{tApp('role')}</p>
                 <p className="text-[11px] text-muted-foreground truncate">{tApp('clearance')}</p>
               </div>
               <LogOut className="h-4 w-4 text-muted-foreground shrink-0" />
-            </div>
+            </button>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 bg-background outline-none">
-          <ScrollArea className="h-[calc(100vh-3.5rem-3rem-2px)]">
+        <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 min-h-0 bg-background outline-none">
+          <ScrollArea className="h-full">
             <div className="p-4 md:p-6 lg:p-8">
               <AnimatePresence mode="wait">
                 <motion.div
